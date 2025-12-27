@@ -4,9 +4,11 @@
   "description": "Media cataloging app with collaborative lists",
   "scripts": {
     "install-all": "npm install && cd client && npm install && cd ../server && npm install",
-    "dev": "concurrently \"npm run server\" \"npm run client\"",
+    "dev": "concurrently \"npm:server\" \"npm:client\" \"npm:dev:styles\" \"npm:browsersync\"",
     "server": "cd server && npm run dev",
     "client": "cd client && npm run dev",
+    "dev:styles": "cd client && npm run dev:styles",
+    "browsersync": "node tools/browsersync.js",
     "build": "cd client && npm run build && cd ../server && npm run build"
   },
   "keywords": [
@@ -19,6 +21,8 @@
   "author": "",
   "license": "MIT",
   "devDependencies": {
-    "concurrently": "^8.2.2"
+    "concurrently": "^8.2.2",
+    "sass": "^1.76.0",
+    "browser-sync": "^2.27.11"
   }
 }
