@@ -1,6 +1,7 @@
 import axios from 'axios';
 
-const OMDB_BASE_URL = 'http://www.omdbapi.com/';
+const TMDB_BASE_URL = 'https://api.themoviedb.org/3';
+const TMDB_IMAGE_BASE_URL = 'https://image.tmdb.org/t/p/w500';
 
 export interface MovieSearchResult {
   imdbID: string;
@@ -26,17 +27,22 @@ export interface MovieDetails {
 
 export const searchMovies = async (query: string): Promise<MovieSearchResult[]> => {
   try {
-    const apiKey = process.env.OMDB_API_KEY || '';
-    const response = await axios.get(OMDB_BASE_URL, {
+    const apiKey = process.env.TMDB_API_KEY || process.env.OMDB_API_KEY || '';
+    const response = await axios.get(`${TMDB_BASE_URL}/search/movie`, {
       params: {
-        apikey: apiKey,
-        s: query,
-        type: 'movie'
+        api_key: apiKey,
+        query: query
       }
     });
 
-    if (response.data.Response === 'True') {
-      return response.data.Search || [];
+    if (response.data.results) {
+      return response.data.results.map((movie: any) => ({
+        imdbID: movie.id.toString(),
+        Title: movie.title,
+        Year: movie.release_date ? movie.release_date.substring(0, 4) : '',
+        Type: 'movie',
+        Poster: movie.poster_path ? `${TMDB_IMAGE_BASE_URL}${movie.poster_path}` : ''
+      }));
     }
     return [];
   } catch (error) {

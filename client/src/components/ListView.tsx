@@ -4,13 +4,11 @@ import { getList, addMediaToList, rateMedia, deleteMediaFromList } from '../api'
 import { MediaItem, SearchResult } from '../types';
 import SearchBar from './SearchBar';
 import StarRating from './StarRating';
-import { useAuth } from '../AuthContext';
 
 const ListView: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { user } = useAuth();
   const [list, setList] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const mediaTypeFromUrl = (searchParams.get('mediaType') as 'movie' | 'book' | 'album') || 'movie';
