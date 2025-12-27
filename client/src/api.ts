@@ -45,7 +45,13 @@ export const searchAlbums = async (query: string): Promise<SearchResult[]> => {
 
 // Lists
 export const getLists = async (): Promise<List[]> => {
+
   const response = await api.get('/lists');
+  return response.data;
+};
+
+export const getOrCreateAutoList = async (mediaType: 'movie' | 'book' | 'album'): Promise<List> => {
+  const response = await api.post('/lists/auto', { mediaType });
   return response.data;
 };
 

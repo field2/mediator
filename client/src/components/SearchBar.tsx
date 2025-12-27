@@ -5,10 +5,12 @@ import { SearchResult } from '../types';
 interface SearchBarProps {
   onSelect: (item: SearchResult, mediaType: 'movie' | 'book' | 'album') => void;
   mediaType: 'movie' | 'book' | 'album';
+  onMediaSelected?: (item: SearchResult, mediaType: 'movie' | 'book' | 'album') => void;
 }
 
-const SearchBar: React.FC<SearchBarProps> = ({ onSelect, mediaType }) => {
+const SearchBar: React.FC<SearchBarProps> = ({ onSelect, mediaType, onMediaSelected }) => {
   const [query, setQuery] = useState('');
+
   const [results, setResults] = useState<SearchResult[]>([]);
   const [loading, setLoading] = useState(false);
   const [showResults, setShowResults] = useState(false);
@@ -55,7 +57,11 @@ const SearchBar: React.FC<SearchBarProps> = ({ onSelect, mediaType }) => {
   }, [query, mediaType]);
 
   const handleSelect = (item: SearchResult) => {
-    onSelect(item, mediaType);
+    if (onMediaSelected) {
+      onMediaSelected(item, mediaType);
+    } else {
+      onSelect(item, mediaType);
+    }
     setQuery('');
     setResults([]);
     setShowResults(false);

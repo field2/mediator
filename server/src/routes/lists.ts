@@ -26,6 +26,34 @@ router.get('/public', (req, res) => {
   }
 });
 
+// Get or create auto-generated list for a media type
+router.post('/auto', authenticate, (req: AuthRequest, res) => {
+  try {
+    const { mediaType } = req.body;
+
+    if (!mediaType || !['movie', 'book', 'album'].includes(mediaType)) {
+      return res.status(400).json({ error: 'Valid mediaType is required (movie, book, or album)' });
+    }
+
+    const listName = `My ${mediaType.charAt(0).toUpperCase() + mediaType.slice(1)}s`;
+
+    // Check if auto-list already exists
+    const existingLists = ListModel.findByUserId(req.userId!);
+    let autoList = existingLists.find((list) => list.name === listName);
+
+    // If not exists, create it
+    if (!autoList) {
+      const listId = ListModel.create(listName, req.userId!, `Auto-generated list for ${mediaType}s`, false);
+      autoList = ListModel.findById(listId as number);
+    }
+
+    res.json(autoList);
+  } catch (error) {
+    console.error('Error getting/creating auto list:', error);
+    res.status(500).json({ error: 'Failed to get or create auto list' });
+  }
+});
+
 // Create a new list
 router.post('/', authenticate, (req: AuthRequest, res) => {
   try {
