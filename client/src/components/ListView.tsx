@@ -159,50 +159,56 @@ const ListView: React.FC = () => {
 
       <div style={{ marginTop: '40px' }}>
         <div style={{ display: 'flex', gap: '10px', marginBottom: '20px', borderBottom: '2px solid #ddd' }}>
-          <button
-            onClick={() => setSelectedSection('movie')}
-            style={{
-              padding: '10px 20px',
-              border: 'none',
-              backgroundColor: selectedSection === 'movie' ? '#007bff' : 'transparent',
-              color: selectedSection === 'movie' ? 'white' : '#007bff',
-              cursor: 'pointer',
-              fontWeight: 'bold'
-            }}
-          >
-            My Movies ({movies.length})
-          </button>
-          <button
-            onClick={() => setSelectedSection('book')}
-            style={{
-              padding: '10px 20px',
-              border: 'none',
-              backgroundColor: selectedSection === 'book' ? '#007bff' : 'transparent',
-              color: selectedSection === 'book' ? 'white' : '#007bff',
-              cursor: 'pointer',
-              fontWeight: 'bold'
-            }}
-          >
-            My Books ({books.length})
-          </button>
-          <button
-            onClick={() => setSelectedSection('album')}
-            style={{
-              padding: '10px 20px',
-              border: 'none',
-              backgroundColor: selectedSection === 'album' ? '#007bff' : 'transparent',
-              color: selectedSection === 'album' ? 'white' : '#007bff',
-              cursor: 'pointer',
-              fontWeight: 'bold'
-            }}
-          >
-            My Albums ({albums.length})
-          </button>
+          {movies.length > 0 && (
+            <button
+              onClick={() => setSelectedSection('movie')}
+              style={{
+                padding: '10px 20px',
+                border: 'none',
+                backgroundColor: selectedSection === 'movie' ? '#007bff' : 'transparent',
+                color: selectedSection === 'movie' ? 'white' : '#007bff',
+                cursor: 'pointer',
+                fontWeight: 'bold'
+              }}
+            >
+              My Movies ({movies.length})
+            </button>
+          )}
+          {books.length > 0 && (
+            <button
+              onClick={() => setSelectedSection('book')}
+              style={{
+                padding: '10px 20px',
+                border: 'none',
+                backgroundColor: selectedSection === 'book' ? '#007bff' : 'transparent',
+                color: selectedSection === 'book' ? 'white' : '#007bff',
+                cursor: 'pointer',
+                fontWeight: 'bold'
+              }}
+            >
+              My Books ({books.length})
+            </button>
+          )}
+          {albums.length > 0 && (
+            <button
+              onClick={() => setSelectedSection('album')}
+              style={{
+                padding: '10px 20px',
+                border: 'none',
+                backgroundColor: selectedSection === 'album' ? '#007bff' : 'transparent',
+                color: selectedSection === 'album' ? 'white' : '#007bff',
+                cursor: 'pointer',
+                fontWeight: 'bold'
+              }}
+            >
+              My Albums ({albums.length})
+            </button>
+          )}
         </div>
 
-        {selectedSection === 'movie' && renderMediaItems(movies)}
-        {selectedSection === 'book' && renderMediaItems(books)}
-        {selectedSection === 'album' && renderMediaItems(albums)}
+        {selectedSection === 'movie' && movies.length > 0 && renderMediaItems(movies)}
+        {selectedSection === 'book' && books.length > 0 && renderMediaItems(books)}
+        {selectedSection === 'album' && albums.length > 0 && renderMediaItems(albums)}
       </div>
     </div>
   );

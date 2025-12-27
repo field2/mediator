@@ -53,16 +53,28 @@ export const searchMovies = async (query: string): Promise<MovieSearchResult[]> 
 
 export const getMovieDetails = async (imdbId: string): Promise<MovieDetails | null> => {
   try {
-    const apiKey = process.env.OMDB_API_KEY || '';
-    const response = await axios.get(OMDB_BASE_URL, {
+    const apiKey = process.env.TMDB_API_KEY || process.env.OMDB_API_KEY || '';
+    const response = await axios.get(`${TMDB_BASE_URL}/movie/${imdbId}`, {
       params: {
-        apikey: apiKey,
-        i: imdbId
+        api_key: apiKey
       }
     });
 
-    if (response.data.Response === 'True') {
-      return response.data;
+    if (response.data) {
+      const movie = response.data;
+      return {
+        imdbID: movie.imdb_id || imdbId,
+        Title: movie.title,
+        Year: movie.release_date ? movie.release_date.substring(0, 4) : '',
+        Rated: '', // TMDb doesn't have rating
+        Released: movie.release_date,
+        Runtime: movie.runtime ? `${movie.runtime} min` : '',
+        Genre: movie.genres ? movie.genres.map((g: any) => g.name).join(', ') : '',
+        Director: '', // Would need credits API
+        Actors: '', // Would need credits API
+        Plot: movie.overview,
+        Poster: movie.poster_path ? `${TMDB_IMAGE_BASE_URL}${movie.poster_path}` : ''
+      };
     }
     return null;
   } catch (error) {
