@@ -48,6 +48,14 @@ const SearchBar: React.FC<SearchBarProps> = ({ onSelect, mediaType, onMediaSelec
     };
   }, [query, mediaType]);
 
+  // keep page-level class when results are visible so CSS can react
+  React.useEffect(() => {
+    const page = document.querySelector('.page-container');
+    if (showResults) page?.classList.add('search-open');
+    else page?.classList.remove('search-open');
+    return () => { page?.classList.remove('search-open'); };
+  }, [showResults]);
+
   const handleSelect = (item: SearchResult) => {
     onSelect(item, mediaType);
     if (onMediaSelected) onMediaSelected(item, mediaType);
@@ -56,7 +64,7 @@ const SearchBar: React.FC<SearchBarProps> = ({ onSelect, mediaType, onMediaSelec
   };
 
   return (
-    <div className="searchbar" style={{ position: 'relative', marginBottom: '20px' }}>
+    <div className="searchbar">
       <input
         className="search-input"
         type="text"
@@ -70,7 +78,7 @@ const SearchBar: React.FC<SearchBarProps> = ({ onSelect, mediaType, onMediaSelec
       {loading && <div className="search-loading">Searching...</div>}
 
       {showResults && results.length > 0 && (
-        <div className="search-results" style={{ position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 1000 }}>
+        <div className="search-results">
           {results.map((r) => (
             <div key={r.id} className="search-result-item" onClick={() => handleSelect(r)}>
               {r.Poster || r.cover ? (
