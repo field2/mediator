@@ -8,7 +8,7 @@ body {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background-color: #f00;
+  background-color: #fff;
 }
 
 #root {
@@ -23,4 +23,26 @@ input,
 textarea,
 select {
   font-family: inherit;
+}
+
+/* Star rating styles */
+.star-rating {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.star {
+  font-size: 20px;
+  color: #e4e5e9;
+  cursor: pointer;
+  user-select: none;
+}
+
+.star.readonly {
+  cursor: default;
+}
+
+.star.filled {
+  color: #ffc107;
 }

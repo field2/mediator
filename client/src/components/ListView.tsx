@@ -73,8 +73,8 @@ const ListView: React.FC = () => {
     }
   };
 
-  if (loading) return <div style={{ padding: '20px' }}>Loading...</div>;
-  if (!list) return <div style={{ padding: '20px' }}>List not found</div>;
+  if (loading) return <div className="list-loading">Loading...</div>;
+  if (!list) return <div className="list-not-found">List not found</div>;
 
   const canEdit = list.isOwner || list.isCollaborator;
   const movies = list.mediaItems?.filter((item: MediaItem) => item.media_type === 'movie') || [];
@@ -83,30 +83,28 @@ const ListView: React.FC = () => {
 
   const renderMediaItems = (items: MediaItem[]) => {
     if (items.length === 0) {
-      return <p style={{ color: '#666', fontStyle: 'italic' }}>No items yet</p>;
+      return <p className="no-items">No items yet</p>;
     }
 
     return (
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: '20px' }}>
+      <div className="media-grid">
         {items.map((item) => (
-          <div key={item.id} style={{ border: '1px solid #ddd', padding: '10px', borderRadius: '4px' }}>
+          <div key={item.id} className="media-card">
             {item.poster_url && (
               <img
                 src={item.poster_url}
                 alt={item.title}
-                style={{ width: '100%', height: '200px', objectFit: 'cover', marginBottom: '10px' }}
+                className="media-card-img"
                 onError={(e) => {
                   (e.target as HTMLImageElement).style.display = 'none';
                 }}
               />
             )}
-            <div style={{ fontWeight: 'bold', marginBottom: '5px' }}>{item.title}</div>
-            {item.year && <div style={{ fontSize: '0.9em', color: '#666', marginBottom: '5px' }}>{item.year}</div>}
+            <div className="media-card-title">{item.title}</div>
+            {item.year && <div className="media-card-year">{item.year}</div>}
 
-            <div style={{ marginTop: '10px' }}>
-              <div style={{ fontSize: '0.8em', color: '#666', marginBottom: '5px' }}>
-                {item.averageRating ? `Avg: ${item.averageRating.toFixed(1)}` : 'No ratings yet'}
-              </div>
+            <div className="media-card-meta">
+              <div className="avg-rating">{item.averageRating ? `Avg: ${item.averageRating.toFixed(1)}` : 'No ratings yet'}</div>
               <StarRating
                 rating={item.userRating}
                 onRate={(rating) => handleRate(item.id, rating)}
@@ -138,71 +136,30 @@ const ListView: React.FC = () => {
   };
 
   return (
-    <div style={{ padding: '20px', maxWidth: '1200px', margin: '0 auto' }}>
-      <button onClick={() => navigate('/')} style={{ marginBottom: '20px', padding: '8px 16px', cursor: 'pointer' }}>
-        ← Back to Lists
-      </button>
+    <div className="page-container">
+      <button onClick={() => navigate('/')} className="back-button">← Back to Lists</button>
 
       <h1>{list.name}</h1>
-      {list.description && <p style={{ color: '#666' }}>{list.description}</p>}
-      <p style={{ fontSize: '0.9em', color: '#666' }}>
-        {list.is_public ? '🌐 Public' : '🔒 Private'}
-        {list.isCollaborator && ' • You are a collaborator'}
-      </p>
+      {list.description && <p className="list-description">{list.description}</p>}
+      <p className="list-meta">{list.is_public ? '🌐 Public' : '🔒 Private'}{list.isCollaborator && ' • You are a collaborator'}</p>
 
       {canEdit && (
-        <div style={{ marginTop: '30px', padding: '20px', backgroundColor: '#f8f9fa', borderRadius: '8px' }}>
+        <div className="add-media-panel">
           <h3>Add Media</h3>
           <SearchBar onSelect={handleAddMedia} mediaType={selectedSection} />
         </div>
       )}
 
-      <div style={{ marginTop: '40px' }}>
-        <div style={{ display: 'flex', gap: '10px', marginBottom: '20px', borderBottom: '2px solid #ddd' }}>
+      <div className="sections">
+        <div className="tabs">
           {movies.length > 0 && (
-            <button
-              onClick={() => setSelectedSection('movie')}
-              style={{
-                padding: '10px 20px',
-                border: 'none',
-                backgroundColor: selectedSection === 'movie' ? '#007bff' : 'transparent',
-                color: selectedSection === 'movie' ? 'white' : '#007bff',
-                cursor: 'pointer',
-                fontWeight: 'bold'
-              }}
-            >
-              My Movies ({movies.length})
-            </button>
+            <button onClick={() => setSelectedSection('movie')} className={`tab-button ${selectedSection === 'movie' ? 'active' : ''}`}>My Movies ({movies.length})</button>
           )}
           {books.length > 0 && (
-            <button
-              onClick={() => setSelectedSection('book')}
-              style={{
-                padding: '10px 20px',
-                border: 'none',
-                backgroundColor: selectedSection === 'book' ? '#007bff' : 'transparent',
-                color: selectedSection === 'book' ? 'white' : '#007bff',
-                cursor: 'pointer',
-                fontWeight: 'bold'
-              }}
-            >
-              My Books ({books.length})
-            </button>
+            <button onClick={() => setSelectedSection('book')} className={`tab-button ${selectedSection === 'book' ? 'active' : ''}`}>My Books ({books.length})</button>
           )}
           {albums.length > 0 && (
-            <button
-              onClick={() => setSelectedSection('album')}
-              style={{
-                padding: '10px 20px',
-                border: 'none',
-                backgroundColor: selectedSection === 'album' ? '#007bff' : 'transparent',
-                color: selectedSection === 'album' ? 'white' : '#007bff',
-                cursor: 'pointer',
-                fontWeight: 'bold'
-              }}
-            >
-              My Albums ({albums.length})
-            </button>
+            <button onClick={() => setSelectedSection('album')} className={`tab-button ${selectedSection === 'album' ? 'active' : ''}`}>My Albums ({albums.length})</button>
           )}
         </div>
 

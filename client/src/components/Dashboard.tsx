@@ -76,10 +76,10 @@ const Dashboard: React.FC = () => {
     };
 
   return (
-    <div style={{ padding: '20px', maxWidth: '1200px', margin: '0 auto' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' }}>
+    <div className="page-container">
+      <div className="header">
         <h1>Mediator</h1>
-        <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+        {/* <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
           <span>Welcome, {user?.username}!</span>
           <button onClick={() => navigate('/collaborations')} style={{ padding: '8px 16px', cursor: 'pointer' }}>
             Collaborations
@@ -87,72 +87,36 @@ const Dashboard: React.FC = () => {
           <button onClick={logout} style={{ padding: '8px 16px', cursor: 'pointer' }}>
             Logout
           </button>
-        </div>
-      </div>
-
-      <div style={{ marginTop: '40px' }}>
-        <div style={{ display: 'flex', gap: '10px', marginBottom: '30px', borderBottom: '2px solid #ddd' }}>
-          <button
-            onClick={() => setSelectedMediaType('movie')}
-            style={{
-              padding: '10px 20px',
-              border: 'none',
-              backgroundColor: selectedMediaType === 'movie' ? '#007bff' : 'transparent',
-              color: selectedMediaType === 'movie' ? 'white' : '#007bff',
-              cursor: 'pointer',
-              fontWeight: 'bold'
-            }}
-          >
+        </div> */}
+        <div className="media-tabs">
+          <button onClick={() => setSelectedMediaType('movie')} className={`media-tab ${selectedMediaType === 'movie' ? 'active' : ''}`}>
             🎬 Movies
           </button>
-          <button
-            onClick={() => setSelectedMediaType('book')}
-            style={{
-              padding: '10px 20px',
-              border: 'none',
-              backgroundColor: selectedMediaType === 'book' ? '#28a745' : 'transparent',
-              color: selectedMediaType === 'book' ? 'white' : '#28a745',
-              cursor: 'pointer',
-              fontWeight: 'bold'
-            }}
-          >
+          <button onClick={() => setSelectedMediaType('book')} className={`media-tab ${selectedMediaType === 'book' ? 'active' : ''}`}>
             📚 Books
           </button>
-          <button
-            onClick={() => setSelectedMediaType('album')}
-            style={{
-              padding: '10px 20px',
-              border: 'none',
-              backgroundColor: selectedMediaType === 'album' ? '#dc3545' : 'transparent',
-              color: selectedMediaType === 'album' ? 'white' : '#dc3545',
-              cursor: 'pointer',
-              fontWeight: 'bold'
-            }}
-          >
+          <button onClick={() => setSelectedMediaType('album')} className={`media-tab ${selectedMediaType === 'album' ? 'active' : ''}`}>
             🎵 Albums
           </button>
         </div>
+      </div>
 
-        <div style={{ padding: '40px 20px', backgroundColor: '#f8f9fa', borderRadius: '8px', textAlign: 'center' }}>
-          <h2 style={{ marginBottom: '30px' }}>
-            Search for {selectedMediaType === 'movie' ? 'a movie' : selectedMediaType === 'book' ? 'a book' : 'an album'}
-          </h2>
+      <div className="media-section-body">
+        <div className="search-panel">
           <SearchBar onSelect={() => {}} mediaType={selectedMediaType} onMediaSelected={handleMediaSelected} />
-          {loading && <div style={{ marginTop: '20px', color: '#007bff', fontWeight: 'bold' }}>Adding to your list...</div>}
-          <div style={{ marginTop: '24px', textAlign: 'left' }}>
-            <h3 style={{ marginBottom: '12px' }}>{autoItems.length ? `Your ${selectedMediaType === 'movie' ? 'Movies' : selectedMediaType === 'book' ? 'Books' : 'Albums'}` : `No ${selectedMediaType === 'movie' ? 'movies' : selectedMediaType === 'book' ? 'books' : 'albums'} added yet`}</h3>
+          {loading && <div className="loading-text">Adding to your list...</div>}
+          <div className="auto-items">
+            <h3 className="auto-items-title">{autoItems.length ? `Your ${selectedMediaType === 'movie' ? 'Movies' : selectedMediaType === 'book' ? 'Books' : 'Albums'}` : `No ${selectedMediaType === 'movie' ? 'movies' : selectedMediaType === 'book' ? 'books' : 'albums'} added yet`}</h3>
             {loadingItems ? (
               <div>Loading your items...</div>
             ) : autoItems.length > 0 ? (
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: '12px' }}>
+              <div className="auto-items-grid">
                 {autoItems.map((mi) => (
-                  <div key={mi.id} style={{ background: 'white', borderRadius: 6, overflow: 'hidden', border: '1px solid #eee', padding: 8, display: 'flex', flexDirection: 'column' }}>
-                    <img src={mi.poster_url || '/placeholder.png'} alt={mi.title} style={{ width: '100%', height: 180, objectFit: 'cover', borderRadius: 4 }} />
-                    <div style={{ marginTop: 8, fontWeight: 600 }}>{mi.title}</div>
-                    {mi.year && <div style={{ color: '#666', fontSize: 12 }}>{mi.year}</div>}
-                    <div style={{ marginTop: '8px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-                      <StarRating rating={mi.userRating || 0} onRate={(r) => handleRate(mi.id, r)} readonly={!user} />
-                    </div>
+                  <div key={mi.id} className="auto-item-card">
+                    <img src={mi.poster_url || '/placeholder.png'} alt={mi.title} className="auto-item-img" />
+                    <div className="auto-item-title">{mi.title}</div>
+                    {mi.year && <div className="auto-item-year">{mi.year}</div>}
+                    <div className="auto-item-rating"><StarRating rating={mi.userRating || 0} onRate={(r) => handleRate(mi.id, r)} readonly={!user} /></div>
                   </div>
                 ))}
               </div>

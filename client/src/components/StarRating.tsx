@@ -10,18 +10,14 @@ const StarRating: React.FC<StarRatingProps> = ({ rating = 0, onRate, readonly = 
   const [hover, setHover] = useState(0);
 
   return (
-    <div style={{ display: 'flex', gap: '2px' }}>
+    <div className="star-rating">
       {[1, 2, 3, 4, 5].map((star) => (
         <span
           key={star}
           onClick={() => !readonly && onRate && onRate(star)}
           onMouseEnter={() => !readonly && setHover(star)}
           onMouseLeave={() => !readonly && setHover(0)}
-          style={{
-            cursor: readonly ? 'default' : 'pointer',
-            fontSize: '20px',
-            color: star <= (hover || rating) ? '#ffc107' : '#e4e5e9'
-          }}
+          className={`star ${star <= (hover || rating) ? 'filled' : ''} ${readonly ? 'readonly' : ''}`}
         >
           ★
         </span>
