@@ -29,7 +29,7 @@ const Dashboard: React.FC = () => {
       // refresh local items for this media type
       setAutoListId(list.id);
       const full = await getList(list.id);
-      setAutoItems(full.mediaItems || []);
+      setAutoItems(Array.isArray(full.mediaItems) ? full.mediaItems : []);
     } catch (error) {
       console.error('Error adding media:', error);
       alert('Failed to add media');
@@ -49,7 +49,7 @@ const Dashboard: React.FC = () => {
         setAutoListId(list.id);
         const full = await getList(list.id);
         if (cancelled) return;
-        setAutoItems(full.mediaItems || []);
+        setAutoItems(Array.isArray(full.mediaItems) ? full.mediaItems : []);
       } catch (err) {
         console.error('Error loading auto list items:', err);
         setAutoItems([]);
@@ -67,7 +67,7 @@ const Dashboard: React.FC = () => {
       try {
         await rateMedia(autoListId, mediaId, rating);
         const full = await getList(autoListId);
-        setAutoItems(full.mediaItems || []);
+        setAutoItems(Array.isArray(full.mediaItems) ? full.mediaItems : []);
       } catch (err) {
         console.error('Error rating item:', err);
       }
