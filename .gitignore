@@ -1,0 +1,43 @@
+node_modules
+dist
+build
+.env
+.env.local
+*.log
+.DS_Store
+*.sqlite
+*.db
+
+# Ignore node modules anywhere
+node_modules/
+**/node_modules/
+
+# Build output
+dist/
+build/
+out/
+coverage/
+
+# Public assets
+public/assets/
+
+# Env files and logs
+.env
+.env.*
+*.log
+
+# macOS and editor folders
+.DS_Store
+.vscode/
+.idea/
+
+# Temporary files
+.cache/
+tmp/
+
+# Database files
+*.sqlite
+*.db
+
+# Ignore system files
+Thumbs.db
