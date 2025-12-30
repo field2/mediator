@@ -4,7 +4,7 @@ A full-stack web application that allows users to catalog movies, books, and alb
 
 ## Features
 
-- 🎬 **Movies** - Search via OMDB API
+- 🎬 **Movies** - Search via The Movie Database (TMDb) API
 - 📚 **Books** - Search via Open Library API
 - 🎵 **Albums** - Search via MusicBrainz API
 - ⭐ **5-Star Rating System** - Rate any media item
@@ -33,14 +33,14 @@ A full-stack web application that allows users to catalog movies, books, and alb
 
 ### External APIs
 
-- [OMDB API](http://www.omdbapi.com/) - Movie data
+- [The Movie Database (TMDb)](https://www.themoviedb.org/documentation/api) - Movie data (replaces OMDB)
 - [Open Library API](https://openlibrary.org/developers/api) - Book data
 - [MusicBrainz API](https://musicbrainz.org/doc/MusicBrainz_API) - Album data
 
 ## Prerequisites
 
 - Node.js 18+ and npm
-- An OMDB API key (get one free at http://www.omdbapi.com/apikey.aspx)
+- A TMDb API key (get one at https://www.themoviedb.org/settings/api)
 
 ## Installation
 
@@ -64,12 +64,12 @@ A full-stack web application that allows users to catalog movies, books, and alb
    cp server/.env.example server/.env
    ```
 
-   Edit `server/.env` and add your OMDB API key:
+   Edit `server/.env` and add your TMDb API key as `TMDB_API_KEY`:
 
    ```
    PORT=3001
    JWT_SECRET=your-super-secret-jwt-key-change-this-in-production
-   OMDB_API_KEY=your-actual-omdb-api-key-here
+   TMDB_API_KEY=your-actual-tmdb-api-key-here
    NODE_ENV=development
    ```
 
@@ -220,10 +220,10 @@ Modify schema in `server/src/db/database.ts`. Delete `mediator.db` to recreate w
 
 ## Troubleshooting
 
-**OMDB API not working?**
+**TMDb API not working?**
 
-- Ensure you have a valid API key in `server/.env`
-- Check your API key at http://www.omdbapi.com/
+- Ensure you have a valid `TMDB_API_KEY` in `server/.env`
+- Verify your key and account at https://www.themoviedb.org/settings/api
 
 **Database errors?**
 
