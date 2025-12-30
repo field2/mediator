@@ -1,0 +1,62 @@
+name: Deploy to mediator.field2.com
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Remote deploy via SSH
+        uses: appleboy/ssh-action@v0.1.9
+        env:
+          DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
+          BRANCH: ${{ secrets.BRANCH }}
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          port: ${{ secrets.SSH_PORT }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            set -euo pipefail
+            BRANCH=${BRANCH:-main}
+            DEPLOY_PATH=${DEPLOY_PATH:-/home/deploy/mediator}
+
+            echo "Deploying branch: $BRANCH to $DEPLOY_PATH"
+
+            # Clone if missing
+            if [ ! -d "$DEPLOY_PATH/.git" ]; then
+              mkdir -p "${DEPLOY_PATH%/*}"
+              git clone https://github.com/field2/mediator.git "$DEPLOY_PATH"
+            fi
+
+            cd "$DEPLOY_PATH"
+            git fetch --all --prune
+            git reset --hard origin/$BRANCH
+
+            # Backend build
+            if [ -d server ]; then
+              cd server
+              npm ci
+              npm run build || true
+              cd -
+            fi
+
+            # Frontend build
+            if [ -d client ]; then
+              cd client
+              npm ci
+              npm run build || true
+              cd -
+            fi
+
+            # Run deploy script from repo (if present)
+            if [ -x ./deploy/start.sh ]; then
+              ./deploy/start.sh
+            else
+              echo "No executable deploy/start.sh found; ensure server restarts as needed."
+            fi
