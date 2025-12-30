@@ -1,0 +1,17 @@
+RewriteEngine On
+RewriteBase /
+
+# Preserve Authorization header in proxy requests
+
+RewriteRule .\* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
+
+# Proxy all /api requests to the Node backend on port 3003
+
+RewriteCond %{REQUEST_URI} ^/api
+RewriteRule ^api/(.\*)$ http://127.0.0.1:3003/api/$1 [P,L,QSA]
+
+# SPA fallback: send everything else to index.html if the file/folder doesn’t exist
+
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule . /index.html [L]
