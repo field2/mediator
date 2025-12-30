@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../AuthContext';
 import SearchBar from './SearchBar';
 import { getOrCreateAutoList, addMediaToList, getList, rateMedia } from '../api';
@@ -7,8 +6,7 @@ import { MediaItem } from '../types';
 import StarRating from './StarRating';
 
 const Dashboard: React.FC = () => {
-  const navigate = useNavigate();
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
   const [selectedMediaType, setSelectedMediaType] = useState<'movie' | 'book' | 'album'>('movie');
   const [loading, setLoading] = useState(false);
   const [autoListId, setAutoListId] = useState<number | null>(null);
