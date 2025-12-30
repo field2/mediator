@@ -9,7 +9,7 @@
     "client": "cd client && npm run dev",
     "dev:styles": "cd client && npm run dev:styles",
     "browsersync": "node tools/browsersync.js",
-    "build": "cd client && npm run build && cd ../server && npm run build"
+    "build": "cd client && npm run build && cd ../server && npm run build && mkdir -p ../public && cp -r ../client/dist/* ../public/"
   },
   "keywords": [
     "media",
