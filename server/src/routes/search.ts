@@ -101,6 +101,7 @@ router.get('/albums', async (req, res) => {
       cover: album.cover || null
     }));
 
+    console.log('Route /albums formattedResults:', formattedResults);
     res.json(formattedResults);
   } catch (error) {
     console.error('Album search error:', error);
