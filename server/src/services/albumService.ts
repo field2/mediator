@@ -39,7 +39,7 @@ export const searchAlbums = async (query: string): Promise<AlbumSearchResult[]> 
 
     return response.data.releases || [];
   } catch (error) {
-    console.error('Error searching albums:', error.message || error);
+    console.error('Error searching albums:', (error as any).message || error);
     return [];
   }
 };
