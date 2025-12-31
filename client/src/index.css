@@ -45,6 +45,7 @@ body {
   border: none;
   outline: none;
   border-radius: 0.5rem;
+  font-size: 16px;
 }
 .searchbar .search-results {
   position: absolute;
