@@ -33,9 +33,7 @@ export const searchAlbums = async (query: string): Promise<AlbumSearchResult[]> 
       timeout: 5000
     });
 
-    console.log('Deezer raw response:', response.data);
     const albums = response.data.data || [];
-    console.log('Deezer albums array:', albums);
     const mapped = albums.map((album: any) => ({
       id: album.id.toString(),
       title: album.title,
@@ -44,7 +42,6 @@ export const searchAlbums = async (query: string): Promise<AlbumSearchResult[]> 
       status: album.record_type || '',
       cover: album.cover_medium || album.cover || null
     }));
-    console.log('Mapped album results:', mapped);
     return mapped;
   } catch (error) {
     console.error('Error searching albums:', (error as any).message || error);
