@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const MUSICBRAINZ_BASE_URL = 'https://musicbrainz.org/ws/2';
+const MUSICBRAINZ_BASE_URL = 'http://musicbrainz.org/ws/2';
 const COVER_ART_BASE_URL = 'https://coverartarchive.org';
 
 export interface AlbumSearchResult {
@@ -33,12 +33,13 @@ export const searchAlbums = async (query: string): Promise<AlbumSearchResult[]> 
       },
       headers: {
         'User-Agent': 'Mediator/1.0.0 (contact@example.com)'
-      }
+      },
+      timeout: 5000
     });
 
     return response.data.releases || [];
   } catch (error) {
-    console.error('Error searching albums:', error);
+    console.error('Error searching albums:', error.message || error);
     return [];
   }
 };

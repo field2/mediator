@@ -89,16 +89,16 @@ router.get('/albums', async (req, res) => {
       return res.status(400).json({ error: 'Query parameter is required' });
     }
 
+    console.log('Searching albums for:', query);
     const results = await searchAlbums(query);
-    const formattedResults = await Promise.all(results.map(async (album) => {
-      const coverUrl = await getAlbumCoverUrl(album.id);
-      return {
-        id: album.id,
-        title: album.title,
-        artist: album['artist-credit']?.map(a => a.name).join(', '),
-        year: album.date?.substring(0, 4),
-        cover: coverUrl
-      };
+    console.log('Album search results:', results.length, 'albums found');
+
+    const formattedResults = results.map((album) => ({
+      id: album.id,
+      title: album.title,
+      artist: album['artist-credit']?.map(a => a.name).join(', '),
+      year: album.date?.substring(0, 4),
+      cover: null // Cover art can be fetched on demand if needed
     }));
 
     res.json(formattedResults);
