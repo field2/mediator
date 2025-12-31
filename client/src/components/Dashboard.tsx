@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../AuthContext';
 import SearchBar from './SearchBar';
 import { getOrCreateAutoList, addMediaToList, getList, rateMedia, deleteMediaFromList } from '../api';
@@ -6,24 +7,29 @@ import { MediaItem } from '../types';
 import StarRating from './StarRating';
 
 const Dashboard: React.FC = () => {
-  const { user } = useAuth();
+  const { user, isAuthenticated } = useAuth();
+  const navigate = useNavigate();
   const [selectedMediaType, setSelectedMediaType] = useState<'movie' | 'book' | 'album'>('movie');
   const [loading, setLoading] = useState(false);
   const [autoListId, setAutoListId] = useState<number | null>(null);
   const [autoItems, setAutoItems] = useState<MediaItem[]>([]);
   const [loadingItems, setLoadingItems] = useState(false);
+  const [guestItems, setGuestItems] = useState<Record<'movie' | 'book' | 'album', MediaItem[]>>({ movie: [], book: [], album: [] });
+  const [showSavePrompt, setShowSavePrompt] = useState(false);
+  const [pendingSelection, setPendingSelection] = useState<{ item: any; mediaType: 'movie' | 'book' | 'album' } | null>(null);
 
-  const handleMediaSelected = async (item: any, mediaType: 'movie' | 'book' | 'album') => {
+  const addItemToAutoList = async (item: any, mediaType: 'movie' | 'book' | 'album') => {
     setLoading(true);
     try {
+      const externalId = (item.external_id ?? item.id)?.toString?.() || item.id;
       const list = await getOrCreateAutoList(mediaType);
       await addMediaToList(
         list.id,
         mediaType,
-        item.id,
+        externalId,
         item.title,
         item.year,
-        item.Poster || item.cover,
+        item.Poster || item.cover || item.poster_url,
         item
       );
       // refresh local items for this media type
@@ -38,11 +44,67 @@ const Dashboard: React.FC = () => {
     }
   };
 
-  // load user's auto list items when media type changes
+  const handleMediaSelected = async (item: any, mediaType: 'movie' | 'book' | 'album') => {
+    if (!isAuthenticated) {
+      // keep locally for now and prompt to save
+      const guestItem: MediaItem = {
+        id: Date.now(),
+        title: item.title,
+        year: item.year,
+        poster_url: item.Poster || item.cover,
+        media_type: mediaType,
+        averageRating: null,
+        userRating: null,
+        external_id: item.id?.toString?.() || ''
+      } as MediaItem;
+      setGuestItems((prev) => {
+        const updated = { ...prev, [mediaType]: [...prev[mediaType], guestItem] };
+        localStorage.setItem(`guestItems_${mediaType}`, JSON.stringify(updated[mediaType]));
+        return updated;
+      });
+      setPendingSelection({ item, mediaType });
+      setShowSavePrompt(true);
+      return;
+    }
+    addItemToAutoList(item, mediaType);
+  };
+
+  const loadGuestItems = (mediaType: 'movie' | 'book' | 'album') => {
+    try {
+      const stored = localStorage.getItem(`guestItems_${mediaType}`);
+      const parsed = stored ? JSON.parse(stored) : [];
+      setGuestItems((prev) => ({ ...prev, [mediaType]: Array.isArray(parsed) ? parsed : [] }));
+    } catch {
+      setGuestItems((prev) => ({ ...prev, [mediaType]: [] }));
+    }
+  };
+
+  // Conditionally add guest-user class to body if guest has no items
+  React.useEffect(() => {
+    if (!isAuthenticated) {
+      const totalGuestItems = Object.values(guestItems).reduce((sum, items) => sum + items.length, 0);
+      if (totalGuestItems === 0) {
+        document.body.classList.add('guest-user');
+      } else {
+        document.body.classList.remove('guest-user');
+      }
+    } else {
+      document.body.classList.remove('guest-user');
+    }
+  }, [isAuthenticated, guestItems]);
+
+  // load items (server or guest) when media type or auth state changes
   React.useEffect(() => {
     let cancelled = false;
     const load = async () => {
       setLoadingItems(true);
+      if (!isAuthenticated) {
+        loadGuestItems(selectedMediaType);
+        setAutoItems([]);
+        setAutoListId(null);
+        setLoadingItems(false);
+        return;
+      }
       try {
         const list = await getOrCreateAutoList(selectedMediaType);
         if (cancelled) return;
@@ -60,10 +122,32 @@ const Dashboard: React.FC = () => {
     };
     load();
     return () => { cancelled = true; };
-  }, [selectedMediaType]);
+  }, [selectedMediaType, isAuthenticated]);
+
+  // If a user signs in after picking items, sync guest items once
+  const hasSyncedRef = React.useRef(false);
+  React.useEffect(() => {
+    const syncGuestItems = async () => {
+      if (!isAuthenticated || hasSyncedRef.current) return;
+      hasSyncedRef.current = true;
+
+      for (const mediaType of ['movie', 'book', 'album'] as const) {
+        const stored = localStorage.getItem(`guestItems_${mediaType}`);
+        const parsed: any[] = stored ? JSON.parse(stored) : [];
+        for (const item of parsed) {
+          await addItemToAutoList(item, mediaType);
+        }
+        localStorage.removeItem(`guestItems_${mediaType}`);
+      }
+      setGuestItems({ movie: [], book: [], album: [] });
+      setPendingSelection(null);
+      setShowSavePrompt(false);
+    };
+    syncGuestItems();
+  }, [isAuthenticated]);
 
     const handleRate = async (mediaId: number, rating: number) => {
-      if (!autoListId) return;
+      if (!isAuthenticated || !autoListId) return;
       try {
         await rateMedia(autoListId, mediaId, rating);
         const full = await getList(autoListId);
@@ -74,6 +158,15 @@ const Dashboard: React.FC = () => {
     };
 
   const handleRemove = async (mediaId: number) => {
+    if (!isAuthenticated) {
+      setGuestItems((prev) => {
+        const filtered = prev[selectedMediaType].filter((mi) => mi.id !== mediaId);
+        const updated = { ...prev, [selectedMediaType]: filtered };
+        localStorage.setItem(`guestItems_${selectedMediaType}`, JSON.stringify(filtered));
+        return updated;
+      });
+      return;
+    }
     if (!autoListId) return;
     try {
       await deleteMediaFromList(autoListId, mediaId);
@@ -121,20 +214,32 @@ const Dashboard: React.FC = () => {
 
       <div className="media-section-body">
         <div className="search-panel">
+          {showSavePrompt && !isAuthenticated && (
+            <div className="save-prompt">
+              <div>
+                <div className="save-prompt-title">Saved locally.</div>
+                <div className="save-prompt-body">Create a free account to keep your media in sync across devices.</div>
+              </div>
+              <div className="save-prompt-actions">
+                <button onClick={() => navigate('/auth?mode=register')} className="primary">Create account</button>
+                <button onClick={() => { setShowSavePrompt(false); setPendingSelection(null); }}>Keep browsing</button>
+              </div>
+            </div>
+          )}
           {loading && <div className="loading-text">Adding to your list...</div>}
           <div className="auto-items">
-            <h3 className="auto-items-title">{autoItems.length ? `Your ${selectedMediaType === 'movie' ? 'Movies' : selectedMediaType === 'book' ? 'Books' : 'Albums'}` : `No ${selectedMediaType === 'movie' ? 'movies' : selectedMediaType === 'book' ? 'books' : 'albums'} added yet`}</h3>
+            <h3 className="auto-items-title">{(isAuthenticated ? autoItems : guestItems[selectedMediaType]).length ? `Your ${selectedMediaType === 'movie' ? 'Movies' : selectedMediaType === 'book' ? 'Books' : 'Albums'}` : `No ${selectedMediaType === 'movie' ? 'movies' : selectedMediaType === 'book' ? 'books' : 'albums'} added yet`}</h3>
             {loadingItems ? (
               <div>Loading your items...</div>
-            ) : autoItems.length > 0 ? (
+            ) : (isAuthenticated ? autoItems : guestItems[selectedMediaType]).length > 0 ? (
               <div className="auto-items-grid">
-                {autoItems.map((mi) => (
+                {(isAuthenticated ? autoItems : guestItems[selectedMediaType]).map((mi) => (
                   <div key={mi.id} className="auto-item-card">
                     <button className="auto-item-remove" onClick={() => handleRemove(mi.id)} aria-label="Remove item">×</button>
-                    <img src={mi.poster_url || '/placeholder.png'} alt={mi.title} className="auto-item-img" />
+                      <img src={mi.poster_url || '/placeholder.png'} alt={mi.title} className="auto-item-img" />
                     <div className="auto-item-title">{mi.title}</div>
                     {mi.year && <div className="auto-item-year">{mi.year}</div>}
-                    <div className="auto-item-rating"><StarRating rating={mi.userRating || 0} onRate={(r) => handleRate(mi.id, r)} readonly={!user} /></div>
+                    <div className="auto-item-rating"><StarRating rating={mi.userRating || 0} onRate={(r) => handleRate(mi.id, r)} readonly={!user || !isAuthenticated} /></div>
                   </div>
                 ))}
               </div>

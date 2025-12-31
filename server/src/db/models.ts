@@ -129,6 +129,11 @@ export const MediaItemModel = {
     return stmt.all(listId, mediaType) as MediaItem[];
   },
 
+  findByListIdAndExternalId: (listId: number, externalId: string): MediaItem | undefined => {
+    const stmt = db.prepare('SELECT * FROM media_items WHERE list_id = ? AND external_id = ?');
+    return stmt.get(listId, externalId) as MediaItem | undefined;
+  },
+
   delete: (id: number) => {
     const stmt = db.prepare('DELETE FROM media_items WHERE id = ?');
     return stmt.run(id);

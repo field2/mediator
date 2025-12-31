@@ -22,7 +22,7 @@ function App() {
       <AuthProvider>
         <Routes>
           <Route path="/auth" element={<PublicRoute><Auth /></PublicRoute>} />
-          <Route path="/" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
+          <Route path="/" element={<Dashboard />} />
           <Route path="/list/:id" element={<PrivateRoute><ListView /></PrivateRoute>} />
           <Route path="/collaborations" element={<PrivateRoute><Collaborations /></PrivateRoute>} />
         </Routes>

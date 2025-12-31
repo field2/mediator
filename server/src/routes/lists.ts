@@ -191,6 +191,12 @@ router.post('/:id/media', authenticate, (req: AuthRequest, res) => {
       return res.status(400).json({ error: 'Media type, external ID, and title are required' });
     }
 
+    // Check if this item already exists in this list
+    const existingItem = MediaItemModel.findByListIdAndExternalId(listId, externalId);
+    if (existingItem) {
+      return res.json(existingItem); // Return existing item instead of creating duplicate
+    }
+
     const mediaItemId = MediaItemModel.create(
       listId,
       mediaType,

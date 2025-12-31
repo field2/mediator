@@ -1,14 +1,23 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useAuth } from '../AuthContext';
 import { login as apiLogin, register as apiRegister } from '../api';
 
 const Auth: React.FC = () => {
-  const [isLogin, setIsLogin] = useState(true);
+  const [searchParams] = useSearchParams();
+  const [isLogin, setIsLogin] = useState(() => searchParams.get('mode') !== 'register');
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [rememberMe, setRememberMe] = useState(true);
   const { login } = useAuth();
+
+  useEffect(() => {
+    const mode = searchParams.get('mode');
+    if (mode === 'register') setIsLogin(false);
+    if (mode === 'login') setIsLogin(true);
+  }, [searchParams]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -17,10 +26,10 @@ const Auth: React.FC = () => {
     try {
       if (isLogin) {
         const userData = await apiLogin(email, password);
-        login(userData);
+        login(userData, rememberMe ? 'local' : 'session');
       } else {
         const userData = await apiRegister(username, email, password);
-        login(userData);
+        login(userData, rememberMe ? 'local' : 'session');
       }
     } catch (err: any) {
       setError(err.response?.data?.error || 'An error occurred');
@@ -62,6 +71,15 @@ const Auth: React.FC = () => {
             required
             style={{ width: '100%', padding: '8px', boxSizing: 'border-box' }}
           />
+        </div>
+        <div style={{ marginBottom: '15px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <input
+            id="rememberMe"
+            type="checkbox"
+            checked={rememberMe}
+            onChange={(e) => setRememberMe(e.target.checked)}
+          />
+          <label htmlFor="rememberMe">Stay signed in</label>
         </div>
         {error && <div style={{ color: 'red', marginBottom: '15px' }}>{error}</div>}
         <button type="submit" style={{ width: '100%', padding: '10px', backgroundColor: '#007bff', color: 'white', border: 'none', cursor: 'pointer' }}>

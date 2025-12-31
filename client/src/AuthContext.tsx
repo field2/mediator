@@ -3,7 +3,7 @@ import { User } from './types';
 
 interface AuthContextType {
   user: User | null;
-  login: (user: User) => void;
+  login: (user: User, persist?: 'local' | 'session') => void;
   logout: () => void;
   isAuthenticated: boolean;
 }
@@ -13,28 +13,38 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
 
+  // read persisted user from either localStorage (stay signed in) or sessionStorage
   useEffect(() => {
-    // Check if user is logged in
-    const token = localStorage.getItem('token');
-    const userId = localStorage.getItem('userId');
-    const username = localStorage.getItem('username');
-    const email = localStorage.getItem('email');
+    const storages = [localStorage, sessionStorage];
+    for (const storage of storages) {
+      const token = storage.getItem('token');
+      const userId = storage.getItem('userId');
+      const username = storage.getItem('username');
+      const email = storage.getItem('email');
 
-    if (token && userId && username && email) {
-      setUser({
-        token,
-        userId: parseInt(userId),
-        username,
-        email
-      });
+      if (token && userId && username && email) {
+        setUser({ token, userId: parseInt(userId), username, email });
+        break;
+      }
     }
   }, []);
 
-  const login = (userData: User) => {
-    localStorage.setItem('token', userData.token);
-    localStorage.setItem('userId', userData.userId.toString());
-    localStorage.setItem('username', userData.username);
-    localStorage.setItem('email', userData.email);
+  const login = (userData: User, persist: 'local' | 'session' = 'local') => {
+    const storage = persist === 'session' ? sessionStorage : localStorage;
+    // clear the other storage to avoid stale sessions
+    localStorage.removeItem('token');
+    localStorage.removeItem('userId');
+    localStorage.removeItem('username');
+    localStorage.removeItem('email');
+    sessionStorage.removeItem('token');
+    sessionStorage.removeItem('userId');
+    sessionStorage.removeItem('username');
+    sessionStorage.removeItem('email');
+
+    storage.setItem('token', userData.token);
+    storage.setItem('userId', userData.userId.toString());
+    storage.setItem('username', userData.username);
+    storage.setItem('email', userData.email);
     setUser(userData);
   };
 
@@ -43,6 +53,10 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     localStorage.removeItem('userId');
     localStorage.removeItem('username');
     localStorage.removeItem('email');
+    sessionStorage.removeItem('token');
+    sessionStorage.removeItem('userId');
+    sessionStorage.removeItem('username');
+    sessionStorage.removeItem('email');
     setUser(null);
   };
 
