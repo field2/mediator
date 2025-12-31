@@ -9,6 +9,7 @@ export interface AlbumSearchResult {
   'artist-credit'?: Array<{ name: string }>;
   date?: string;
   status?: string;
+  cover?: string;
 }
 
 export interface AlbumDetails {
