@@ -25,19 +25,22 @@ export interface AlbumDetails {
 
 export const searchAlbums = async (query: string): Promise<AlbumSearchResult[]> => {
   try {
-    const response = await axios.get(`${MUSICBRAINZ_BASE_URL}/release`, {
+    const response = await axios.get('https://api.deezer.com/search/album', {
       params: {
-        query: query,
-        fmt: 'json',
-        limit: 10
-      },
-      headers: {
-        'User-Agent': 'Mediator/1.0.0 (contact@example.com)'
+        q: query
       },
       timeout: 5000
     });
 
-    return response.data.releases || [];
+    // Deezer returns { data: [ ... ] }
+    return (response.data.data || []).map((album: any) => ({
+      id: album.id.toString(),
+      title: album.title,
+      'artist-credit': [{ name: album.artist.name }],
+      date: album.release_date || '',
+      status: album.record_type || '',
+      cover: album.cover_medium || album.cover || null
+    }));
   } catch (error) {
     console.error('Error searching albums:', (error as any).message || error);
     return [];

@@ -98,7 +98,7 @@ router.get('/albums', async (req, res) => {
       title: album.title,
       artist: album['artist-credit']?.map(a => a.name).join(', '),
       year: album.date?.substring(0, 4),
-      cover: null // Cover art can be fetched on demand if needed
+      cover: album.cover || album.cover_medium || null
     }));
 
     res.json(formattedResults);
