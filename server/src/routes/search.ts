@@ -90,12 +90,15 @@ router.get('/albums', async (req, res) => {
     }
 
     const results = await searchAlbums(query);
-    const formattedResults = results.map(album => ({
-      id: album.id,
-      title: album.title,
-      artist: album['artist-credit']?.map(a => a.name).join(', '),
-      year: album.date?.substring(0, 4),
-      status: album.status
+    const formattedResults = await Promise.all(results.map(async (album) => {
+      const coverUrl = await getAlbumCoverUrl(album.id);
+      return {
+        id: album.id,
+        title: album.title,
+        artist: album['artist-credit']?.map(a => a.name).join(', '),
+        year: album.date?.substring(0, 4),
+        cover: coverUrl
+      };
     }));
 
     res.json(formattedResults);
