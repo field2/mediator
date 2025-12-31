@@ -57,6 +57,12 @@ body {
     display: grid;
     grid-template-columns: repeat(4, auto);
     background: #000;
+    min-height: 80px;
+    align-content: center;
+    justify-items: center;
+    .search-loading {
+      grid-column: 1 / -1;
+    }
     .search-result-item {
       padding: 0.25rem;
       display: grid;
@@ -222,4 +228,22 @@ select {
   .auto-items-title {
     // display: none;
   }
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid rgba(255, 255, 255, 0.2);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
 }

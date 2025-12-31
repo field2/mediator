@@ -77,28 +77,34 @@ const SearchBar: React.FC<SearchBarProps> = ({ onSelect, mediaType, onMediaSelec
         onBlur={() => setTimeout(() => setShowResults(false), 150)}
       />
 
-      {loading && <div className="search-loading">Searching...</div>}
-
-      {shouldShowResults && results.length > 0 && (
+      {(loading || shouldShowResults) && (
         <div className="search-results">
-          {results.map((r) => (
-            <div key={r.id} className="search-result-item" onClick={() => handleSelect(r)}>
-              {r.Poster || r.cover ? (
-                <img src={r.Poster || r.cover} alt={r.title} className="result-thumb" />
-              ) : (
-                <div className="result-thumb placeholder" />
-              )}
-              <div className="result-body">
-                <div className="result-title">{r.title}</div>
-                <div className="result-sub">{r.year || r.author || r.artist}</div>
-              </div>
+          {loading && (
+            <div className="search-loading">
+              <div className="spinner"></div>
             </div>
-          ))}
-        </div>
-      )}
+          )}
 
-      {shouldShowResults && results.length === 0 && query.trim().length >= 2 && !loading && (
-        <div className="search-no-results">No results found for "{query}"</div>
+          {!loading && results.length > 0 && (
+            results.map((r) => (
+              <div key={r.id} className="search-result-item" onClick={() => handleSelect(r)}>
+                {r.Poster || r.cover ? (
+                  <img src={r.Poster || r.cover} alt={r.title} className="result-thumb" />
+                ) : (
+                  <div className="result-thumb placeholder" />
+                )}
+                <div className="result-body">
+                  <div className="result-title">{r.title}</div>
+                  <div className="result-sub">{r.year || r.author || r.artist}</div>
+                </div>
+              </div>
+            ))
+          )}
+
+          {!loading && results.length === 0 && query.trim().length >= 2 && (
+            <div className="search-no-results">No results found for "{query}"</div>
+          )}
+        </div>
       )}
     </div>
   );
