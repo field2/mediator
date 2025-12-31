@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '../AuthContext';
 import SearchBar from './SearchBar';
-import { getOrCreateAutoList, addMediaToList, getList, rateMedia } from '../api';
+import { getOrCreateAutoList, addMediaToList, getList, rateMedia, deleteMediaFromList } from '../api';
 import { MediaItem } from '../types';
 import StarRating from './StarRating';
 
@@ -73,6 +73,17 @@ const Dashboard: React.FC = () => {
       }
     };
 
+  const handleRemove = async (mediaId: number) => {
+    if (!autoListId) return;
+    try {
+      await deleteMediaFromList(autoListId, mediaId);
+      const full = await getList(autoListId);
+      setAutoItems(Array.isArray(full.mediaItems) ? full.mediaItems : []);
+    } catch (err) {
+      console.error('Error removing item:', err);
+    }
+  };
+
   return (
     <div className="page-container">
       <div className="header">
@@ -119,6 +130,7 @@ const Dashboard: React.FC = () => {
               <div className="auto-items-grid">
                 {autoItems.map((mi) => (
                   <div key={mi.id} className="auto-item-card">
+                    <button className="auto-item-remove" onClick={() => handleRemove(mi.id)} aria-label="Remove item">×</button>
                     <img src={mi.poster_url || '/placeholder.png'} alt={mi.title} className="auto-item-img" />
                     <div className="auto-item-title">{mi.title}</div>
                     {mi.year && <div className="auto-item-year">{mi.year}</div>}

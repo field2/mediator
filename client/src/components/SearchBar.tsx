@@ -13,35 +13,7 @@ const SearchBar: React.FC<SearchBarProps> = ({ onSelect, mediaType, onMediaSelec
   const [results, setResults] = useState<SearchResult[]>([]);
   const [loading, setLoading] = useState(false);
   const [showResults, setShowResults] = useState(false);
-  const [debugOpen, setDebugOpen] = useState(false);
-  const [forceWindowOpen, setForceWindowOpen] = useState(false);
   const debounceTimer = useRef<number | null>(null);
-
-  // watch for dev helper class on body to keep results visible while styling
-  useEffect(() => {
-    const update = () => setDebugOpen(document.body?.classList.contains('debug-search-open'));
-    update();
-    const observer = new MutationObserver(update);
-    observer.observe(document.body, { attributes: true, attributeFilter: ['class'] });
-    return () => observer.disconnect();
-  }, []);
-
-  // when forcing debug mode on, keep results visible immediately
-  useEffect(() => {
-    if (debugOpen) setShowResults(true);
-  }, [debugOpen]);
-
-  // keep results visible when the window loses focus (for styling in devtools)
-  useEffect(() => {
-    const handleBlur = () => setForceWindowOpen(true);
-    const handleFocus = () => setForceWindowOpen(false);
-    window.addEventListener('blur', handleBlur);
-    window.addEventListener('focus', handleFocus);
-    return () => {
-      window.removeEventListener('blur', handleBlur);
-      window.removeEventListener('focus', handleFocus);
-    };
-  }, []);
 
   useEffect(() => {
     if (query.trim().length < 2) {
@@ -79,13 +51,12 @@ const SearchBar: React.FC<SearchBarProps> = ({ onSelect, mediaType, onMediaSelec
   // keep page-level class when results are visible so CSS can react
   React.useEffect(() => {
     const page = document.querySelector('.page-container');
-    const visible = debugOpen || forceWindowOpen || showResults;
-    if (visible) page?.classList.add('search-open');
+    if (showResults) page?.classList.add('search-open');
     else page?.classList.remove('search-open');
     return () => { page?.classList.remove('search-open'); };
-  }, [showResults, debugOpen, forceWindowOpen]);
+  }, [showResults]);
 
-  const shouldShowResults = debugOpen || forceWindowOpen || showResults;
+  const shouldShowResults = showResults;
 
   const handleSelect = (item: SearchResult) => {
     onSelect(item, mediaType);
@@ -102,11 +73,8 @@ const SearchBar: React.FC<SearchBarProps> = ({ onSelect, mediaType, onMediaSelec
         placeholder={`Search ${mediaType === 'movie' ? 'movies' : mediaType === 'book' ? 'books' : 'albums'}`}
         value={query}
         onChange={(e) => setQuery(e.target.value)}
-        onFocus={() => setShowResults(results.length > 0 || debugOpen || forceWindowOpen)}
-        onBlur={() => {
-          if (debugOpen || forceWindowOpen) return;
-          setTimeout(() => setShowResults(false), 150);
-        }}
+        onFocus={() => setShowResults(results.length > 0)}
+        onBlur={() => setTimeout(() => setShowResults(false), 150)}
       />
 
       {loading && <div className="search-loading">Searching...</div>}

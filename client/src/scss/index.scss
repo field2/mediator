@@ -82,6 +82,30 @@ body {
     object-fit: cover;
     display: block;
   }
+  .auto-item-card {
+    position: relative;
+  }
+  .auto-item-remove {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    background: rgba(0, 0, 0, 0.6);
+    color: #fff;
+    font-size: 16px;
+    line-height: 1;
+    display: grid;
+    place-items: center;
+    cursor: pointer;
+    transition: transform 120ms ease, opacity 120ms ease;
+  }
+  .auto-item-remove:hover {
+    opacity: 1;
+    transform: scale(1.04);
+  }
   .auto-item-title,
   .auto-item-year {
     display: none;
@@ -140,13 +164,4 @@ select {
 .page-container.search-open .auto-items {
   opacity: 0.5;
   transition: opacity 160ms ease-in-out;
-}
-
-/* Dev helper: force search results visible for styling */
-body.debug-search-open .searchbar .search-results {
-  display: grid !important;
-  visibility: visible;
-  opacity: 1;
-  pointer-events: auto;
-  z-index: 1000;
 }
