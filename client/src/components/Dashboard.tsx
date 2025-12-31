@@ -16,7 +16,6 @@ const Dashboard: React.FC = () => {
   const [loadingItems, setLoadingItems] = useState(false);
   const [guestItems, setGuestItems] = useState<Record<'movie' | 'book' | 'album', MediaItem[]>>({ movie: [], book: [], album: [] });
   const [showSavePrompt, setShowSavePrompt] = useState(false);
-  const [pendingSelection, setPendingSelection] = useState<{ item: any; mediaType: 'movie' | 'book' | 'album' } | null>(null);
 
   const addItemToAutoList = async (item: any, mediaType: 'movie' | 'book' | 'album') => {
     setLoading(true);
@@ -47,22 +46,25 @@ const Dashboard: React.FC = () => {
   const handleMediaSelected = async (item: any, mediaType: 'movie' | 'book' | 'album') => {
     if (!isAuthenticated) {
       // keep locally for now and prompt to save
-      const guestItem: MediaItem = {
+      const guestItem = {
         id: Date.now(),
         title: item.title,
         year: item.year,
         poster_url: item.Poster || item.cover,
         media_type: mediaType,
-        averageRating: null,
-        userRating: null,
-        external_id: item.id?.toString?.() || ''
+        averageRating: undefined,
+        userRating: undefined,
+        external_id: item.id?.toString?.() || '',
+        list_id: 0,
+        additional_data: null,
+        added_by: 0,
+        added_at: new Date().toISOString()
       } as MediaItem;
       setGuestItems((prev) => {
         const updated = { ...prev, [mediaType]: [...prev[mediaType], guestItem] };
         localStorage.setItem(`guestItems_${mediaType}`, JSON.stringify(updated[mediaType]));
         return updated;
       });
-      setPendingSelection({ item, mediaType });
       setShowSavePrompt(true);
       return;
     }
@@ -140,7 +142,6 @@ const Dashboard: React.FC = () => {
         localStorage.removeItem(`guestItems_${mediaType}`);
       }
       setGuestItems({ movie: [], book: [], album: [] });
-      setPendingSelection(null);
       setShowSavePrompt(false);
     };
     syncGuestItems();
@@ -222,7 +223,7 @@ const Dashboard: React.FC = () => {
               </div>
               <div className="save-prompt-actions">
                 <button onClick={() => navigate('/auth?mode=register')} className="primary">Create account</button>
-                <button onClick={() => { setShowSavePrompt(false); setPendingSelection(null); }}>Keep browsing</button>
+                <button onClick={() => setShowSavePrompt(false)}>Keep browsing</button>
               </div>
             </div>
           )}
