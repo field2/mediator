@@ -98,6 +98,7 @@ const Friends: React.FC = () => {
 
   return (
     <div className="friends-view">
+			<header className="view-header">
       <button
         className="back-button"
         onClick={() => {
@@ -113,8 +114,9 @@ const Friends: React.FC = () => {
         </svg>
       </button>
 
-      <div className="view-body">
         <h1>Friends</h1>
+				</header>
+      <div className="view-body">
 
         <div className="friends-search">
           <input

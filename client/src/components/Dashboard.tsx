@@ -200,6 +200,20 @@ const Dashboard: React.FC = () => {
     }
   };
 
+  const isNewAccount = (): boolean => {
+    if (!user || !user.signupDate) return false;
+    const signupTime = new Date(user.signupDate).getTime();
+    const now = new Date().getTime();
+    const fiveMinutesAgo = now - 5 * 60 * 1000;
+    return signupTime > fiveMinutesAgo;
+  };
+
+  const hasAnyItems = (): boolean => {
+    if (!isAuthenticated) return false;
+    // Check if user has items in any media type
+    return autoItems.length > 0;
+  };
+
   return (
     <div className="page-container">
       <div className="header">
@@ -280,7 +294,7 @@ const Dashboard: React.FC = () => {
             <h3 className="auto-items-title">
               {(isAuthenticated ? autoItems : guestItems[selectedMediaType]).length ? (
                 `Your ${selectedMediaType === 'movie' ? 'Movies' : selectedMediaType === 'book' ? 'Books' : 'Albums'}`
-              ) : (
+              ) : isAuthenticated && isNewAccount() && !hasAnyItems() ? (
                 <>
                   <div className="intro">
                     <p>Thanks for trying Mediator!</p>
@@ -289,6 +303,8 @@ const Dashboard: React.FC = () => {
                   Mediator is a work in progress by Field 2 Design / <a href="https://bendunkle.com" target="_blank">Ben Dunkle</a>.</p>
                   <p>Copyright 2026 by Ben Dunkle. All Rights Reserved.</p></div>
                 </>
+              ) : (
+                `No ${selectedMediaType === 'movie' ? 'Movies' : selectedMediaType === 'book' ? 'Books' : 'Albums'} yet.`
               )}
             </h3>
             {loadingItems ? (

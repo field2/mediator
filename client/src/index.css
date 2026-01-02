@@ -304,3 +304,14 @@ a {
 input[type=checkbox] {
   background-color: #fff;
 }
+
+header.view-header {
+  display: flex;
+  align-items: center;
+}
+
+.friends-search input.search-input {
+  width: 100%;
+  font-size: 1rem;
+  padding: 0.5rem 1rem;
+}
