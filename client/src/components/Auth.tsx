@@ -26,10 +26,10 @@ const Auth: React.FC = () => {
     try {
       if (isLogin) {
         const userData = await apiLogin(identifier, password);
-        login(userData, rememberMe ? 'local' : 'session');
+        await login(userData, rememberMe ? 'local' : 'session');
       } else {
         const userData = await apiRegister(username, identifier, password);
-        login(userData, rememberMe ? 'local' : 'session');
+        await login(userData, rememberMe ? 'local' : 'session');
       }
     } catch (err: any) {
       setError(err.response?.data?.error || 'An error occurred');

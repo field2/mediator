@@ -8,7 +8,8 @@ import Collaborations from './components/Collaborations';
 import Account from './components/Account';
 
 const PrivateRoute: React.FC<{ children: React.ReactElement }> = ({ children }) => {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, isLoading } = useAuth();
+  if (isLoading) return <div>Loading...</div>;
   return isAuthenticated ? children : <Navigate to="/auth" />;
 };
 

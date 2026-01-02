@@ -30,9 +30,11 @@ const Account: React.FC = () => {
 <path d="M16 28L40 10V46L16 28Z" fill="white"/>
 </svg>
 </button>
+<div className="view-body">
       <h1 className="account-title">{user.username}</h1>
       <div className="account-signup-date">Signed up: {signupDate}</div>
     </div>
+		</div>
   );
 };
 

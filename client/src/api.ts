@@ -1,3 +1,13 @@
+// Fetch current user profile
+export async function getCurrentUser(token: string) {
+  const res = await fetch('/api/auth/me', {
+    headers: {
+      Authorization: `Bearer ${token}`
+    }
+  });
+  if (!res.ok) throw new Error('Failed to fetch user profile');
+  return await res.json();
+}
 import axios from 'axios';
 import { User, List, MediaItem, Collaboration, SearchResult } from './types';
 
@@ -22,8 +32,8 @@ export const register = async (username: string, email: string, password: string
   return response.data;
 };
 
-export const login = async (email: string, password: string): Promise<User> => {
-  const response = await api.post('/auth/login', { email, password });
+export const login = async (identifier: string, password: string): Promise<User> => {
+  const response = await api.post('/auth/login', { identifier, password });
   return response.data;
 };
 

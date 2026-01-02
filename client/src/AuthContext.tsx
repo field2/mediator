@@ -1,35 +1,46 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { User } from './types';
+import { getCurrentUser } from './api';
 
 interface AuthContextType {
   user: User | null;
-  login: (user: User, persist?: 'local' | 'session') => void;
+  login: (user: User, persist?: 'local' | 'session') => Promise<void>;
   logout: () => void;
   isAuthenticated: boolean;
+  isLoading: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   // read persisted user from either localStorage (stay signed in) or sessionStorage
   useEffect(() => {
     const storages = [localStorage, sessionStorage];
-    for (const storage of storages) {
-      const token = storage.getItem('token');
-      const userId = storage.getItem('userId');
-      const username = storage.getItem('username');
-      const email = storage.getItem('email');
-
-      if (token && userId && username && email) {
-        setUser({ token, userId: parseInt(userId), username, email });
-        break;
+    (async () => {
+      for (const storage of storages) {
+        const token = storage.getItem('token');
+        const userId = storage.getItem('userId');
+        const username = storage.getItem('username');
+        const email = storage.getItem('email');
+        if (token && userId && username && email) {
+          try {
+            const profile = await getCurrentUser(token);
+            setUser({ token, userId: parseInt(userId), username, email, signupDate: profile.signupDate });
+          } catch {
+            setUser({ token, userId: parseInt(userId), username, email });
+          }
+          setIsLoading(false);
+          return;
+        }
       }
-    }
+      setIsLoading(false);
+    })();
   }, []);
 
-  const login = (userData: User, persist: 'local' | 'session' = 'local') => {
+  const login = async (userData: User, persist: 'local' | 'session' = 'local') => {
     const storage = persist === 'session' ? sessionStorage : localStorage;
     // clear the other storage to avoid stale sessions
     localStorage.removeItem('token');
@@ -45,7 +56,18 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     storage.setItem('userId', userData.userId.toString());
     storage.setItem('username', userData.username);
     storage.setItem('email', userData.email);
-    setUser(userData);
+    try {
+      console.log('Fetching user profile with token:', userData.token);
+      const profile = await getCurrentUser(userData.token);
+      console.log('Profile fetched:', profile);
+      const mergedUser = { ...userData, signupDate: profile.signupDate };
+      console.log('Setting user:', mergedUser);
+      setUser(mergedUser);
+    } catch (err) {
+      console.error('Failed to fetch profile:', err);
+      console.log('Setting user without profile:', userData);
+      setUser(userData);
+    }
   };
 
   const logout = () => {
@@ -61,7 +83,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, logout, isAuthenticated: !!user }}>
+    <AuthContext.Provider value={{ user, login, logout, isAuthenticated: !!user, isLoading }}>
       {children}
     </AuthContext.Provider>
   );

@@ -3,6 +3,7 @@ export interface User {
   username: string;
   email: string;
   token: string;
+  signupDate?: string;
 }
 
 export interface List {

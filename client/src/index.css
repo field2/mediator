@@ -261,3 +261,7 @@ select {
 .menu-content button {
   opacity: 1;
 }
+
+.view-body {
+  padding: 0 1rem;
+}
