@@ -189,12 +189,17 @@ const Dashboard: React.FC = () => {
         {menuOpen && (
           <div className="menu-overlay" onClick={handleMenuClose}>
             <div className="menu-content" onClick={e => e.stopPropagation()}>
-              <div className="menu-account">
-                <a href="/account" className="menu-username">{user?.username || 'Account'}</a>
-              </div>
-              <a href="/friends" className="menu-link">Friends</a>
-              <a href="/lists" className="menu-link">Lists</a>
-              <button className="menu-link logout" onClick={() => { logout(); handleMenuClose(); }}>Logout</button>
+              {isAuthenticated ? (
+                <>
+                  <div className="menu-account">
+                    <a href="/account" className="menu-username">{user?.username || 'Account'}</a>
+                  </div>
+                  <a href="/friends" className="menu-link">Friends</a>
+                  <a href="/lists" className="menu-link">Lists</a>
+                </>
+              ) : (
+                <a href="/auth" className="menu-link">Login / Register</a>
+              )}
             </div>
           </div>
         )}

@@ -268,6 +268,9 @@ select {
 
 .view-body {
   padding: 0 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
 }
 
 div.intro {
@@ -282,7 +285,8 @@ div.intro p a {
   color: #fff;
 }
 
-button.submit {
+button.submit,
+button.logout-button {
   background-color: #fff;
   padding: 0.5rem 1rem;
   font-size: 1rem;

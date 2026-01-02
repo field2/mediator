@@ -86,7 +86,7 @@ const SearchBar: React.FC<SearchBarProps> = ({ onSelect, mediaType, onMediaSelec
           )}
 
           {!loading && results.length > 0 && (
-            results.map((r) => (
+            results.filter(r => r.Poster || r.cover).map((r) => (
               <div key={r.id} className="search-result-item" onClick={() => handleSelect(r)}>
                 {r.Poster || r.cover ? (
                   <img src={r.Poster || r.cover} alt={r.title} className="result-thumb" />

@@ -3,7 +3,7 @@ import { useAuth } from '../AuthContext';
 import { useNavigate } from 'react-router-dom';
 
 const Account: React.FC = () => {
-  const { user, isAuthenticated } = useAuth();
+  const { user, isAuthenticated, logout } = useAuth();
   console.log('Account view:', { user, isAuthenticated });
   const navigate = useNavigate();
 
@@ -33,6 +33,15 @@ const Account: React.FC = () => {
 <div className="view-body">
       <h1 className="account-title">{user.username}</h1>
       <div className="account-signup-date">Signed up: {signupDate}</div>
+      <button
+        className="logout-button"
+        onClick={() => {
+          logout();
+          navigate('/');
+        }}
+      >
+        Logout
+      </button>
     </div>
 		</div>
   );
