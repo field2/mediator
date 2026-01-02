@@ -222,3 +222,70 @@ export const CollaborationModel = {
     return result.count > 0;
   }
 };
+
+// Friend operations
+export const FriendModel = {
+  searchByUsername: (username: string, excludeUserId: number): User[] => {
+    const stmt = db.prepare('SELECT id, username, email, created_at FROM users WHERE username LIKE ? AND id != ? LIMIT 20');
+    return stmt.all(`%${username}%`, excludeUserId) as User[];
+  },
+
+  sendFriendRequest: (fromUserId: number, toUserId: number): number => {
+    const stmt = db.prepare('INSERT OR IGNORE INTO friend_requests (from_user_id, to_user_id, status) VALUES (?, ?, ?)');
+    const result = stmt.run(fromUserId, toUserId, 'pending');
+    return result.lastInsertRowid as number;
+  },
+
+  getFriendRequests: (userId: number): any[] => {
+    const stmt = db.prepare(`
+      SELECT fr.id, fr.from_user_id, u.username, u.email, fr.requested_at, fr.status
+      FROM friend_requests fr
+      JOIN users u ON fr.from_user_id = u.id
+      WHERE fr.to_user_id = ?
+      ORDER BY fr.requested_at DESC
+    `);
+    return stmt.all(userId) as any[];
+  },
+
+  respondToFriendRequest: (requestId: number, status: 'approved' | 'rejected') => {
+    const stmt = db.prepare('UPDATE friend_requests SET status = ?, responded_at = CURRENT_TIMESTAMP WHERE id = ?');
+    stmt.run(status, requestId);
+
+    // If approved, create friendship
+    if (status === 'approved') {
+      const getReqStmt = db.prepare('SELECT from_user_id, to_user_id FROM friend_requests WHERE id = ?');
+      const req = getReqStmt.get(requestId) as any;
+      const friendStmt = db.prepare('INSERT OR IGNORE INTO friends (user_id_1, user_id_2) VALUES (?, ?)');
+      const userId1 = Math.min(req.from_user_id, req.to_user_id);
+      const userId2 = Math.max(req.from_user_id, req.to_user_id);
+      friendStmt.run(userId1, userId2);
+    }
+  },
+
+  getFriends: (userId: number): User[] => {
+    const stmt = db.prepare(`
+      SELECT u.id, u.username, u.email, u.created_at
+      FROM friends f
+      JOIN users u ON (
+        (f.user_id_1 = ? AND u.id = f.user_id_2) OR
+        (f.user_id_2 = ? AND u.id = f.user_id_1)
+      )
+      ORDER BY u.username
+    `);
+    return stmt.all(userId, userId) as User[];
+  },
+
+  areFriends: (userId1: number, userId2: number): boolean => {
+    const id1 = Math.min(userId1, userId2);
+    const id2 = Math.max(userId1, userId2);
+    const stmt = db.prepare('SELECT COUNT(*) as count FROM friends WHERE user_id_1 = ? AND user_id_2 = ?');
+    const result = stmt.get(id1, id2) as { count: number };
+    return result.count > 0;
+  },
+
+  hasPendingRequest: (fromUserId: number, toUserId: number): boolean => {
+    const stmt = db.prepare('SELECT COUNT(*) as count FROM friend_requests WHERE from_user_id = ? AND to_user_id = ? AND status = ?');
+    const result = stmt.get(fromUserId, toUserId, 'pending') as { count: number };
+    return result.count > 0;
+  }
+};

@@ -82,6 +82,34 @@ export function initializeDatabase() {
     )
   `);
 
+  // Friends table
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS friends (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      user_id_1 INTEGER NOT NULL,
+      user_id_2 INTEGER NOT NULL,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      UNIQUE(user_id_1, user_id_2),
+      FOREIGN KEY (user_id_1) REFERENCES users(id) ON DELETE CASCADE,
+      FOREIGN KEY (user_id_2) REFERENCES users(id) ON DELETE CASCADE
+    )
+  `);
+
+  // Friend requests table
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS friend_requests (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      from_user_id INTEGER NOT NULL,
+      to_user_id INTEGER NOT NULL,
+      status TEXT NOT NULL CHECK(status IN ('pending', 'approved', 'rejected')),
+      requested_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      responded_at DATETIME,
+      UNIQUE(from_user_id, to_user_id),
+      FOREIGN KEY (from_user_id) REFERENCES users(id) ON DELETE CASCADE,
+      FOREIGN KEY (to_user_id) REFERENCES users(id) ON DELETE CASCADE
+    )
+  `);
+
   console.log('Database initialized successfully');
 }
 

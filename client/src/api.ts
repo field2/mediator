@@ -151,3 +151,27 @@ export const getCollaborators = async (listId: number): Promise<Collaboration[]>
   const response = await api.get(`/collaborations/list/${listId}`);
   return response.data;
 };
+
+// Friends
+export const searchUsers = async (username: string): Promise<any[]> => {
+  const response = await api.get(`/friends/search/${encodeURIComponent(username)}`);
+  return response.data;
+};
+
+export const getFriends = async (): Promise<User[]> => {
+  const response = await api.get('/friends');
+  return response.data;
+};
+
+export const sendFriendRequest = async (toUserId: number): Promise<void> => {
+  await api.post('/friends/request', { toUserId });
+};
+
+export const getFriendRequests = async (): Promise<any[]> => {
+  const response = await api.get('/friends/requests/incoming');
+  return response.data;
+};
+
+export const respondToFriendRequest = async (requestId: number, status: 'approved' | 'rejected'): Promise<void> => {
+  await api.post(`/friends/request/${requestId}/respond`, { status });
+};

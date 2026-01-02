@@ -4,6 +4,8 @@ export interface User {
   email: string;
   token: string;
   signupDate?: string;
+  // Some endpoints (friends) return `id`; keep optional for compatibility
+  id?: number;
 }
 
 export interface List {
