@@ -20,9 +20,9 @@ body {
   min-height: 100vh;
   width: 100vw;
 }
-.page-container {
+a {
+  color: #fff;
 }
-
 .header {
   padding: 0.5rem;
   display: flex;
@@ -282,4 +282,32 @@ select {
 
 .view-body {
   padding: 0 1rem;
+}
+
+div.intro {
+  margin-top: 3rem;
+  text-align: center;
+  font-size: 24px;
+  p {
+    margin-bottom: 1em;
+    a {
+      color: #fff;
+    }
+  }
+}
+button.submit {
+  background-color: #fff;
+  padding: 0.5rem 1rem;
+  font-size: 1rem;
+  opacity: 1;
+  border-radius: 0.5rem;
+}
+
+a {
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+input[type="checkbox"] {
+  background-color: #fff;
 }

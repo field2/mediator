@@ -254,7 +254,20 @@ const Dashboard: React.FC = () => {
           )}
           {loading && <div className="loading-text">Adding to your list...</div>}
           <div className="auto-items">
-            <h3 className="auto-items-title">{(isAuthenticated ? autoItems : guestItems[selectedMediaType]).length ? `Your ${selectedMediaType === 'movie' ? 'Movies' : selectedMediaType === 'book' ? 'Books' : 'Albums'}` : `No ${selectedMediaType === 'movie' ? 'movies' : selectedMediaType === 'book' ? 'books' : 'albums'} added yet`}</h3>
+            <h3 className="auto-items-title">
+              {(isAuthenticated ? autoItems : guestItems[selectedMediaType]).length ? (
+                `Your ${selectedMediaType === 'movie' ? 'Movies' : selectedMediaType === 'book' ? 'Books' : 'Albums'}`
+              ) : (
+                <>
+                  <div className="intro">
+                    <p>Thanks for trying Mediator!</p>
+                    <p>Use it to keep track of the movies you've watched, the books you've read or the albums you own.</p>
+                  <p>
+                  Mediator is a work in progress by Field 2 Design / <a href="https://bendunkle.com" target="_blank">Ben Dunkle</a>.</p>
+                  <p>Copyright 2026 by Ben Dunkle. All Rights Reserved.</p></div>
+                </>
+              )}
+            </h3>
             {loadingItems ? (
               <div>Loading your items...</div>
             ) : (isAuthenticated ? autoItems : guestItems[selectedMediaType]).length > 0 ? (

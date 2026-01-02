@@ -37,6 +37,14 @@ export const login = async (identifier: string, password: string): Promise<User>
   return response.data;
 };
 
+export const forgotPassword = async (email: string): Promise<void> => {
+  await api.post('/auth/forgot-password', { email });
+};
+
+export const resetPassword = async (token: string, password: string): Promise<void> => {
+  await api.post('/auth/reset-password', { token, password });
+};
+
 // Search
 export const searchMovies = async (query: string): Promise<SearchResult[]> => {
   const response = await api.get(`/search/movies?q=${encodeURIComponent(query)}`);

@@ -1,6 +1,7 @@
 import express, { Router } from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
+import crypto from 'crypto';
 import { UserModel } from '../db/models';
 
 const router: Router = express.Router();
@@ -14,10 +15,16 @@ router.post('/register', async (req, res) => {
       return res.status(400).json({ error: 'All fields are required' });
     }
 
-    // Check if user exists
-    const existingUser = await UserModel.findByEmail(email);
-    if (existingUser) {
-      return res.status(400).json({ error: 'User already exists' });
+    // Check if email exists
+    const existingUserByEmail = await UserModel.findByEmail(email);
+    if (existingUserByEmail) {
+      return res.status(400).json({ error: 'Email already exists', field: 'email' });
+    }
+
+    // Check if username exists
+    const existingUserByUsername = await UserModel.findByUsername(username);
+    if (existingUserByUsername) {
+      return res.status(400).json({ error: 'Username already exists', field: 'username' });
     }
 
     // Hash password
@@ -86,7 +93,7 @@ router.get('/me', async (req, res) => {
     const token = authHeader.split(' ')[1];
     let payload;
     try {
-      payload = jwt.verify(token, process.env.JWT_SECRET || 'fallback-secret');
+      payload = jwt.verify(token, process.env.JWT_SECRET || 'fallback-secret') as { userId: number };
     } catch {
       return res.status(401).json({ error: 'Invalid token' });
     }
@@ -101,6 +108,67 @@ router.get('/me', async (req, res) => {
   } catch (error) {
     console.error('Get /me error:', error);
     res.status(500).json({ error: 'Failed to fetch user profile' });
+  }
+});
+
+// Forgot password
+router.post('/forgot-password', async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email) {
+      return res.status(400).json({ error: 'Email is required' });
+    }
+
+    const user = await UserModel.findByEmail(email);
+    if (!user) {
+      // Don't reveal if email exists or not for security
+      return res.json({ message: 'If that email exists, a password reset link has been sent' });
+    }
+
+    // Generate reset token
+    const resetToken = crypto.randomBytes(32).toString('hex');
+    const expires = new Date(Date.now() + 3600000).toISOString(); // 1 hour from now
+
+    UserModel.setResetToken(email, resetToken, expires);
+
+    // For now, just log the token (in production, send via email)
+    console.log(`Password reset token for ${email}: ${resetToken}`);
+    console.log(`Reset link: http://localhost:3000/reset-password?token=${resetToken}`);
+
+    res.json({ message: 'If that email exists, a password reset link has been sent', token: resetToken });
+  } catch (error) {
+    console.error('Forgot password error:', error);
+    res.status(500).json({ error: 'Failed to process request' });
+  }
+});
+
+// Reset password
+router.post('/reset-password', async (req, res) => {
+  try {
+    const { token, password } = req.body;
+
+    if (!token || !password) {
+      return res.status(400).json({ error: 'Token and password are required' });
+    }
+
+    const user = await UserModel.findByResetToken(token);
+    if (!user) {
+      return res.status(400).json({ error: 'Invalid or expired reset token' });
+    }
+
+    // Check if token is expired
+    if (user.reset_token_expires && new Date(user.reset_token_expires) < new Date()) {
+      return res.status(400).json({ error: 'Reset token has expired' });
+    }
+
+    // Hash new password
+    const passwordHash = await bcrypt.hash(password, 10);
+    UserModel.updatePassword(user.id, passwordHash);
+
+    res.json({ message: 'Password reset successfully' });
+  } catch (error) {
+    console.error('Reset password error:', error);
+    res.status(500).json({ error: 'Failed to reset password' });
   }
 });
 

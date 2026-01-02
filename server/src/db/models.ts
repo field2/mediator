@@ -5,6 +5,8 @@ export interface User {
   username: string;
   email: string;
   password_hash: string;
+  reset_token: string | null;
+  reset_token_expires: string | null;
   created_at: string;
 }
 
@@ -70,6 +72,21 @@ export const UserModel = {
   findById: (id: number): User | undefined => {
     const stmt = db.prepare('SELECT * FROM users WHERE id = ?');
     return stmt.get(id) as User | undefined;
+  },
+
+  setResetToken: (email: string, token: string, expires: string) => {
+    const stmt = db.prepare('UPDATE users SET reset_token = ?, reset_token_expires = ? WHERE email = ?');
+    stmt.run(token, expires, email);
+  },
+
+  findByResetToken: (token: string): User | undefined => {
+    const stmt = db.prepare('SELECT * FROM users WHERE reset_token = ?');
+    return stmt.get(token) as User | undefined;
+  },
+
+  updatePassword: (userId: number, passwordHash: string) => {
+    const stmt = db.prepare('UPDATE users SET password_hash = ?, reset_token = NULL, reset_token_expires = NULL WHERE id = ?');
+    stmt.run(passwordHash, userId);
   }
 };
 

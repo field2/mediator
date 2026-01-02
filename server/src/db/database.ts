@@ -15,6 +15,8 @@ export function initializeDatabase() {
       username TEXT UNIQUE NOT NULL,
       email TEXT UNIQUE NOT NULL,
       password_hash TEXT NOT NULL,
+      reset_token TEXT,
+      reset_token_expires DATETIME,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     )
   `);
