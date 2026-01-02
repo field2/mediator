@@ -53,7 +53,8 @@ export const UserModel = {
   create: (username: string, email: string, passwordHash: string) => {
     const stmt = db.prepare('INSERT INTO users (username, email, password_hash) VALUES (?, ?, ?)');
     const result = stmt.run(username, email, passwordHash);
-    return result.lastInsertRowid;
+    const user = db.prepare('SELECT * FROM users WHERE id = ?').get(result.lastInsertRowid) as User;
+    return user;
   },
 
   findByEmail: (email: string): User | undefined => {

@@ -7,6 +7,10 @@ import { MediaItem } from '../types';
 import StarRating from './StarRating';
 
 const Dashboard: React.FC = () => {
+    const [menuOpen, setMenuOpen] = useState(false);
+    const handleMenuToggle = () => setMenuOpen((open) => !open);
+    const handleMenuClose = () => setMenuOpen(false);
+    const { logout } = useAuth();
   const { user, isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const [selectedMediaType, setSelectedMediaType] = useState<'movie' | 'book' | 'album'>('movie');
@@ -181,6 +185,19 @@ const Dashboard: React.FC = () => {
   return (
     <div className="page-container">
       <div className="header">
+        {/* Menu Overlay */}
+        {menuOpen && (
+          <div className="menu-overlay" onClick={handleMenuClose}>
+            <div className="menu-content" onClick={e => e.stopPropagation()}>
+              <div className="menu-account">
+                <a href="/account" className="menu-username">{user?.username || 'Account'}</a>
+              </div>
+              <a href="/friends" className="menu-link">Friends</a>
+              <a href="/lists" className="menu-link">Lists</a>
+              <button className="menu-link logout" onClick={() => { logout(); handleMenuClose(); }}>Logout</button>
+            </div>
+          </div>
+        )}
 
         <div className="media-tabs">
           <button onClick={() => setSelectedMediaType('movie')} className={`media-tab ${selectedMediaType === 'movie' ? 'active' : ''}`}>
@@ -211,7 +228,14 @@ const Dashboard: React.FC = () => {
           </button>
         </div>
                           <SearchBar onSelect={() => {}} mediaType={selectedMediaType} onMediaSelected={handleMediaSelected} />
-
+{/* <MainMenu /> */}
+<div className="main-menu" onClick={handleMenuToggle} style={{ cursor: 'pointer' }}>
+  <svg width="17" height="35" viewBox="0 0 17 35" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="8.5" cy="6.5" r="3.5" fill="white"/>
+    <circle cx="8.5" cy="17.5" r="3.5" fill="white"/>
+    <circle cx="8.5" cy="28.5" r="3.5" fill="white"/>
+  </svg>
+</div>
       </div>
 
       <div className="media-section-body">
@@ -249,6 +273,7 @@ const Dashboard: React.FC = () => {
           </div>
         </div>
       </div>
+
     </div>
   );
 };

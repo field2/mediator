@@ -5,6 +5,7 @@ import Auth from './components/Auth';
 import Dashboard from './components/Dashboard';
 import ListView from './components/ListView';
 import Collaborations from './components/Collaborations';
+import Account from './components/Account';
 
 const PrivateRoute: React.FC<{ children: React.ReactElement }> = ({ children }) => {
   const { isAuthenticated } = useAuth();
@@ -25,6 +26,7 @@ function App() {
           <Route path="/" element={<Dashboard />} />
           <Route path="/list/:id" element={<PrivateRoute><ListView /></PrivateRoute>} />
           <Route path="/collaborations" element={<PrivateRoute><Collaborations /></PrivateRoute>} />
+          <Route path="/account" element={<PrivateRoute><Account /></PrivateRoute>} />
         </Routes>
       </AuthProvider>
     </Router>

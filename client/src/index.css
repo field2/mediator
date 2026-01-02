@@ -210,21 +210,6 @@ select {
   transition: opacity 160ms ease-in-out;
 }
 
-.guest-user #root {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-}
-.guest-user .header {
-  flex-direction: column;
-  align-items: stretch;
-  padding: 1rem;
-  /* justify-content: stretch; */
-  /* border: solid; */
-}
-.guest-user .media-tabs {
-  align-self: center;
-}
 @keyframes spin {
   from {
     transform: rotate(0deg);
@@ -244,4 +229,35 @@ select {
   left: 50vw;
   margin-left: -16px;
   top: 30vw;
+}
+
+.main-menu {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.menu-overlay {
+  position: absolute;
+  right: 0;
+  width: 100%;
+  z-index: 10000;
+  background: #fff;
+  top: 57px;
+  padding: 1rem;
+}
+
+.menu-content {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+.menu-content a,
+.menu-content button {
+  text-decoration: none;
+  font-size: 1.5rem;
+  color: #000;
+}
+.menu-content button {
+  opacity: 1;
 }

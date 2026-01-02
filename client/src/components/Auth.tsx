@@ -7,7 +7,7 @@ const Auth: React.FC = () => {
   const [searchParams] = useSearchParams();
   const [isLogin, setIsLogin] = useState(() => searchParams.get('mode') !== 'register');
   const [username, setUsername] = useState('');
-  const [email, setEmail] = useState('');
+  const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [rememberMe, setRememberMe] = useState(true);
@@ -25,10 +25,10 @@ const Auth: React.FC = () => {
 
     try {
       if (isLogin) {
-        const userData = await apiLogin(email, password);
+        const userData = await apiLogin(identifier, password);
         login(userData, rememberMe ? 'local' : 'session');
       } else {
-        const userData = await apiRegister(username, email, password);
+        const userData = await apiRegister(username, identifier, password);
         login(userData, rememberMe ? 'local' : 'session');
       }
     } catch (err: any) {
@@ -53,11 +53,11 @@ const Auth: React.FC = () => {
           </div>
         )}
         <div style={{ marginBottom: '15px' }}>
-          <label style={{ display: 'block', marginBottom: '5px' }}>Email</label>
+          <label style={{ display: 'block', marginBottom: '5px' }}>Email or Username</label>
           <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            type="text"
+            value={identifier}
+            onChange={(e) => setIdentifier(e.target.value)}
             required
             style={{ width: '100%', padding: '8px', boxSizing: 'border-box' }}
           />
