@@ -21,52 +21,48 @@ This guide will help you deploy the Mediator app to production on your server.
    cd mediator.field2.com
    ```
 
-2. **Configure environment variables (first time only):**
-   Create a `server/.env` file with your actual values:
+2. **Build and deploy:**
 
    ```bash
-   nano server/.env
-   ```
-
-   Add:
-   - `JWT_SECRET`: A secure random string
-   - `OMDB_API_KEY`: Your OMDB API key
-   - `GOOGLE_BOOKS_API_KEY`: Your Google Books API key
-   - `NODE_ENV=production`
-   - `PORT=3003`
-
-3. **Make deploy script executable:**
-   ```bash
-   chmod +x deploy-server.sh
-   ```
-
-4. **Deploy updates:**
-
-   ```bash
-   # On your local machine - commit and push changes
-   git add .
-   git commit -m "Your changes"
+   # On your local machine
+   ./build.sh
+   git add deploy/
+   git commit -m "Build for production"
    git push
 
-   # On the server - pull and deploy
+   # On the server
    ssh -p 2200 field2@199.167.200.160
    cd /home/field2/public_html/mediator.field2.com
    git pull
-   ./deploy-server.sh
    ```
 
-5. **Set up domain document root in cPanel:**
-   - Log into cPanel
-   - Go to Domains → Manage
-   - Edit mediator.field2.com
-   - Set Document Root to: `/home/field2/public_html/mediator.field2.com/client/dist`
-   - Save
+3. **Install dependencies (first time or after package.json changes):**
 
-6. **Configure API proxy with .htaccess:**
-   
-   Create `/home/field2/public_html/mediator.field2.com/client/dist/.htaccess` (this is created automatically by deploy-server.sh)
-   
-   If proxy doesn't work, you may need to create a subdomain `api.mediator.field2.com` or use a different approach for API routing.
+   ```bash
+   npm install --production
+   ```
+
+4. **Configure environment variables (first time only):**
+   Create a `.env` file with your actual values:
+
+   ```bash
+   nano .env
+   ```
+
+   Add:
+
+   - `JWT_SECRET`: A secure random string
+   - `OMDB_API_KEY`: Your OMDB API key
+   - `NODE_ENV=production`
+   - `PORT=3003`
+
+5. **Start or restart the application:**
+   ```bash
+   cd deploy
+   ./start.sh
+   # Or to restart:
+   pm2 restart mediator-server
+   ```
 
 ## Alternative: Zip File Deployment
 
