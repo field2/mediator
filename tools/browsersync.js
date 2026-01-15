@@ -3,7 +3,7 @@ const bs = require("browser-sync").create();
 const path = require("path");
 
 const clientDir = path.resolve(__dirname, "..", "client");
-const vitePort = process.env.VITE_PORT || 3001;
+const vitePort = process.env.VITE_PORT || 3000;
 const proxyTarget = `http://localhost:${vitePort}`;
 
 bs.init(
