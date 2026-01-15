@@ -88,11 +88,14 @@ const Friends: React.FC = () => {
   const handleRespond = async (requestId: number, status: 'approved' | 'rejected') => {
     try {
       await respondToFriendRequest(requestId, status);
-      await loadRequests();
+      // Immediately remove from UI
+      setRequests(requests.filter(req => req.id !== requestId));
       if (status === 'approved') await loadFriends();
     } catch (error: any) {
       console.error('Error responding to friend request:', error);
       alert(error.response?.data?.error || 'Failed to update request');
+      // Reload on error
+      await loadRequests();
     }
   };
 
@@ -125,7 +128,7 @@ const Friends: React.FC = () => {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             onFocus={() => setShowResults(searchResults.length > 0)}
-            onBlur={() => setTimeout(() => setShowResults(false), 150)}
+            onBlur={() => setTimeout(() => setShowResults(false), 250)}
             className="search-input"
           />
 
@@ -186,6 +189,11 @@ const Friends: React.FC = () => {
               {friends.map((friend) => (
                 <div key={friend.id ?? friend.userId} className="friend-card">
                   <div className="friend-username">{friend.username}</div>
+                  <div className="friend-links">
+                    <button onClick={() => navigate(`/user/${friend.id ?? friend.userId}`)}>
+                      View Media
+                    </button>
+                  </div>
                 </div>
               ))}
             </div>

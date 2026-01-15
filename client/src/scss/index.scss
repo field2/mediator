@@ -328,3 +328,19 @@ header.view-header {
   font-size: 1rem;
   padding: 0.5rem 1rem;
 }
+.main-menu circle {
+  fill: #fff;
+}
+
+// Or if you want different colors based on state:
+.main-menu.has-pending circle:first-of-type {
+  fill: red;  // red for pending notifications
+  animation-name:pulse;
+  animation-duration: 1s;
+  animation-direction: alternate;
+  animation-iteration-count: infinite;
+}
+@keyframes pulse {
+  from {fill: red;}
+  to {fill: white;}
+}

@@ -26,6 +26,7 @@ function App() {
         <Routes>
           <Route path="/auth" element={<PublicRoute><Auth /></PublicRoute>} />
           <Route path="/" element={<Dashboard />} />
+          <Route path="/user/:userId" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
           <Route path="/list/:id" element={<PrivateRoute><ListView /></PrivateRoute>} />
           <Route path="/collaborations" element={<PrivateRoute><Collaborations /></PrivateRoute>} />
           <Route path="/friends" element={<PrivateRoute><Friends /></PrivateRoute>} />

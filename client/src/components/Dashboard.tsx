@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../AuthContext';
 import SearchBar from './SearchBar';
-import { getOrCreateAutoList, addMediaToList, getList, rateMedia, deleteMediaFromList, getFriendRequests } from '../api';
+import { getOrCreateAutoList, addMediaToList, getList, rateMedia, deleteMediaFromList, getFriendRequests, getUserAutoList } from '../api';
 import { MediaItem } from '../types';
 import StarRating from './StarRating';
 
@@ -12,6 +12,8 @@ const Dashboard: React.FC = () => {
     const handleMenuClose = () => setMenuOpen(false);
   const { user, isAuthenticated } = useAuth();
   const navigate = useNavigate();
+  const { userId } = useParams<{ userId: string }>();
+  const viewingOtherUser = userId && parseInt(userId) !== user?.id;
   const [selectedMediaType, setSelectedMediaType] = useState<'movie' | 'book' | 'album'>('movie');
   const [loading, setLoading] = useState(false);
   const [autoListId, setAutoListId] = useState<number | null>(null);
@@ -130,12 +132,21 @@ const Dashboard: React.FC = () => {
         return;
       }
       try {
-        const list = await getOrCreateAutoList(selectedMediaType);
-        if (cancelled) return;
-        setAutoListId(list.id);
-        const full = await getList(list.id);
-        if (cancelled) return;
-        setAutoItems(Array.isArray(full.mediaItems) ? full.mediaItems : []);
+        // If viewing another user's content
+        if (viewingOtherUser) {
+          const full = await getUserAutoList(parseInt(userId!), selectedMediaType);
+          if (cancelled) return;
+          setAutoListId(full.id);
+          setAutoItems(Array.isArray(full.mediaItems) ? full.mediaItems : []);
+        } else {
+          // Viewing own content
+          const list = await getOrCreateAutoList(selectedMediaType);
+          if (cancelled) return;
+          setAutoListId(list.id);
+          const full = await getList(list.id);
+          if (cancelled) return;
+          setAutoItems(Array.isArray(full.mediaItems) ? full.mediaItems : []);
+        }
       } catch (err) {
         console.error('Error loading auto list items:', err);
         setAutoItems([]);
@@ -146,7 +157,7 @@ const Dashboard: React.FC = () => {
     };
     load();
     return () => { cancelled = true; };
-  }, [selectedMediaType, isAuthenticated]);
+  }, [selectedMediaType, isAuthenticated, viewingOtherUser, userId]);
 
   // If a user signs in after picking items, sync guest items once
   const hasSyncedRef = React.useRef(false);
@@ -250,7 +261,7 @@ const Dashboard: React.FC = () => {
 
           </button>
         </div>
-                          <SearchBar onSelect={() => {}} mediaType={selectedMediaType} onMediaSelected={handleMediaSelected} />
+                          {!viewingOtherUser && <SearchBar onSelect={() => {}} mediaType={selectedMediaType} onMediaSelected={handleMediaSelected} />}
 {/* <MainMenu /> */}
 <div className={`main-menu ${hasPendingFriendRequests ? 'has-pending' : ''}`} onClick={handleMenuToggle} style={{ cursor: 'pointer' }}>
   <svg width="17" height="35" viewBox="0 0 17 35" fill="none" xmlns="http://www.w3.org/2000/svg">

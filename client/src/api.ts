@@ -73,6 +73,11 @@ export const getOrCreateAutoList = async (mediaType: 'movie' | 'book' | 'album')
   return response.data;
 };
 
+export const getUserAutoList = async (userId: number, mediaType: 'movie' | 'book' | 'album'): Promise<any> => {
+  const response = await api.get(`/lists/user/${userId}/auto/${mediaType}`);
+  return response.data;
+};
+
 export const getPublicLists = async (): Promise<List[]> => {
   const response = await api.get('/lists/public');
   return response.data;

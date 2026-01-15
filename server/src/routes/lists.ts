@@ -54,6 +54,48 @@ router.post('/auto', authenticate, (req: AuthRequest, res) => {
   }
 });
 
+// Get another user's auto list (for friends viewing)
+router.get('/user/:userId/auto/:mediaType', authenticate, (req: AuthRequest, res) => {
+  try {
+    const userId = parseInt(req.params.userId);
+    const { mediaType } = req.params;
+
+    if (!mediaType || !['movie', 'book', 'album'].includes(mediaType)) {
+      return res.status(400).json({ error: 'Valid mediaType is required (movie, book, or album)' });
+    }
+
+    // TODO: Check if users are friends (for now, allow any authenticated user)
+    const listName = `My ${mediaType.charAt(0).toUpperCase() + mediaType.slice(1)}s`;
+    const existingLists = ListModel.findByUserId(userId);
+    const autoList = existingLists.find((list) => list.name === listName);
+
+    if (!autoList) {
+      return res.status(404).json({ error: 'User has no list for this media type' });
+    }
+
+    const mediaItems = MediaItemModel.findByListId(autoList.id);
+    const itemsWithRatings = mediaItems.map(item => {
+      const avgRating = RatingModel.getAverageRating(item.id);
+      const userRating = RatingModel.findByUserAndMediaItem(item.id, req.userId!);
+      return {
+        ...item,
+        averageRating: avgRating,
+        userRating: userRating?.rating
+      };
+    });
+
+    res.json({
+      ...autoList,
+      mediaItems: itemsWithRatings,
+      isOwner: false,
+      isCollaborator: false
+    });
+  } catch (error) {
+    console.error('Error fetching user auto list:', error);
+    res.status(500).json({ error: 'Failed to fetch user auto list' });
+  }
+});
+
 // Create a new list
 router.post('/', authenticate, (req: AuthRequest, res) => {
   try {

@@ -284,8 +284,8 @@ export const FriendModel = {
   },
 
   hasPendingRequest: (fromUserId: number, toUserId: number): boolean => {
-    const stmt = db.prepare('SELECT COUNT(*) as count FROM friend_requests WHERE from_user_id = ? AND to_user_id = ? AND status = ?');
-    const result = stmt.get(fromUserId, toUserId, 'pending') as { count: number };
+    const stmt = db.prepare('SELECT COUNT(*) as count FROM friend_requests WHERE ((from_user_id = ? AND to_user_id = ?) OR (from_user_id = ? AND to_user_id = ?)) AND status = ?');
+    const result = stmt.get(fromUserId, toUserId, toUserId, fromUserId, 'pending') as { count: number };
     return result.count > 0;
   }
 };
