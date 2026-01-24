@@ -158,6 +158,11 @@ export const getCollaborators = async (listId: number): Promise<Collaboration[]>
 };
 
 // Friends
+export const getAllUsers = async (): Promise<any[]> => {
+  const response = await api.get('/friends/directory');
+  return response.data;
+};
+
 export const searchUsers = async (username: string): Promise<any[]> => {
   const response = await api.get(`/friends/search/${encodeURIComponent(username)}`);
   return response.data;

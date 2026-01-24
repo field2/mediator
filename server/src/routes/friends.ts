@@ -4,6 +4,24 @@ import { authenticate, AuthRequest } from '../middleware/auth';
 
 const router = express.Router();
 
+// Get all users (directory)
+router.get('/directory', authenticate, async (req: AuthRequest, res) => {
+  try {
+    const userId = req.userId as number;
+    const users = FriendModel.getAllUsers(userId);
+    const enriched = users.map(user => ({
+      id: user.id,
+      username: user.username,
+      isFriend: FriendModel.areFriends(userId, user.id),
+      hasPendingRequest: FriendModel.hasPendingRequest(userId, user.id)
+    }));
+    res.json(enriched);
+  } catch (error) {
+    console.error('Get directory error:', error);
+    res.status(500).json({ error: 'Failed to get directory' });
+  }
+});
+
 // Search users by username
 router.get('/search/:username', authenticate, async (req: AuthRequest, res) => {
   try {

@@ -18,7 +18,6 @@ const SearchBar: React.FC<SearchBarProps> = ({ onSelect, mediaType, onMediaSelec
   useEffect(() => {
     if (query.trim().length < 2) {
       setResults([]);
-      setShowResults(false);
       return;
     }
 
@@ -34,10 +33,8 @@ const SearchBar: React.FC<SearchBarProps> = ({ onSelect, mediaType, onMediaSelec
         if (mediaType === 'book') res = await searchBooks(query);
         if (mediaType === 'album') res = await searchAlbums(query);
         setResults(res || []);
-        setShowResults((res || []).length > 0);
       } catch (err) {
         setResults([]);
-        setShowResults(false);
       } finally {
         setLoading(false);
       }
@@ -65,20 +62,30 @@ const SearchBar: React.FC<SearchBarProps> = ({ onSelect, mediaType, onMediaSelec
     setQuery('');
   };
 
+  const handleInputFocus = () => {
+    setShowResults(true);
+  };
+
+  const handleCloseResults = () => {
+    setShowResults(false);
+  };
+
   return (
-    <div className="searchbar">
+    <div className="search-bar">
       <input
         className="search-input"
         type="text"
         placeholder={`Search ${mediaType === 'movie' ? 'movies' : mediaType === 'book' ? 'books' : 'albums'}`}
         value={query}
         onChange={(e) => setQuery(e.target.value)}
-        onFocus={() => setShowResults(results.length > 0)}
-        onBlur={() => setTimeout(() => setShowResults(false), 150)}
+        onFocus={handleInputFocus}
       />
 
-      {(loading || shouldShowResults) && (
+      {showResults && (
         <div className="search-results">
+          <button className="search-close" onClick={handleCloseResults} aria-label="Close search results">
+            <img src="/src/assets/icon-close.svg" alt="Close" />
+          </button>
           {loading && (
             <div className="search-loading">
               <div className="spinner"></div>

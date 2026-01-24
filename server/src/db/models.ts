@@ -230,6 +230,11 @@ export const FriendModel = {
     return stmt.all(`%${username}%`, excludeUserId) as User[];
   },
 
+  getAllUsers: (excludeUserId: number): User[] => {
+    const stmt = db.prepare('SELECT id, username, email, created_at FROM users WHERE id != ? ORDER BY username');
+    return stmt.all(excludeUserId) as User[];
+  },
+
   sendFriendRequest: (fromUserId: number, toUserId: number): number => {
     const stmt = db.prepare('INSERT OR IGNORE INTO friend_requests (from_user_id, to_user_id, status) VALUES (?, ?, ?)');
     const result = stmt.run(fromUserId, toUserId, 'pending');

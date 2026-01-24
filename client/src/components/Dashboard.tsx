@@ -221,7 +221,7 @@ const Dashboard: React.FC = () => {
 
   return (
     <div className="page-container">
-      <div className="header">
+      <header className="view-header">
         {/* Menu Overlay */}
         {menuOpen && (
           <div className="menu-overlay" onClick={handleMenuClose}>
@@ -232,6 +232,7 @@ const Dashboard: React.FC = () => {
                     <a href="/account" className="menu-username">{user?.username || 'Account'}</a>
                   </div>
                   <a href="/friends" className={`menu-link ${hasPendingFriendRequests ? 'pulse' : ''}`}>Friends</a>
+                  <a href="/directory" className="menu-link">Directory</a>
                   <a href="/lists" className="menu-link">Lists</a>
                 </>
               ) : (
@@ -278,7 +279,7 @@ const Dashboard: React.FC = () => {
     <circle cx="8.5" cy="28.5" r="3.5" fill="white"/>
   </svg>
 </div>
-      </div>
+      </header>
 
       <div className="media-section-body">
         <div className="search-panel">

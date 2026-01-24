@@ -100,8 +100,9 @@ const Friends: React.FC = () => {
   };
 
   return (
-    <div className="friends-view">
+    <div className="page-container">
 			<header className="view-header">
+        <div className="view-label">
       <button
         className="back-button"
         onClick={() => {
@@ -112,19 +113,18 @@ const Friends: React.FC = () => {
           }
         }}
       >
-        <svg width="56" height="56" viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M16 28L40 10V46L16 28Z" fill="white"/>
-        </svg>
+        <svg width="20" height="22" viewBox="0 0 20 22" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M9.5098 0.437519C10.0677 -0.14584 10.972 -0.14584 11.5299 0.437519C12.0878 1.02088 12.0878 1.96646 11.5299 2.54982L4.87715 9.50622H18.5714C19.3604 9.50622 20 10.175 20 11C20 11.825 19.3604 12.4938 18.5714 12.4938H4.87715L11.5299 19.4502C12.0878 20.0335 12.0878 20.9791 11.5299 21.5625C10.972 22.1458 10.0677 22.1458 9.5098 21.5625L0.418421 12.0562C-0.139474 11.4728 -0.139474 10.5272 0.418421 9.94385L9.5098 0.437519Z" fill="white"/>
+</svg>
+
       </button>
 
-        <h1>Friends</h1>
-				</header>
-      <div className="view-body">
+        <h1>Friends</h1></div>
+        <div className="search-bar">
 
-        <div className="friends-search">
           <input
             type="text"
-            placeholder="Search by username"
+            placeholder="Search users"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             onFocus={() => setShowResults(searchResults.length > 0)}
@@ -163,7 +163,12 @@ const Friends: React.FC = () => {
               )}
             </div>
           )}
+
         </div>
+				</header>
+      <div className="view-body">
+
+        
 
         <div className="friends-list">
           {requests.length > 0 && (

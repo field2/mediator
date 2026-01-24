@@ -7,6 +7,7 @@ import ListView from './components/ListView';
 import Collaborations from './components/Collaborations';
 import Account from './components/Account';
 import Friends from './components/Friends';
+import Directory from './components/Directory';
 
 const PrivateRoute: React.FC<{ children: React.ReactElement }> = ({ children }) => {
   const { isAuthenticated, isLoading } = useAuth();
@@ -30,6 +31,7 @@ function App() {
           <Route path="/list/:id" element={<PrivateRoute><ListView /></PrivateRoute>} />
           <Route path="/collaborations" element={<PrivateRoute><Collaborations /></PrivateRoute>} />
           <Route path="/friends" element={<PrivateRoute><Friends /></PrivateRoute>} />
+          <Route path="/directory" element={<PrivateRoute><Directory /></PrivateRoute>} />
           <Route path="/account" element={<PrivateRoute><Account /></PrivateRoute>} />
         </Routes>
       </AuthProvider>

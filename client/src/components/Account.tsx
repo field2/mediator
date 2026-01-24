@@ -16,6 +16,7 @@ const Account: React.FC = () => {
 
   return (
     <div className="account-view">
+      <div className="view-header">
       <button
         className="back-button"
         onClick={() => {
@@ -30,8 +31,9 @@ const Account: React.FC = () => {
 <path d="M16 28L40 10V46L16 28Z" fill="white"/>
 </svg>
 </button>
-<div className="view-body">
       <h1 className="account-title">{user.username}</h1>
+</div>
+<div className="view-body">
       <div className="account-signup-date">Signed up: {signupDate}</div>
       <button
         className="logout-button"
