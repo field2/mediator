@@ -30,6 +30,7 @@ a {
   padding: 0.5rem;
   display: flex;
   align-items: stretch;
+  justify-content: space-between;
   gap: 0.5rem;
 }
 .header .media-tabs {
@@ -318,6 +319,14 @@ header.view-header {
 
 .main-menu circle {
   fill: #fff;
+}
+
+.friend-links button {
+  background: #fff;
+  padding: 0.5rem 1rem;
+  font-size: 1rem;
+  opacity: 1;
+  border-radius: 0.5rem;
 }
 
 .main-menu.has-pending circle:first-of-type {

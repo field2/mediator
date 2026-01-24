@@ -9,7 +9,15 @@ import StarRating from './StarRating';
 const Dashboard: React.FC = () => {
     const [menuOpen, setMenuOpen] = useState(false);
     const handleMenuToggle = () => setMenuOpen((open) => !open);
-    const handleMenuClose = () => setMenuOpen(false);
+    const handleMenuClose = () => setMenuOpen(false);  
+  // Close menu when clicking outside
+  useEffect(() => {
+    if (menuOpen) {
+      const handleClickOutside = () => setMenuOpen(false);
+      document.addEventListener('click', handleClickOutside);
+      return () => document.removeEventListener('click', handleClickOutside);
+    }
+  }, [menuOpen]);
   const { user, isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const { userId } = useParams<{ userId: string }>();
@@ -263,7 +271,7 @@ const Dashboard: React.FC = () => {
         </div>
                           {!viewingOtherUser && <SearchBar onSelect={() => {}} mediaType={selectedMediaType} onMediaSelected={handleMediaSelected} />}
 {/* <MainMenu /> */}
-<div className={`main-menu ${hasPendingFriendRequests ? 'has-pending' : ''}`} onClick={handleMenuToggle} style={{ cursor: 'pointer' }}>
+<div className={`main-menu ${hasPendingFriendRequests ? 'has-pending' : ''}`} onClick={(e) => { e.stopPropagation(); handleMenuToggle(); }} style={{ cursor: 'pointer' }}>
   <svg width="17" height="35" viewBox="0 0 17 35" fill="none" xmlns="http://www.w3.org/2000/svg">
     <circle cx="8.5" cy="6.5" r="3.5" fill="white"/>
     <circle cx="8.5" cy="17.5" r="3.5" fill="white"/>
