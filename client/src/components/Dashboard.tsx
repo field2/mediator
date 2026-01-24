@@ -270,7 +270,9 @@ const Dashboard: React.FC = () => {
 
           </button>
         </div>
-                          {!viewingOtherUser && <SearchBar onSelect={() => {}} mediaType={selectedMediaType} onMediaSelected={handleMediaSelected} />}
+                      {/* Move SearchBar outside of .media-section-body and .search-panel, as a sibling of .view-body */}
+                      {/* Place SearchBar just after the header, before .media-section-body */}
+                      {!viewingOtherUser && <SearchBar onSelect={() => {}} mediaType={selectedMediaType} onMediaSelected={handleMediaSelected} />}
 {/* <MainMenu /> */}
 <div className={`main-menu ${hasPendingFriendRequests ? 'has-pending' : ''}`} onClick={(e) => { e.stopPropagation(); handleMenuToggle(); }} style={{ cursor: 'pointer' }}>
   <svg width="17" height="35" viewBox="0 0 17 35" fill="none" xmlns="http://www.w3.org/2000/svg">

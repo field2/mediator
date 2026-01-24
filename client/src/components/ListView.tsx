@@ -143,12 +143,8 @@ const ListView: React.FC = () => {
       {list.description && <p className="list-description">{list.description}</p>}
       <p className="list-meta">{list.is_public ? '🌐 Public' : '🔒 Private'}{list.isCollaborator && ' • You are a collaborator'}</p>
 
-      {canEdit && (
-        <div className="add-media-panel">
-          <h3>Add Media</h3>
-          <SearchBar onSelect={handleAddMedia} mediaType={selectedSection} />
-        </div>
-      )}
+      {/* Move SearchBar outside of .add-media-panel, as a sibling of .view-body */}
+      {canEdit && <SearchBar onSelect={handleAddMedia} mediaType={selectedSection} />}
 
       <div className="sections">
         <div className="tabs">

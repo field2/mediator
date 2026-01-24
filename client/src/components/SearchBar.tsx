@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { searchMovies, searchBooks, searchAlbums } from '../api';
 import { SearchResult } from '../types';
 
@@ -70,64 +71,85 @@ const SearchBar: React.FC<SearchBarProps> = ({ onSelect, mediaType, onMediaSelec
     setShowResults(false);
   };
 
-  return (
-    <div className="search-bar">
-      <input
-        className="search-input"
-        type="text"
-        placeholder={`Search ${mediaType === 'movie' ? 'movies' : mediaType === 'book' ? 'books' : 'albums'}`}
-        value={query}
-        onChange={(e) => setQuery(e.target.value)}
-        onFocus={handleInputFocus}
-      />
-      {query.trim().length === 0 ? (
-        <button className="search-icon-btn" tabIndex={-1} type="button" aria-label="Search">
-          <img src="/src/assets/icon-search.svg" alt="Search" />
-        </button>
-      ) : (
-        <button
-          className="search-icon-btn"
-          type="button"
-          aria-label="Clear search"
-          onClick={() => {
-            setQuery('');
-            setShowResults(false);
-          }}
-        >
-          <img src="/src/assets/icon-close.svg" alt="Clear" />
-        </button>
-      )}
-
-      {showResults && (
-        <div className="search-results">
-          {loading && (
-            <div className="search-loading">
-              <div className="spinner"></div>
-            </div>
-          )}
-
-          {!loading && results.length > 0 && (
-            results.filter(r => r.Poster || r.cover).map((r) => (
-              <div key={r.id} className="search-result-item" onClick={() => handleSelect(r)}>
-                {r.Poster || r.cover ? (
-                  <img src={r.Poster || r.cover} alt={r.title} className="result-thumb" />
-                ) : (
-                  <div className="result-thumb placeholder" />
-                )}
-                <div className="result-body">
-                  <div className="result-title">{r.title}</div>
-                  <div className="result-sub">{r.year || r.author || r.artist}</div>
-                </div>
-              </div>
-            ))
-          )}
-
-          {!loading && results.length === 0 && query.trim().length >= 2 && (
-            <div className="search-no-results">No results found for "{query}"</div>
-          )}
+  // Render search results in a portal to the body, as a sibling of .view-body
+  // Find the closest .page-container to anchor the results
+  const searchResults = showResults ? (
+    <div className="search-results">
+      {loading && (
+        <div className="search-loading">
+          <div className="spinner"></div>
         </div>
       )}
+
+      {!loading && results.length > 0 && (
+        results.filter(r => r.Poster || r.cover).map((r) => (
+          <div key={r.id} className="search-result-item" onClick={() => handleSelect(r)}>
+            {r.Poster || r.cover ? (
+              <img src={r.Poster || r.cover} alt={r.title} className="result-thumb" />
+            ) : (
+              <div className="result-thumb placeholder" />
+            )}
+            <div className="result-body">
+              <div className="result-title">{r.title}</div>
+              <div className="result-sub">{r.year || r.author || r.artist}</div>
+            </div>
+          </div>
+        ))
+      )}
+
+      {!loading && results.length === 0 && query.trim().length >= 2 && (
+        <div className="search-no-results">No results found for "{query}"</div>
+      )}
     </div>
+  ) : null;
+
+  // Use a portal to render searchResults as a sibling of .view-body
+  // Find the closest .page-container to the input
+  const searchBarRef = React.useRef<HTMLDivElement>(null);
+  const [container, setContainer] = React.useState<HTMLElement | null>(null);
+  React.useEffect(() => {
+    if (searchBarRef.current) {
+      let el = searchBarRef.current.parentElement;
+      while (el && !el.classList.contains('page-container')) {
+        el = el.parentElement;
+      }
+      setContainer(el || document.body);
+    }
+  }, []);
+
+  return (
+    <>
+      <div className="search-bar" ref={searchBarRef}>
+        <input
+          className="search-input"
+          type="text"
+          placeholder={`Search ${mediaType === 'movie' ? 'movies' : mediaType === 'book' ? 'books' : 'albums'}`}
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          onFocus={handleInputFocus}
+        />
+        {query.trim().length === 0 ? (
+          <button className="search-icon-btn" tabIndex={-1} type="button" aria-label="Search">
+            <img src="/src/assets/icon-search.svg" alt="Search" />
+          </button>
+        ) : (
+          <button
+            className="search-icon-btn"
+            type="button"
+            aria-label="Clear search"
+            onClick={() => {
+              setQuery('');
+              setShowResults(false);
+            }}
+          >
+            <img src="/src/assets/icon-close.svg" alt="Clear" />
+          </button>
+        )}
+      </div>
+      {container && showResults
+        ? createPortal(searchResults, container)
+        : null}
+    </>
   );
 };
 
