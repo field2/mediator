@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import { searchUsers, sendFriendRequest, getFriends, getFriendRequests, respondToFriendRequest } from '../api';
+import { useAuth } from '../AuthContext';
 import { User } from '../types';
 
 const Friends: React.FC = () => {
@@ -12,11 +14,51 @@ const Friends: React.FC = () => {
   const [requests, setRequests] = useState<any[]>([]);
   const [showResults, setShowResults] = useState(false);
   const debounceTimer = useRef<number | null>(null);
+  const inputRef = useRef<HTMLInputElement | null>(null);
+  const searchBarRef = useRef<HTMLDivElement | null>(null);
+  const [container, setContainer] = useState<HTMLElement | null>(null);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const handleMenuToggle = () => setMenuOpen((open) => !open);
+  const handleMenuClose = () => setMenuOpen(false);
+  const { user, isAuthenticated } = useAuth();
 
   // Load friends and requests on mount
   useEffect(() => {
     loadFriends();
     loadRequests();
+  }, []);
+
+  // Close menu when clicking outside
+  useEffect(() => {
+    if (!menuOpen) return;
+    const handleClickOutside = () => setMenuOpen(false);
+    document.addEventListener('click', handleClickOutside);
+    return () => document.removeEventListener('click', handleClickOutside);
+  }, [menuOpen]);
+
+  // find container (closest .page-container) to portal the dropdown like SearchBar
+  useEffect(() => {
+    let portalRoot: HTMLElement | null = null;
+    if (searchBarRef.current) {
+      let el = searchBarRef.current.parentElement;
+      while (el && !el.classList.contains('page-container')) {
+        el = el.parentElement;
+      }
+      const page = el || document.body;
+      const viewBody = page.querySelector('.view-body');
+      portalRoot = document.createElement('div');
+      portalRoot.className = 'search-portal';
+      if (viewBody && viewBody.parentElement === page) {
+        page.insertBefore(portalRoot, viewBody);
+      } else {
+        page.appendChild(portalRoot);
+      }
+      setContainer(portalRoot);
+    }
+
+    return () => {
+      if (portalRoot && portalRoot.parentElement) portalRoot.parentElement.removeChild(portalRoot);
+    };
   }, []);
 
   const loadFriends = async () => {
@@ -39,7 +81,7 @@ const Friends: React.FC = () => {
 
   // Search users
   useEffect(() => {
-    if (query.trim().length < 2) {
+    if (query.trim().length < 1) {
       setSearchResults([]);
       setShowResults(false);
       return;
@@ -52,13 +94,15 @@ const Friends: React.FC = () => {
     debounceTimer.current = window.setTimeout(async () => {
       setLoading(true);
       try {
-        const results = await searchUsers(query);
+        const resp = await searchUsers(query);
+        console.log('searchUsers response:', resp);
+        const results = Array.isArray(resp) ? resp : (resp?.users ?? resp?.data ?? []);
         setSearchResults(results || []);
-        setShowResults((results || []).length > 0);
+          setShowResults(true);
       } catch (err) {
         console.error('Error searching users:', err);
         setSearchResults([]);
-        setShowResults(false);
+          setShowResults(true);
       } finally {
         setLoading(false);
       }
@@ -68,6 +112,14 @@ const Friends: React.FC = () => {
       if (debounceTimer.current) clearTimeout(debounceTimer.current);
     };
   }, [query]);
+
+  // Keep page-level class when results are visible so CSS can react (matches SearchBar behavior)
+  useEffect(() => {
+    const page = document.querySelector('.page-container');
+    if (showResults) page?.classList.add('search-open');
+    else page?.classList.remove('search-open');
+    return () => { page?.classList.remove('search-open'); };
+  }, [showResults]);
 
   const handleAddFriend = async (userId: number) => {
     try {
@@ -102,6 +154,25 @@ const Friends: React.FC = () => {
   return (
     <div className="page-container">
 			<header className="view-header">
+        {/* Menu Overlay */}
+        {menuOpen && (
+          <div className="menu-overlay" onClick={handleMenuClose}>
+            <div className="menu-content" onClick={e => e.stopPropagation()}>
+              {isAuthenticated ? (
+                <>
+                  <div className="menu-account">
+                    <a href="/account" className="menu-username">{user?.username || 'Account'}</a>
+                  </div>
+                  <a href="/friends" className={`menu-link ${requests.some((r) => r.status === 'pending') ? 'pulse' : ''}`}>Friends</a>
+                  <a href="/directory" className="menu-link">Directory</a>
+                  <a href="/lists" className="menu-link">Lists</a>
+                </>
+              ) : (
+                <a href="/auth" className="menu-link">Login / Register</a>
+              )}
+            </div>
+          </div>
+        )}
         <div className="view-label">
       <button
         className="back-button"
@@ -120,50 +191,82 @@ const Friends: React.FC = () => {
       </button>
 
         <h1>Friends</h1></div>
-        <div className="search-bar">
-
+        <div className="search-bar" ref={searchBarRef}>
           <input
+            ref={inputRef}
             type="text"
             placeholder="Search users"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            onFocus={() => setShowResults(searchResults.length > 0)}
-            onBlur={() => setTimeout(() => setShowResults(false), 250)}
+            onFocus={() => setShowResults(true)}
             className="search-input"
           />
 
-          {(loading || showResults) && (
-            <div className="search-dropdown">
-              {loading && <div className="loading">Searching...</div>}
-
-              {!loading && searchResults.length > 0 && (
-                <div className="search-list">
-                  {searchResults.map((user) => (
-                    <div key={user.id} className="search-user-item">
-                      <span className="username">{user.username}</span>
-                      {user.isFriend ? (
-                        <span className="badge friends">Friends</span>
-                      ) : user.hasPendingRequest ? (
-                        <span className="badge pending">Pending</span>
-                      ) : (
-                        <button
-                          className="add-button"
-                          onClick={() => handleAddFriend(user.id)}
-                        >
-                          Add
-                        </button>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              {!loading && searchResults.length === 0 && query.trim().length >= 2 && (
-                <div className="no-results">No users found</div>
-              )}
-            </div>
+          
+        <button
+          className="search-icon-btn"
+          tabIndex={-1}
+          type="button"
+          aria-label={showResults ? 'Close search' : 'Search'}
+          onClick={(e) => {
+            e.stopPropagation();
+            if (showResults) {
+              setQuery('');
+              setSearchResults([]);
+              setShowResults(false);
+              inputRef.current?.blur();
+            } else {
+              inputRef.current?.focus();
+              setShowResults(searchResults.length > 0);
+            }
+          }}
+        >
+          {showResults ? (
+            <img src="/src/assets/icon-close.svg" alt="Clear" />
+          ) : (
+            <img src="/src/assets/icon-search.svg" alt="Search" />
           )}
+        </button>
+        </div>
 
+        {container && (loading || showResults) ? createPortal(
+          <div className="search-dropdown">
+            {loading && <div className="loading">Searching...</div>}
+
+            {!loading && searchResults.length > 0 && (
+              <div className="search-list">
+                {searchResults.map((user) => (
+                  <div key={user.id} className="search-user-item">
+                    <span className="username">{user.username}</span>
+                    {user.isFriend ? (
+                      <span className="badge friends">Friends</span>
+                    ) : user.hasPendingRequest ? (
+                      <span className="badge pending">Pending</span>
+                    ) : (
+                      <button
+                        className="add-button"
+                        onClick={() => handleAddFriend(user.id)}
+                      >
+                        Add
+                      </button>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {!loading && searchResults.length === 0 && query.trim().length >= 2 && (
+              <div className="no-results">No users found</div>
+            )}
+          </div>
+        , container) : null}
+
+        <div className={`main-menu ${requests.some((r) => r.status === 'pending') ? 'has-pending' : ''}`} onClick={(e) => { e.stopPropagation(); handleMenuToggle(); }} style={{ cursor: 'pointer' }}>
+          <svg width="17" height="35" viewBox="0 0 17 35" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="8.5" cy="6.5" r="3.5" fill="white"/>
+            <circle cx="8.5" cy="17.5" r="3.5" fill="white"/>
+            <circle cx="8.5" cy="28.5" r="3.5" fill="white"/>
+          </svg>
         </div>
 				</header>
       <div className="view-body">
