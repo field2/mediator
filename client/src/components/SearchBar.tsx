@@ -80,12 +80,26 @@ const SearchBar: React.FC<SearchBarProps> = ({ onSelect, mediaType, onMediaSelec
         onChange={(e) => setQuery(e.target.value)}
         onFocus={handleInputFocus}
       />
+      {query.trim().length === 0 ? (
+        <button className="search-icon-btn" tabIndex={-1} type="button" aria-label="Search">
+          <img src="/src/assets/icon-search.svg" alt="Search" />
+        </button>
+      ) : (
+        <button
+          className="search-icon-btn"
+          type="button"
+          aria-label="Clear search"
+          onClick={() => {
+            setQuery('');
+            setShowResults(false);
+          }}
+        >
+          <img src="/src/assets/icon-close.svg" alt="Clear" />
+        </button>
+      )}
 
       {showResults && (
         <div className="search-results">
-          <button className="search-close" onClick={handleCloseResults} aria-label="Close search results">
-            <img src="/src/assets/icon-close.svg" alt="Close" />
-          </button>
           {loading && (
             <div className="search-loading">
               <div className="spinner"></div>
