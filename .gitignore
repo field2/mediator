@@ -41,3 +41,5 @@ tmp/
 
 # Ignore system files
 Thumbs.db
+deploy/
+mediator.field2.com/
