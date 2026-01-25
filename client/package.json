@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "vite",
     "dev:styles": "sass --watch src/scss:src --no-source-map",
-    "build": "tsc && vite build && cp ../deploy/.htaccess dist/.htaccess",
+    "build": "tsc && vite build",
     "preview": "vite preview"
   },
   "dependencies": {
