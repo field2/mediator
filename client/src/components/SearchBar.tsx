@@ -54,7 +54,6 @@ const SearchBar: React.FC<SearchBarProps> = ({ onSelect, mediaType, onMediaSelec
     return () => { page?.classList.remove('search-open'); };
   }, [showResults]);
 
-  const shouldShowResults = showResults;
 
   const handleSelect = (item: SearchResult) => {
     onSelect(item, mediaType);
@@ -67,9 +66,7 @@ const SearchBar: React.FC<SearchBarProps> = ({ onSelect, mediaType, onMediaSelec
     setShowResults(true);
   };
 
-  const handleCloseResults = () => {
-    setShowResults(false);
-  };
+  
 
   // Render search results in a portal to the body, as a sibling of .view-body
   // Find the closest .page-container to anchor the results

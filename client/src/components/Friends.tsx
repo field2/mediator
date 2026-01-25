@@ -96,7 +96,7 @@ const Friends: React.FC = () => {
       try {
         const resp = await searchUsers(query);
         console.log('searchUsers response:', resp);
-        const results = Array.isArray(resp) ? resp : (resp?.users ?? resp?.data ?? []);
+        const results = Array.isArray(resp) ? resp : ((resp as any)?.users ?? (resp as any)?.data ?? []);
         setSearchResults(results || []);
           setShowResults(true);
       } catch (err) {
