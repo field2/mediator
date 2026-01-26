@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { searchMovies, searchBooks, searchAlbums } from '../api';
+import IconSearch from '../assets/icon-search.svg';
+import IconClose from '../assets/icon-close.svg';
 import { SearchResult } from '../types';
 
 interface SearchBarProps {
@@ -127,7 +129,7 @@ const SearchBar: React.FC<SearchBarProps> = ({ onSelect, mediaType, onMediaSelec
         />
         {query.trim().length === 0 ? (
           <button className="search-icon-btn" tabIndex={-1} type="button" aria-label="Search">
-            <img src="/src/assets/icon-search.svg" alt="Search" />
+            <img src={IconSearch} alt="Search" />
           </button>
         ) : (
           <button
@@ -139,7 +141,7 @@ const SearchBar: React.FC<SearchBarProps> = ({ onSelect, mediaType, onMediaSelec
               setShowResults(false);
             }}
           >
-            <img src="/src/assets/icon-close.svg" alt="Clear" />
+            <img src={IconClose} alt="Clear" />
           </button>
         )}
       </div>

@@ -3,6 +3,8 @@ import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import { searchUsers, sendFriendRequest, getFriends, getFriendRequests, respondToFriendRequest } from '../api';
 import { useAuth } from '../AuthContext';
+import IconSearch from '../assets/icon-search.svg';
+import IconClose from '../assets/icon-close.svg';
 import { User } from '../types';
 
 const Friends: React.FC = () => {
@@ -222,9 +224,9 @@ const Friends: React.FC = () => {
           }}
         >
           {showResults ? (
-            <img src="/src/assets/icon-close.svg" alt="Clear" />
+            <img src={IconClose} alt="Clear" />
           ) : (
-            <img src="/src/assets/icon-search.svg" alt="Search" />
+            <img src={IconSearch} alt="Search" />
           )}
         </button>
         </div>
