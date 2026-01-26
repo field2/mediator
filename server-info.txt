@@ -1,0 +1,3 @@
+ssh -p2200 field2@199.167.200.160
+remote path /home/field2/public_html/mediator.field2.com
+repo: github.com/field2/mediator
