@@ -1,14 +1,115 @@
-import Database from 'better-sqlite3';
+import fs from 'fs';
 import path from 'path';
 
-const db = new Database(path.join(process.cwd(), 'mediator.db'));
+let db: any = null;
+let _sqlJs: any = null; // reference to sql.js runtime when used
 
-// Enable foreign keys
-db.pragma('foreign_keys = ON');
+// Helper to persist database when using sql.js
+function persistSqlJsDb() {
+  if (!_sqlJs || !db) return;
+  try {
+    const data = db.export();
+    fs.writeFileSync(path.join(process.cwd(), 'mediator.db'), Buffer.from(data));
+  } catch (err) {
+    console.warn('Failed to persist sql.js DB:', err);
+  }
+}
 
-// Initialize database schema
-export function initializeDatabase() {
-  // Users table
+// Create a wrapper that mimics better-sqlite3 minimal API used in the app
+function createSqlJsWrapper(sqlDb: any) {
+  return {
+    exec: (sql: string) => sqlDb.exec(sql),
+    prepare: (sql: string) => {
+      const stmt = sqlDb.prepare(sql);
+
+      return {
+        run: (...params: any[]) => {
+          if (params && params.length) stmt.bind(params);
+          stmt.step();
+          stmt.free();
+
+          // Attempt to get last insert id
+          const res = sqlDb.exec('SELECT last_insert_rowid() as id');
+          const last = (res && res[0] && res[0].values && res[0].values[0] && res[0].values[0][0]) || null;
+          persistSqlJsDb();
+          return { lastInsertRowid: last };
+        },
+
+        get: (...params: any[]) => {
+          if (params && params.length) stmt.bind(params);
+          if (stmt.step()) {
+            const row = stmt.get();
+            const cols = stmt.getColumnNames();
+            const obj: any = {};
+            cols.forEach((c: string, i: number) => (obj[c] = row[i]));
+            stmt.free();
+            return obj;
+          }
+          stmt.free();
+          return undefined;
+        },
+
+        all: (...params: any[]) => {
+          const out: any[] = [];
+          if (params && params.length) stmt.bind(params);
+          while (stmt.step()) {
+            const row = stmt.get();
+            const cols = stmt.getColumnNames();
+            const obj: any = {};
+            cols.forEach((c: string, i: number) => (obj[c] = row[i]));
+            out.push(obj);
+          }
+          stmt.free();
+          return out;
+        }
+      } as any;
+    }
+  } as any;
+}
+
+// Try to use better-sqlite3 first; if not available (e.g., server can't build native addons) fall back to sql.js
+export async function initializeDatabase() {
+  const dbPath = path.join(process.cwd(), 'mediator.db');
+
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const BetterDB = require('better-sqlite3');
+    db = new BetterDB(dbPath);
+    // Enable foreign keys
+    db.pragma('foreign_keys = ON');
+  } catch (err) {
+    // Fallback to sql.js (WASM)
+    try {
+      // dynamic import to avoid requiring at top-level
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
+      const initSqlJs = require('sql.js');
+      _sqlJs = await initSqlJs();
+
+      if (fs.existsSync(dbPath)) {
+        const file = fs.readFileSync(dbPath);
+        db = new _sqlJs.Database(new Uint8Array(file));
+      } else {
+        db = new _sqlJs.Database();
+      }
+
+      // wrap the sql.js instance to match better-sqlite3's minimal interface used
+      db = createSqlJsWrapper(db);
+
+      console.info('Using sql.js (WASM) fallback for SQLite');
+    } catch (werr) {
+      console.error('Failed to initialize any SQLite implementation:', werr);
+      throw werr;
+    }
+  }
+
+  // Enable foreign keys (works for both wrappers)
+  try {
+    db.exec('PRAGMA foreign_keys = ON');
+  } catch (e) {
+    // ignore
+  }
+
+  // Initialize schema
   db.exec(`
     CREATE TABLE IF NOT EXISTS users (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -21,7 +122,6 @@ export function initializeDatabase() {
     )
   `);
 
-  // Lists table
   db.exec(`
     CREATE TABLE IF NOT EXISTS lists (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -34,7 +134,6 @@ export function initializeDatabase() {
     )
   `);
 
-  // Media items table
   db.exec(`
     CREATE TABLE IF NOT EXISTS media_items (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -52,7 +151,6 @@ export function initializeDatabase() {
     )
   `);
 
-  // Ratings table
   db.exec(`
     CREATE TABLE IF NOT EXISTS ratings (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -67,7 +165,6 @@ export function initializeDatabase() {
     )
   `);
 
-  // Collaborations table
   db.exec(`
     CREATE TABLE IF NOT EXISTS collaborations (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -82,7 +179,6 @@ export function initializeDatabase() {
     )
   `);
 
-  // Friends table
   db.exec(`
     CREATE TABLE IF NOT EXISTS friends (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -95,7 +191,6 @@ export function initializeDatabase() {
     )
   `);
 
-  // Friend requests table
   db.exec(`
     CREATE TABLE IF NOT EXISTS friend_requests (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -113,4 +208,16 @@ export function initializeDatabase() {
   console.log('Database initialized successfully');
 }
 
-export default db;
+// Export a proxy object so imports get a usable object even before async init
+const exportedDb: any = {
+  prepare: (sql: string) => {
+    if (!db) throw new Error('Database not initialized. Call initializeDatabase() first.');
+    return db.prepare(sql);
+  },
+  exec: (sql: string) => {
+    if (!db) throw new Error('Database not initialized. Call initializeDatabase() first.');
+    return db.exec(sql);
+  }
+};
+
+export default exportedDb;

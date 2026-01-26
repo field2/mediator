@@ -17,9 +17,6 @@ const app = express();
 const PORT = process.env.PORT || 3001;
 const isProduction = process.env.NODE_ENV === 'production';
 
-// Initialize database
-initializeDatabase();
-
 // Middleware
 app.use(cors());
 app.use(express.json());
@@ -46,10 +43,20 @@ if (isProduction) {
   });
 }
 
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
-  console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
-  if (isProduction) {
-    console.log('Serving static files from production build');
+// Initialize database and start server
+(async () => {
+  try {
+    await initializeDatabase();
+
+    app.listen(PORT, () => {
+      console.log(`Server is running on port ${PORT}`);
+      console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
+      if (isProduction) {
+        console.log('Serving static files from production build');
+      }
+    });
+  } catch (err) {
+    console.error('Failed to initialize database, aborting start:', err);
+    process.exit(1);
   }
-});
+})();
