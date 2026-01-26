@@ -8,6 +8,7 @@ import Collaborations from './components/Collaborations';
 import Account from './components/Account';
 import Friends from './components/Friends';
 import Directory from './components/Directory';
+import AnimatedRoutes from './components/AnimatedRoutes';
 
 const PrivateRoute: React.FC<{ children: React.ReactElement }> = ({ children }) => {
   const { isAuthenticated, isLoading } = useAuth();
@@ -24,16 +25,7 @@ function App() {
   return (
     <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
       <AuthProvider>
-        <Routes>
-          <Route path="/auth" element={<PublicRoute><Auth /></PublicRoute>} />
-          <Route path="/" element={<Dashboard />} />
-          <Route path="/user/:userId" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
-          <Route path="/list/:id" element={<PrivateRoute><ListView /></PrivateRoute>} />
-          <Route path="/collaborations" element={<PrivateRoute><Collaborations /></PrivateRoute>} />
-          <Route path="/friends" element={<PrivateRoute><Friends /></PrivateRoute>} />
-          <Route path="/directory" element={<PrivateRoute><Directory /></PrivateRoute>} />
-          <Route path="/account" element={<PrivateRoute><Account /></PrivateRoute>} />
-        </Routes>
+        <AnimatedRoutes />
       </AuthProvider>
     </Router>
   );

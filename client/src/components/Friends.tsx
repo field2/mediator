@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { searchUsers, sendFriendRequest, getFriends, getFriendRequests, respondToFriendRequest } from '../api';
 import { useAuth } from '../AuthContext';
 import IconSearch from '../assets/icon-search.svg';
@@ -163,14 +163,14 @@ const Friends: React.FC = () => {
               {isAuthenticated ? (
                 <>
                   <div className="menu-account">
-                    <a href="/account" className="menu-username">{user?.username || 'Account'}</a>
+                    <Link to="/account" className="menu-username" onClick={() => handleMenuClose()}>{user?.username || 'Account'}</Link>
                   </div>
-                  <a href="/friends" className={`menu-link ${requests.some((r) => r.status === 'pending') ? 'pulse' : ''}`}>Friends</a>
-                  <a href="/directory" className="menu-link">Directory</a>
-                  <a href="/lists" className="menu-link">Lists</a>
+                  <Link to="/friends" className={`menu-link ${requests.some((r) => r.status === 'pending') ? 'pulse' : ''}`} onClick={() => handleMenuClose()}>Friends</Link>
+                  <Link to="/directory" className="menu-link" onClick={() => handleMenuClose()}>Directory</Link>
+                  <Link to="/lists" className="menu-link" onClick={() => handleMenuClose()}>Lists</Link>
                 </>
               ) : (
-                <a href="/auth" className="menu-link">Login / Register</a>
+                <Link to="/auth" className="menu-link" onClick={() => handleMenuClose()}>Login / Register</Link>
               )}
             </div>
           </div>
