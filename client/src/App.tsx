@@ -1,13 +1,6 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './AuthContext';
-import Auth from './components/Auth';
-import Dashboard from './components/Dashboard';
-import ListView from './components/ListView';
-import Collaborations from './components/Collaborations';
-import Account from './components/Account';
-import Friends from './components/Friends';
-import Directory from './components/Directory';
 import AnimatedRoutes from './components/AnimatedRoutes';
 
 const PrivateRoute: React.FC<{ children: React.ReactElement }> = ({ children }) => {
