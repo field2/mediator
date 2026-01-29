@@ -1,13 +1,14 @@
 import React, { useEffect, useState } from 'react';
-import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
+import { useParams, useSearchParams } from 'react-router-dom';
 import { getList, addMediaToList, rateMedia, deleteMediaFromList } from '../api';
 import { MediaItem, SearchResult } from '../types';
 import SearchBar from './SearchBar';
 import StarRating from './StarRating';
+import Header from './Header';
 
 const ListView: React.FC = () => {
   const { id } = useParams<{ id: string }>();
-  const navigate = useNavigate();
+  
   const [searchParams] = useSearchParams();
   const [list, setList] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -137,9 +138,7 @@ const ListView: React.FC = () => {
 
   return (
     <div className="page-container">
-      <button onClick={() => navigate('/')} className="back-button">← Back to Lists</button>
-
-      <h1>{list.name}</h1>
+      <Header title={list.name} />
       {list.description && <p className="list-description">{list.description}</p>}
       <p className="list-meta">{list.is_public ? '🌐 Public' : '🔒 Private'}{list.isCollaborator && ' • You are a collaborator'}</p>
 

@@ -1,6 +1,7 @@
 import React from 'react';
 import { useAuth } from '../AuthContext';
 import { useNavigate } from 'react-router-dom';
+import Header from './Header';
 
 const Account: React.FC = () => {
   const { user, isAuthenticated, logout } = useAuth();
@@ -15,37 +16,21 @@ const Account: React.FC = () => {
     : 'N/A';
 
   return (
-    <div className="account-view">
-      <div className="view-header">
-      <button
-        className="back-button"
-        onClick={() => {
-          if (window.history.length > 1) {
-            navigate(-1);
-          } else {
+    <div className="account-view page-container">
+      <Header title={user.username} />
+      <div className="view-body">
+        <div className="account-signup-date">Signed up: {signupDate}</div>
+        <button
+          className="logout-button"
+          onClick={() => {
+            logout();
             navigate('/');
-          }
-        }}
-      >
-        <svg width="56" height="56" viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
-<path d="M16 28L40 10V46L16 28Z" fill="white"/>
-</svg>
-</button>
-      <h1 className="account-title">{user.username}</h1>
-</div>
-<div className="view-body">
-      <div className="account-signup-date">Signed up: {signupDate}</div>
-      <button
-        className="logout-button"
-        onClick={() => {
-          logout();
-          navigate('/');
-        }}
-      >
-        Logout
-      </button>
+          }}
+        >
+          Logout
+        </button>
+      </div>
     </div>
-		</div>
   );
 };
 

@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import Header from './Header';
 import { getCollaborationRequests, getMyCollaborationRequests, respondToCollaboration } from '../api';
 import { Collaboration } from '../types';
 
 const Collaborations: React.FC = () => {
-  const navigate = useNavigate();
+  
   const [incomingRequests, setIncomingRequests] = useState<Collaboration[]>([]);
   const [myRequests, setMyRequests] = useState<Collaboration[]>([]);
   const [activeTab, setActiveTab] = useState<'incoming' | 'outgoing'>('incoming');
@@ -57,12 +57,8 @@ const Collaborations: React.FC = () => {
   };
 
   return (
-    <div style={{ padding: '20px', maxWidth: '1200px', margin: '0 auto' }}>
-      <button onClick={() => navigate('/')} style={{ marginBottom: '20px', padding: '8px 16px', cursor: 'pointer' }}>
-        ← Back to Dashboard
-      </button>
-
-      <h1>Collaborations</h1>
+    <div className="page-container" style={{ padding: '20px', maxWidth: '1200px', margin: '0 auto' }}>
+      <Header title="Collaborations" />
 
       <div style={{ marginBottom: '20px', display: 'flex', gap: '10px' }}>
         <button

@@ -6,6 +6,7 @@ import { useAuth } from '../AuthContext';
 import IconSearch from '../assets/icon-search.svg';
 import IconClose from '../assets/icon-close.svg';
 import { User } from '../types';
+import Header from './Header';
 
 const Friends: React.FC = () => {
   const navigate = useNavigate();
@@ -19,9 +20,6 @@ const Friends: React.FC = () => {
   const inputRef = useRef<HTMLInputElement | null>(null);
   const searchBarRef = useRef<HTMLDivElement | null>(null);
   const [container, setContainer] = useState<HTMLElement | null>(null);
-  const [menuOpen, setMenuOpen] = useState(false);
-  const handleMenuToggle = () => setMenuOpen((open) => !open);
-  const handleMenuClose = () => setMenuOpen(false);
   const { user, isAuthenticated } = useAuth();
 
   // Load friends and requests on mount
@@ -30,13 +28,7 @@ const Friends: React.FC = () => {
     loadRequests();
   }, []);
 
-  // Close menu when clicking outside
-  useEffect(() => {
-    if (!menuOpen) return;
-    const handleClickOutside = () => setMenuOpen(false);
-    document.addEventListener('click', handleClickOutside);
-    return () => document.removeEventListener('click', handleClickOutside);
-  }, [menuOpen]);
+  // (menu handled by shared Header)
 
   // find container (closest .page-container) to portal the dropdown like SearchBar
   useEffect(() => {
@@ -155,44 +147,8 @@ const Friends: React.FC = () => {
 
   return (
     <div className="page-container">
-			<header className="view-header">
-        {/* Menu Overlay */}
-        {menuOpen && (
-          <div className="menu-overlay" onClick={handleMenuClose}>
-            <div className="menu-content" onClick={e => e.stopPropagation()}>
-              {isAuthenticated ? (
-                <>
-                  <div className="menu-account">
-                    <Link to="/account" className="menu-username" onClick={() => handleMenuClose()}>{user?.username || 'Account'}</Link>
-                  </div>
-                  <Link to="/friends" className={`menu-link ${requests.some((r) => r.status === 'pending') ? 'pulse' : ''}`} onClick={() => handleMenuClose()}>Friends</Link>
-                  <Link to="/directory" className="menu-link" onClick={() => handleMenuClose()}>Directory</Link>
-                  <Link to="/lists" className="menu-link" onClick={() => handleMenuClose()}>Lists</Link>
-                </>
-              ) : (
-                <Link to="/auth" className="menu-link" onClick={() => handleMenuClose()}>Login / Register</Link>
-              )}
-            </div>
-          </div>
-        )}
-        <div className="view-label">
-      <button
-        className="back-button"
-        onClick={() => {
-          if (window.history.length > 1) {
-            navigate(-1);
-          } else {
-            navigate('/');
-          }
-        }}
-      >
-        <svg width="20" height="22" viewBox="0 0 20 22" fill="none" xmlns="http://www.w3.org/2000/svg">
-<path d="M9.5098 0.437519C10.0677 -0.14584 10.972 -0.14584 11.5299 0.437519C12.0878 1.02088 12.0878 1.96646 11.5299 2.54982L4.87715 9.50622H18.5714C19.3604 9.50622 20 10.175 20 11C20 11.825 19.3604 12.4938 18.5714 12.4938H4.87715L11.5299 19.4502C12.0878 20.0335 12.0878 20.9791 11.5299 21.5625C10.972 22.1458 10.0677 22.1458 9.5098 21.5625L0.418421 12.0562C-0.139474 11.4728 -0.139474 10.5272 0.418421 9.94385L9.5098 0.437519Z" fill="white"/>
-</svg>
-
-      </button>
-
-        <h1>Friends</h1></div>
+      <Header title="Friends" />
+      <div className="view-body">
         <div className="search-bar" ref={searchBarRef}>
           <input
             ref={inputRef}
@@ -204,31 +160,30 @@ const Friends: React.FC = () => {
             className="search-input"
           />
 
-          
-        <button
-          className="search-icon-btn"
-          tabIndex={-1}
-          type="button"
-          aria-label={showResults ? 'Close search' : 'Search'}
-          onClick={(e) => {
-            e.stopPropagation();
-            if (showResults) {
-              setQuery('');
-              setSearchResults([]);
-              setShowResults(false);
-              inputRef.current?.blur();
-            } else {
-              inputRef.current?.focus();
-              setShowResults(searchResults.length > 0);
-            }
-          }}
-        >
-          {showResults ? (
-            <img src={IconClose} alt="Clear" />
-          ) : (
-            <img src={IconSearch} alt="Search" />
-          )}
-        </button>
+          <button
+            className="search-icon-btn"
+            tabIndex={-1}
+            type="button"
+            aria-label={showResults ? 'Close search' : 'Search'}
+            onClick={(e) => {
+              e.stopPropagation();
+              if (showResults) {
+                setQuery('');
+                setSearchResults([]);
+                setShowResults(false);
+                inputRef.current?.blur();
+              } else {
+                inputRef.current?.focus();
+                setShowResults(searchResults.length > 0);
+              }
+            }}
+          >
+            {showResults ? (
+              <img src={IconClose} alt="Clear" />
+            ) : (
+              <img src={IconSearch} alt="Search" />
+            )}
+          </button>
         </div>
 
         {container && (loading || showResults) ? createPortal(
@@ -262,16 +217,6 @@ const Friends: React.FC = () => {
             )}
           </div>
         , container) : null}
-
-        <div className={`main-menu ${requests.some((r) => r.status === 'pending') ? 'has-pending' : ''}`} onClick={(e) => { e.stopPropagation(); handleMenuToggle(); }} style={{ cursor: 'pointer' }}>
-          <svg width="17" height="35" viewBox="0 0 17 35" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <circle cx="8.5" cy="6.5" r="3.5" fill="white"/>
-            <circle cx="8.5" cy="17.5" r="3.5" fill="white"/>
-            <circle cx="8.5" cy="28.5" r="3.5" fill="white"/>
-          </svg>
-        </div>
-				</header>
-      <div className="view-body">
 
         
 

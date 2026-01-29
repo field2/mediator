@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useParams, Link } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
+import Header from './Header';
 import { useAuth } from '../AuthContext';
 import SearchBar from './SearchBar';
 import { getOrCreateAutoList, addMediaToList, getList, rateMedia, deleteMediaFromList, getFriendRequests, getUserAutoList } from '../api';
@@ -7,17 +8,7 @@ import { MediaItem } from '../types';
 import StarRating from './StarRating';
 
 const Dashboard: React.FC = () => {
-    const [menuOpen, setMenuOpen] = useState(false);
-    const handleMenuToggle = () => setMenuOpen((open) => !open);
-    const handleMenuClose = () => setMenuOpen(false);  
-  // Close menu when clicking outside
-  useEffect(() => {
-    if (menuOpen) {
-      const handleClickOutside = () => setMenuOpen(false);
-      document.addEventListener('click', handleClickOutside);
-      return () => document.removeEventListener('click', handleClickOutside);
-    }
-  }, [menuOpen]);
+  
   const { user, isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const { userId } = useParams<{ userId: string }>();
@@ -221,28 +212,9 @@ const Dashboard: React.FC = () => {
 
   return (
     <div className="page-container">
-      <header className="view-header">
-        {/* Menu Overlay */}
-        {menuOpen && (
-          <div className="menu-overlay" onClick={handleMenuClose}>
-            <div className="menu-content" onClick={e => e.stopPropagation()}>
-              {isAuthenticated ? (
-                <>
-                  <div className="menu-account">
-                    <Link to="/account" className="menu-username" onClick={() => handleMenuClose()}>{user?.username || 'Account'}</Link>
-                  </div>
-                  <Link to="/friends" className={`menu-link ${hasPendingFriendRequests ? 'pulse' : ''}`} onClick={() => handleMenuClose()}>Friends</Link>
-                  <Link to="/directory" className="menu-link" onClick={() => handleMenuClose()}>Directory</Link>
-                  <Link to="/lists" className="menu-link" onClick={() => handleMenuClose()}>Lists</Link>
-                </>
-              ) : (
-                <Link to="/auth" className="menu-link" onClick={() => handleMenuClose()}>Login / Register</Link>
-              )}
-            </div>
-          </div>
-        )}
+      <Header title="Dashboard" />
 
-        <div className="media-tabs">
+      <div className="media-tabs">
           <button onClick={() => setSelectedMediaType('movie')} className={`media-tab ${selectedMediaType === 'movie' ? 'active' : ''}`}>
           <svg width="33" height="37" viewBox="0 0 33 37" fill="none" xmlns="http://www.w3.org/2000/svg">
 <path fillRule="evenodd" clipRule="evenodd" d="M32.9512 34.5263C32.9512 35.6309 32.0558 36.5263 30.9512 36.5263H3.95119C2.84662 36.5263 1.95119 35.6309 1.95119 34.5263V16.5263H32.9512V34.5263ZM3.95119 18.5263V23.5263L6.65139 18.5263H3.95119ZM9.34572 18.5263L6.6465 23.5263H9.34572L12.0459 18.5263H9.34572ZM14.75 18.5263L12.0498 23.5263H14.75L17.4492 18.5263H14.75ZM20.1514 18.5263L17.4522 23.5263H20.1514L22.8516 18.5263H20.1514ZM25.5498 18.5263L22.8496 23.5263H25.5498L28.249 18.5263H25.5498ZM28.251 23.5263H30.9512V18.5263L28.251 23.5263Z" fill="white"/>
@@ -273,15 +245,6 @@ const Dashboard: React.FC = () => {
                       {/* Move SearchBar outside of .media-section-body and .search-panel, as a sibling of .view-body */}
                       {/* Place SearchBar just after the header, before .media-section-body */}
                       {!viewingOtherUser && <SearchBar onSelect={() => {}} mediaType={selectedMediaType} onMediaSelected={handleMediaSelected} />}
-{/* <MainMenu /> */}
-<div className={`main-menu ${hasPendingFriendRequests ? 'has-pending' : ''}`} onClick={(e) => { e.stopPropagation(); handleMenuToggle(); }} style={{ cursor: 'pointer' }}>
-  <svg width="17" height="35" viewBox="0 0 17 35" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <circle cx="8.5" cy="6.5" r="3.5" fill="white"/>
-    <circle cx="8.5" cy="17.5" r="3.5" fill="white"/>
-    <circle cx="8.5" cy="28.5" r="3.5" fill="white"/>
-  </svg>
-</div>
-      </header>
 
       <div className="media-section-body">
         <div className="search-panel">
