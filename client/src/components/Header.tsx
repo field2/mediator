@@ -35,12 +35,7 @@ const Header: React.FC<HeaderProps> = ({ title, children }) => {
 	return (
 		<div className="view-header">
 			{hasPreviousView ? (
-				<button
-					className="back-button"
-					aria-label="Back"
-					onClick={() => navigate(-1)}
-					style={{ color: '#fff', background: 'none', border: 'none', padding: 0 }}
-				>
+				<button className="back-button" aria-label="Back" onClick={() => navigate(-1)}>
 					<svg
 						width="28"
 						height="28"
@@ -61,8 +56,8 @@ const Header: React.FC<HeaderProps> = ({ title, children }) => {
 				<div />
 			)}
 
-			<div className="view-label" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-				<div className="logo" aria-hidden style={{ display: 'flex', alignItems: 'center' }}>
+			<div className="view-label">
+				<div className="logo" aria-hidden>
 					<svg
 						width="148"
 						height="20"
@@ -112,18 +107,11 @@ const Header: React.FC<HeaderProps> = ({ title, children }) => {
 						</defs>
 					</svg>
 				</div>
-				<h1 className="view-title" style={{ margin: 0, fontSize: '1.1rem' }}>
-					{title}
-				</h1>
+				<h1 className="view-title">{title}</h1>
 			</div>
 
-			<div ref={menuRef} style={{ marginLeft: 'auto', position: 'relative' }}>
-				<button
-					className="menu-button"
-					aria-label="Menu"
-					onClick={() => setMenuOpen((v) => !v)}
-					style={{ color: '#fff', background: 'none', border: 'none', padding: 0 }}
-				>
+			<div ref={menuRef} className="menu-container">
+				<button className="menu-button" aria-label="Menu" onClick={() => setMenuOpen((v) => !v)}>
 					<svg
 						width="28"
 						height="28"
@@ -142,42 +130,22 @@ const Header: React.FC<HeaderProps> = ({ title, children }) => {
 					</svg>
 				</button>
 
-				{menuOpen && (
-					<div
-						className="menu-content"
-						style={{
-							position: 'absolute',
-							right: 0,
-							top: 'calc(100% + 8px)',
-							background: '#fff',
-							borderRadius: 6,
-							boxShadow: '0 6px 18px rgba(0,0,0,0.12)',
-							padding: '0.5rem',
-							minWidth: 160,
-							zIndex: 1000,
-						}}
-					>
-						<nav style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-							<Link to="/">Home</Link>
-							<Link to="/friends">Friends</Link>
-							<Link to="/directory">Directory</Link>
-							{isAuthenticated ? (
-								<>
-									<Link to="/account">Account</Link>
-									<button
-										onClick={handleLogout}
-										style={{ background: 'none', border: 'none', padding: 0, textAlign: 'left' }}
-									>
-										Logout
-									</button>
-								</>
-							) : (
-								<Link to="/login">Login</Link>
-							)}
-						</nav>
-						{children}
-					</div>
-				)}
+				<div className={`menu-content${menuOpen ? ' open' : ''}`}>
+					<nav>
+						<Link to="/">Home</Link>
+						<Link to="/friends">Friends</Link>
+						<Link to="/directory">Directory</Link>
+						{isAuthenticated ? (
+							<>
+								<Link to="/account">Account</Link>
+								<button onClick={handleLogout}>Logout</button>
+							</>
+						) : (
+							<Link to="/login">Login</Link>
+						)}
+					</nav>
+					{children}
+				</div>
 			</div>
 		</div>
 	);
