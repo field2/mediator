@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import { Routes, Route, useLocation, useNavigationType } from 'react-router-dom';
 import Auth from './Auth';
 import Dashboard from './Dashboard';
@@ -8,6 +8,7 @@ import Account from './Account';
 import Friends from './Friends';
 import Directory from './Directory';
 import { useAuth } from '../AuthContext';
+import NavigationContext from '../NavigationContext';
 
 type Direction = 'forward' | 'back' | 'none';
 
@@ -32,12 +33,14 @@ const AnimatedRoutes: React.FC = () => {
   const [prevLocation, setPrevLocation] = React.useState<any | null>(null);
   const [prevDirection, setPrevDirection] = React.useState<Direction | null>(null);
 
-  const historyStackRef = React.useRef<string[]>([]);
-  const initialRef = React.useRef(true);
-  const lastLocationRef = React.useRef(location);
+  const historyStackRef = useRef<string[]>([]);
+  const initialRef = useRef(true);
+  const lastLocationRef = useRef(location);
 
-  React.useEffect(() => {
-    console.log('[AnimatedRoutes] mount effect - init history stack');
+  // Navigation context state
+  const [hasPreviousView, setHasPreviousView] = useState(false);
+
+  useEffect(() => {
     // initialize simple in-memory history stack for direction detection
     historyStackRef.current = [location.pathname];
     const id = setTimeout(() => (initialRef.current = false), 0);
@@ -45,25 +48,23 @@ const AnimatedRoutes: React.FC = () => {
   }, []);
 
   // update in-memory stack on PUSH/REPLACE
-  React.useEffect(() => {
+  useEffect(() => {
     if (navType === 'PUSH') {
       const top = historyStackRef.current[historyStackRef.current.length - 1];
       if (top !== location.pathname) historyStackRef.current.push(location.pathname);
-      console.log('[AnimatedRoutes] nav PUSH - stack:', historyStackRef.current.slice());
     } else if (navType === 'REPLACE') {
       historyStackRef.current[historyStackRef.current.length - 1] = location.pathname;
-      console.log('[AnimatedRoutes] nav REPLACE - stack:', historyStackRef.current.slice());
     }
+    // Set hasPreviousView: true if stack has more than 1 entry
+    setHasPreviousView(historyStackRef.current.length > 1);
   }, [activeKey, navType, location.pathname]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (initialRef.current) {
-      console.log('[AnimatedRoutes] initial load - suppress animation');
       setDirection('none');
       lastLocationRef.current = location;
       return;
     }
-
 
     // compute direction using in-memory stack when possible
     let isBack = false;
@@ -72,10 +73,8 @@ const AnimatedRoutes: React.FC = () => {
       const lastIdx = historyStackRef.current.length - 1;
       if (idx !== -1 && idx < lastIdx) {
         isBack = true;
-        // trim stack to the popped index
         historyStackRef.current = historyStackRef.current.slice(0, idx + 1);
       } else {
-        // not found: treat POP as back conservatively
         isBack = true;
       }
     } else {
@@ -98,6 +97,8 @@ const AnimatedRoutes: React.FC = () => {
     }, ROUTE_ANIM_MS + 40);
 
     lastLocationRef.current = location;
+    // Set hasPreviousView: true if stack has more than 1 entry
+    setHasPreviousView(historyStackRef.current.length > 1);
     return () => clearTimeout(t);
   }, [location, navType]);
 
@@ -128,17 +129,18 @@ const AnimatedRoutes: React.FC = () => {
   const exitingKey = prevLocation ? (prevLocation.key && prevLocation.key !== 'default' ? `prev-${prevLocation.key}` : `prev-${prevLocation.pathname}`) : undefined;
 
   return (
-    <div className="route-animate" style={{ position: 'relative', overflow: 'hidden', width: '100%', minHeight: '100vh' }}>
-      {prevLocation && prevDirection && (
-        <div key={exitingKey} className={`route outgoing ${prevDirection}`} style={{ zIndex: 0 }}>
-          {renderRoutes(prevLocation)}
+    <NavigationContext.Provider value={{ hasPreviousView, setHasPreviousView }}>
+      <div className="route-animate" style={{ position: 'relative', overflow: 'hidden', width: '100%', minHeight: '100vh' }}>
+        {prevLocation && prevDirection && (
+          <div key={exitingKey} className={`route outgoing ${prevDirection}`} style={{ zIndex: 0 }}>
+            {renderRoutes(prevLocation)}
+          </div>
+        )}
+        <div key={enteringKey} className={`route ${direction === 'none' ? '' : direction}`} style={{ zIndex: 1 }}>
+          {renderRoutes(location)}
         </div>
-      )}
-
-      <div key={enteringKey} className={`route ${direction === 'none' ? '' : direction}`} style={{ zIndex: 1 }}>
-        {renderRoutes(location)}
       </div>
-    </div>
+    </NavigationContext.Provider>
   );
 };
 
