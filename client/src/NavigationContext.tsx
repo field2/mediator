@@ -1,8 +1,13 @@
-import { createContext } from 'react';
+import React, { createContext } from 'react';
 
-const NavigationContext = createContext({
-  hasPreviousView: false,
-  setHasPreviousView: (v: boolean) => {},
+type NavigationContextType = {
+	hasPreviousView: boolean;
+	setHasPreviousView: React.Dispatch<React.SetStateAction<boolean>>;
+};
+
+const NavigationContext = createContext<NavigationContextType>({
+	hasPreviousView: false,
+	setHasPreviousView: () => {},
 });
 
 export default NavigationContext;

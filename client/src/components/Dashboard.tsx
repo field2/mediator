@@ -93,7 +93,7 @@ const Dashboard: React.FC = () => {
 		album: [],
 	});
 	const [showSavePrompt, setShowSavePrompt] = useState(false);
-	const [hasPendingFriendRequests, setHasPendingFriendRequests] = useState(false);
+	const [, setHasPendingFriendRequests] = useState(false);
 
 	useEffect(() => {
 		const fetchFriendRequests = async () => {
