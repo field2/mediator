@@ -80,7 +80,9 @@ const SearchBar: React.FC<SearchBarProps> = ({
 	// Render search results in a portal to the body, as a sibling of .view-body
 	// Find the closest .page-container to anchor the results
 	const searchResults = showResults ? (
-		<div className="search-results">
+		<div
+			className={`search-results ${selectedMediaType === 'book' ? 'book-results' : selectedMediaType === 'album' ? 'album-results' : ''}`}
+		>
 			{loading && (
 				<div className="search-loading">
 					<div className="spinner"></div>
@@ -130,7 +132,16 @@ const SearchBar: React.FC<SearchBarProps> = ({
 			<div className="search-bar" ref={searchBarRef}>
 				<div className="media-tabs">
 					<button
-						onClick={() => setSelectedMediaType('movie')}
+						onClick={() => {
+							if (debounceTimer.current) {
+								clearTimeout(debounceTimer.current);
+								debounceTimer.current = null;
+							}
+							setQuery('');
+							setResults([]);
+							setShowResults(false);
+							setSelectedMediaType('movie');
+						}}
 						className={`media-tab ${selectedMediaType === 'movie' ? 'active' : ''}`}
 					>
 						<svg
@@ -155,7 +166,16 @@ const SearchBar: React.FC<SearchBarProps> = ({
 						</svg>
 					</button>
 					<button
-						onClick={() => setSelectedMediaType('book')}
+						onClick={() => {
+							if (debounceTimer.current) {
+								clearTimeout(debounceTimer.current);
+								debounceTimer.current = null;
+							}
+							setQuery('');
+							setResults([]);
+							setShowResults(false);
+							setSelectedMediaType('book');
+						}}
 						className={`media-tab ${selectedMediaType === 'book' ? 'active' : ''}`}
 					>
 						<svg
@@ -180,7 +200,16 @@ const SearchBar: React.FC<SearchBarProps> = ({
 						</svg>
 					</button>
 					<button
-						onClick={() => setSelectedMediaType('album')}
+						onClick={() => {
+							if (debounceTimer.current) {
+								clearTimeout(debounceTimer.current);
+								debounceTimer.current = null;
+							}
+							setQuery('');
+							setResults([]);
+							setShowResults(false);
+							setSelectedMediaType('album');
+						}}
 						className={`media-tab ${selectedMediaType === 'album' ? 'active' : ''}`}
 					>
 						<svg
