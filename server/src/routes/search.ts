@@ -9,19 +9,20 @@ const router: Router = express.Router();
 router.get('/movies', async (req, res) => {
   try {
     const query = req.query.q as string;
+    const page = parseInt((req.query.page as string) || '1', 10) || 1;
     if (!query) {
       return res.status(400).json({ error: 'Query parameter is required' });
     }
 
-    const results = await searchMovies(query);
-    const formattedResults = results.map(movie => ({
+    const resp = await searchMovies(query, page);
+    const formattedResults = resp.results.map(movie => ({
       id: movie.imdbID,
       title: movie.Title,
       year: movie.Year,
       Poster: movie.Poster
     }));
 
-    res.json(formattedResults);
+    res.json({ results: formattedResults, page: resp.page, total_pages: resp.total_pages, total_results: resp.total_results });
   } catch (error) {
     console.error('Movie search error:', error);
     res.status(500).json({ error: 'Search failed' });
@@ -46,12 +47,14 @@ router.get('/movies/:id', async (req, res) => {
 router.get('/books', async (req, res) => {
   try {
     const query = req.query.q as string;
+    const page = parseInt((req.query.page as string) || '1', 10) || 1;
+    const limit = parseInt((req.query.limit as string) || '10', 10) || 10;
     if (!query) {
       return res.status(400).json({ error: 'Query parameter is required' });
     }
 
-    const results = await searchBooks(query);
-    const formattedResults = results.map(book => ({
+    const resp = await searchBooks(query, page, limit);
+    const formattedResults = resp.results.map(book => ({
       id: book.key,
       title: book.title,
       author: book.author_name?.join(', '),
@@ -59,7 +62,7 @@ router.get('/books', async (req, res) => {
       cover: book.cover_i ? getCoverUrl(book.cover_i, 'M') : null
     }));
 
-    res.json(formattedResults);
+    res.json({ results: formattedResults, page: resp.page, total_pages: resp.total_pages, total_results: resp.total_results });
   } catch (error) {
     console.error('Book search error:', error);
     res.status(500).json({ error: 'Search failed' });
@@ -85,15 +88,17 @@ router.get('/books/:id', async (req, res) => {
 router.get('/albums', async (req, res) => {
   try {
     const query = req.query.q as string;
+    const page = parseInt((req.query.page as string) || '1', 10) || 1;
+    const limit = parseInt((req.query.limit as string) || '10', 10) || 10;
     if (!query) {
       return res.status(400).json({ error: 'Query parameter is required' });
     }
 
-    console.log('Searching albums for:', query);
-    const results = await searchAlbums(query);
-    console.log('Album search results:', results.length, 'albums found');
+    console.log('Searching albums for:', query, 'page', page);
+    const resp = await searchAlbums(query, page, limit);
+    console.log('Album search results:', resp.results.length, 'albums found');
 
-    const formattedResults = results.map((album) => ({
+    const formattedResults = resp.results.map((album) => ({
       id: album.id,
       title: album.title,
       artist: album['artist-credit']?.map(a => a.name).join(', '),
@@ -101,7 +106,7 @@ router.get('/albums', async (req, res) => {
       cover: album.cover || null
     }));
 
-    res.json(formattedResults);
+    res.json({ results: formattedResults, page: resp.page, total_pages: resp.total_pages, total_results: resp.total_results });
   } catch (error) {
     console.error('Album search error:', error);
     res.status(500).json({ error: 'Search failed' });

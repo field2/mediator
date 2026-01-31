@@ -24,16 +24,22 @@ export interface AlbumDetails {
   };
 }
 
-export const searchAlbums = async (query: string): Promise<AlbumSearchResult[]> => {
+export const searchAlbums = async (query: string, page: number = 1, limit: number = 10): Promise<{ results: AlbumSearchResult[]; page: number; total_pages: number; total_results: number; }> => {
   try {
+    // Deezer uses offset(index) and limit
+    const index = (page - 1) * limit;
     const response = await axios.get('https://api.deezer.com/search/album', {
       params: {
-        q: query
+        q: query,
+        index,
+        limit
       },
       timeout: 5000
     });
 
     const albums = response.data.data || [];
+    const total = response.data.total || albums.length;
+    const total_pages = Math.ceil(total / limit);
     const mapped = albums.map((album: any) => ({
       id: album.id.toString(),
       title: album.title,
@@ -42,10 +48,10 @@ export const searchAlbums = async (query: string): Promise<AlbumSearchResult[]> 
       status: album.record_type || '',
       cover: album.cover_medium || album.cover || null
     }));
-    return mapped;
+    return { results: mapped, page, total_pages, total_results: total };
   } catch (error) {
     console.error('Error searching albums:', (error as any).message || error);
-    return [];
+    return { results: [], page: 1, total_pages: 1, total_results: 0 };
   }
 };
 

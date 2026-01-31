@@ -22,6 +22,9 @@ const SearchBar: React.FC<SearchBarProps> = ({
 }) => {
 	const [query, setQuery] = useState('');
 	const [results, setResults] = useState<SearchResult[]>([]);
+	const [currentPage, setCurrentPage] = useState(1);
+	const [totalPages, setTotalPages] = useState(1);
+	const [totalResults, setTotalResults] = useState(0);
 	const [loading, setLoading] = useState(false);
 	const [showResults, setShowResults] = useState(false);
 	const debounceTimer = useRef<number | null>(null);
@@ -29,6 +32,9 @@ const SearchBar: React.FC<SearchBarProps> = ({
 	useEffect(() => {
 		if (query.trim().length < 2) {
 			setResults([]);
+			setCurrentPage(1);
+			setTotalPages(1);
+			setTotalResults(0);
 			return;
 		}
 
@@ -39,13 +45,20 @@ const SearchBar: React.FC<SearchBarProps> = ({
 		debounceTimer.current = window.setTimeout(async () => {
 			setLoading(true);
 			try {
-				let res: SearchResult[] = [];
-				if (mediaType === 'movie') res = await searchMovies(query);
-				if (mediaType === 'book') res = await searchBooks(query);
-				if (mediaType === 'album') res = await searchAlbums(query);
-				setResults(res || []);
+				let resp: any = null;
+				if (mediaType === 'movie') resp = await searchMovies(query, 1);
+				if (mediaType === 'book') resp = await searchBooks(query, 1, 10);
+				if (mediaType === 'album') resp = await searchAlbums(query, 1, 10);
+				const list = resp?.results || [];
+				setResults(list || []);
+				setCurrentPage(resp?.page || 1);
+				setTotalPages(resp?.total_pages || 1);
+				setTotalResults(resp?.total_results || list.length);
 			} catch (err) {
 				setResults([]);
+				setCurrentPage(1);
+				setTotalPages(1);
+				setTotalResults(0);
 			} finally {
 				setLoading(false);
 			}
@@ -75,6 +88,28 @@ const SearchBar: React.FC<SearchBarProps> = ({
 
 	const handleInputFocus = () => {
 		setShowResults(true);
+	};
+
+	const loadMore = async () => {
+		if (loading) return;
+		if (currentPage >= totalPages) return;
+		const next = currentPage + 1;
+		setLoading(true);
+		try {
+			let resp: any = null;
+			if (mediaType === 'movie') resp = await searchMovies(query, next);
+			if (mediaType === 'book') resp = await searchBooks(query, next, 10);
+			if (mediaType === 'album') resp = await searchAlbums(query, next, 10);
+			const list = resp?.results || [];
+			setResults((prev) => [...prev, ...list]);
+			setCurrentPage(resp?.page || next);
+			setTotalPages(resp?.total_pages || currentPage);
+			setTotalResults(resp?.total_results || totalResults + list.length);
+		} catch (err) {
+			// ignore
+		} finally {
+			setLoading(false);
+		}
 	};
 
 	// Render search results in a portal to the body, as a sibling of .view-body
@@ -110,6 +145,12 @@ const SearchBar: React.FC<SearchBarProps> = ({
 			{!loading && results.length === 0 && query.trim().length >= 2 && (
 				<div className="search-no-results">No results found for "{query}"</div>
 			)}
+
+			{!loading && results.length > 0 && currentPage < totalPages && (
+				<div className="search-load-more">
+					<button onClick={loadMore}>Load more</button>
+				</div>
+			)}
 		</div>
 	) : null;
 
@@ -118,13 +159,9 @@ const SearchBar: React.FC<SearchBarProps> = ({
 	const searchBarRef = React.useRef<HTMLDivElement>(null);
 	const [container, setContainer] = React.useState<HTMLElement | null>(null);
 	React.useEffect(() => {
-		if (searchBarRef.current) {
-			let el = searchBarRef.current.parentElement;
-			while (el && !el.classList.contains('page-container')) {
-				el = el.parentElement;
-			}
-			setContainer(el || document.body);
-		}
+		// Render search results into document.body so they aren't clipped
+		// by route containers with overflow:hidden and so they can be scrolled
+		setContainer(document.body);
 	}, []);
 
 	return (

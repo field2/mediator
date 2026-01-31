@@ -46,18 +46,29 @@ export const resetPassword = async (token: string, password: string): Promise<vo
 };
 
 // Search
-export const searchMovies = async (query: string): Promise<SearchResult[]> => {
-  const response = await api.get(`/search/movies?q=${encodeURIComponent(query)}`);
+export const searchMovies = async (
+  query: string,
+  page: number = 1
+): Promise<{ results: SearchResult[]; page: number; total_pages: number; total_results: number }> => {
+  const response = await api.get(`/search/movies?q=${encodeURIComponent(query)}&page=${page}`);
   return response.data;
 };
 
-export const searchBooks = async (query: string): Promise<SearchResult[]> => {
-  const response = await api.get(`/search/books?q=${encodeURIComponent(query)}`);
+export const searchBooks = async (
+  query: string,
+  page: number = 1,
+  limit: number = 10
+): Promise<{ results: SearchResult[]; page: number; total_pages: number; total_results: number }> => {
+  const response = await api.get(`/search/books?q=${encodeURIComponent(query)}&page=${page}&limit=${limit}`);
   return response.data;
 };
 
-export const searchAlbums = async (query: string): Promise<SearchResult[]> => {
-  const response = await api.get(`/search/albums?q=${encodeURIComponent(query)}`);
+export const searchAlbums = async (
+  query: string,
+  page: number = 1,
+  limit: number = 10
+): Promise<{ results: SearchResult[]; page: number; total_pages: number; total_results: number }> => {
+  const response = await api.get(`/search/albums?q=${encodeURIComponent(query)}&page=${page}&limit=${limit}`);
   return response.data;
 };
 

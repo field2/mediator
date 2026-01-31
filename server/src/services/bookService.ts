@@ -20,19 +20,24 @@ export interface BookDetails {
   first_publish_date?: string;
 }
 
-export const searchBooks = async (query: string): Promise<BookSearchResult[]> => {
+export const searchBooks = async (query: string, page: number = 1, limit: number = 10): Promise<{ results: BookSearchResult[]; page: number; total_pages: number; total_results: number; }> => {
   try {
     const response = await axios.get(OPEN_LIBRARY_SEARCH_URL, {
       params: {
         q: query,
-        limit: 10
+        page,
+        limit
       }
     });
 
-    return response.data.docs || [];
+    const docs = response.data.docs || [];
+    const numFound = response.data.numFound || docs.length;
+    const total_pages = Math.ceil(numFound / limit);
+
+    return { results: docs, page: page, total_pages, total_results: numFound };
   } catch (error) {
     console.error('Error searching books:', error);
-    return [];
+    return { results: [], page: 1, total_pages: 1, total_results: 0 };
   }
 };
 
