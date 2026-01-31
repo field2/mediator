@@ -1,4 +1,9 @@
-@import url("https://fonts.googleapis.com/css2?family=Manrope:wght@200..800&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Roboto+Flex:wght@400;700&display=swap");
+.condensed-text {
+  font-family: "Roboto Flex", sans-serif;
+  font-variation-settings: "wght" 400, "wdth" 75;
+}
+
 * {
   margin: 0;
   padding: 0;
@@ -10,7 +15,8 @@ body {
 }
 
 body {
-  font-family: "Manrope", sans-serif;
+  font-family: "Roboto Flex", sans-serif;
+  font-variation-settings: "wght" 300, "opsz" 48, "slnt" 0, "XOPQ" 96, "XTRA" 468, "YOPQ" 79, "YTDE" -203, "YTFI" 738, "YTLC" 514, "YTUC" 712;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   color: #fff;
@@ -364,6 +370,10 @@ input.search-input {
   border: none;
   outline: none;
   font-size: 1rem;
+  border-radius: 50px;
+}
+input.search-input::placeholder {
+  font-family: "Roboto Flex", sans-serif;
 }
 
 .search-icon-btn {
