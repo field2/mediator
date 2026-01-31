@@ -117,7 +117,13 @@ const Header: React.FC<HeaderProps> = ({ title, children }) => {
 						onClick={() => {
 							setMenuNoAnim(false);
 							setMenuHidden(false);
-							setMenuOpen((v) => !v);
+							const newOpen = !menuOpen;
+							setMenuOpen(newOpen);
+							if (newOpen) {
+								// notify listeners (e.g., SearchBar) that menu was opened
+								const ev = new CustomEvent('menu:opened', { detail: { open: true } });
+								document.dispatchEvent(ev);
+							}
 						}}
 					>
 						<svg

@@ -79,6 +79,24 @@ const SearchBar: React.FC<SearchBarProps> = ({
 		};
 	}, [showResults]);
 
+	// Clear search when menu opens elsewhere in the UI
+	React.useEffect(() => {
+		const onMenuOpened = () => {
+			setQuery('');
+			setResults([]);
+			setShowResults(false);
+			if (debounceTimer.current) {
+				clearTimeout(debounceTimer.current);
+				debounceTimer.current = null;
+			}
+		};
+
+		document.addEventListener('menu:opened', onMenuOpened as EventListener);
+		return () => {
+			document.removeEventListener('menu:opened', onMenuOpened as EventListener);
+		};
+	}, []);
+
 	const handleSelect = (item: SearchResult) => {
 		onSelect(item, mediaType);
 		if (onMediaSelected) onMediaSelected(item, mediaType);
