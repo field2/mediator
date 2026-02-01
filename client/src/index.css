@@ -127,13 +127,22 @@ a {
 }
 
 button {
-  font-family: inherit;
-  font-family: inherit;
   background: none;
   border: 0;
+}
+button:not(.ignore-default-button-styles) {
+  font-family: inherit;
+  font-family: inherit;
+  background: #fff;
+  color: #000;
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  text-transform: uppercase;
+}
+button.media-tab {
   opacity: 0.5;
 }
-button.active {
+button.media-tab.active {
   opacity: 1;
 }
 
@@ -231,8 +240,39 @@ select {
   gap: 0.5rem;
 }
 
+.onboard-form {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+}
+.onboard-form button[type=submit] {
+  align-self: center;
+}
+
+.logo-splash {
+  flex: 1;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 2rem;
+}
+.logo-splash .logo-type {
+  text-transform: uppercase;
+  font-variation-settings: "wght" 100, "wdth" 200;
+  letter-spacing: 0.3em;
+  font-size: 1.4em;
+}
+.logo-splash svg {
+  width: 100px;
+  height: auto;
+  display: block;
+}
+
 div.intro {
-  margin-top: 3rem;
+  padding: 1rem;
+  font-variation-settings: "wght" 100;
   text-align: center;
   font-size: 24px;
 }
@@ -241,6 +281,17 @@ div.intro p {
 }
 div.intro p a {
   color: #fff;
+}
+
+.intro-actions {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: center;
+  margin-bottom: 1rem;
+}
+
+.intro-blurb {
+  margin-top: 2rem;
 }
 
 button.submit,
@@ -623,6 +674,7 @@ a.logo {
   gap: 0.25rem;
   text-decoration: none;
   text-transform: uppercase;
+  padding: 0.5rem;
   font-variation-settings: "wdth" 150; /* The numeric value corresponds to percentage */
   letter-spacing: 0.1em;
 }

@@ -62,7 +62,7 @@ const Header: React.FC<HeaderProps> = ({ title, children }) => {
 		<div className="view-header">
 			{hasPreviousView && location.pathname !== '/' ? (
 				<button
-					className="back-button"
+					className="back-button ignore-default-button-styles"
 					aria-label="Back"
 					onClick={async () => {
 						// ensure menu closes and animation completes before navigating

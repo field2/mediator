@@ -245,20 +245,50 @@ const Dashboard: React.FC = () => {
 								`Your ${selectedMediaType === 'movie' ? 'Movies' : selectedMediaType === 'book' ? 'Books' : 'Albums'}`
 							) : !isAuthenticated ? (
 								<>
+									<div className="logo-splash" aria-label="Home">
+										<svg
+											width="21"
+											height="20"
+											viewBox="0 0 21 20"
+											fill="none"
+											xmlns="http://www.w3.org/2000/svg"
+										>
+											<path
+												d="M16.2706 6.98744C17.2439 3.5462 17.6856 0.602478 16.8772 0.0942718C16.2004 -0.331793 13.8494 0.732034 11.1474 2.36417C12.1092 2.53045 13.2673 3.3699 13.6109 4.96664C13.6402 5.10287 13.6633 5.24378 13.6804 5.39003C13.7335 5.85483 13.6845 6.4218 13.5638 7.03619C13.0403 9.70878 11.1631 13.2829 10.4304 13.2829C9.69761 13.2829 7.8204 9.70878 7.29691 7.03619C7.17626 6.4218 7.12718 5.85483 7.18035 5.39003C7.19739 5.24378 7.22057 5.10287 7.24988 4.9673C7.59342 3.36989 8.75151 2.53045 9.71329 2.36417C7.01131 0.732034 4.66036 -0.331793 3.9835 0.0942718C3.17509 0.602478 3.61678 3.5462 4.59015 6.98744C1.81523 9.21526 -0.243292 11.3055 0.0232253 12.1056C0.234531 12.7413 2.3953 13.1948 5.24247 13.4459C4.56016 12.8582 4.15663 12.2111 4.15663 11.6408C4.15663 10.6958 4.56084 9.77222 5.1859 8.95281C6.81977 14.0249 9.26137 19.3707 10.4304 19.3707C11.5994 19.3707 14.041 14.0249 15.6748 8.95281C16.2999 9.77222 16.7041 10.6958 16.7041 11.6408C16.7041 12.2111 16.3006 12.8582 15.6183 13.4459C18.4654 13.1948 20.6262 12.7413 20.8375 12.1056C21.104 11.3055 19.0455 9.21526 16.2706 6.98744Z"
+												fill="white"
+											/>
+										</svg>
+										<span className="logo-type">mediator</span>
+									</div>
+
 									<div className="intro">
-										<p>Thanks for trying Mediator!</p>
-										<p>
-											Use it to keep track of the movies you've watched, the books you've read or
-											the albums you own.
-										</p>
-										<p>
-											Mediator is a work in progress by Field 2 Design /{' '}
-											<a href="https://bendunkle.com" target="_blank">
-												Ben Dunkle
-											</a>
-											.
-										</p>
-										<p>Copyright 2026 by Ben Dunkle. All Rights Reserved.</p>
+										<div className="intro-actions">
+											<button onClick={() => navigate('/auth?mode=login')} className="secondary">
+												Log in
+											</button>
+											<button onClick={() => navigate('/auth?mode=register')} className="primary">
+												Create account
+											</button>
+										</div>
+										<div className="intro-blurb">
+											<p>Thanks for trying Mediator!</p>
+											<p>
+												Use it to keep track of the movies you've watched, the books you've read or
+												the albums you own.
+											</p>
+											<p>
+												Mediator is a work in progress<br></br>by Field 2 Design /{' '}
+												<a href="https://bendunkle.com" target="_blank">
+													Ben Dunkle
+												</a>
+												.
+											</p>
+											<p>
+												Copyright 2026 by Ben Dunkle.
+												<br />
+												All Rights Reserved.
+											</p>
+										</div>
 									</div>
 								</>
 							) : (

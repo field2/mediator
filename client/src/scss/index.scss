@@ -152,13 +152,23 @@ a {
 }
 
 button {
-	font-family: inherit;
-	font-family: inherit;
 	background: none;
+
 	border: 0;
-	opacity: 0.5;
-	&.active {
-		opacity: 1;
+	&:not(.ignore-default-button-styles) {
+		font-family: inherit;
+		font-family: inherit;
+		background: #fff;
+		color: #000;
+		padding: 0.5rem 1rem;
+		border-radius: 0.5rem;
+		text-transform: uppercase;
+	}
+	&.media-tab {
+		opacity: 0.5;
+		&.active {
+			opacity: 1;
+		}
 	}
 }
 
@@ -270,9 +280,41 @@ select {
 	align-items: flex-start;
 	gap: 0.5rem;
 }
+.onboard-form {
+	width: 100%;
+	display: flex;
+	flex-direction: column;
+	align-items: stretch;
+	button[type='submit'] {
+		align-self: center;
+	}
+}
+.logo-splash {
+	flex: 1;
+	text-align: center;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	padding-top: 2rem;
+	.logo-type {
+		text-transform: uppercase;
+		font-variation-settings:
+			'wght' 100,
+			'wdth' 200;
+		letter-spacing: 0.3em;
+		font-size: 1.4em;
+	}
+	svg {
+		width: 100px;
+		height: auto;
+		display: block;
+	}
+}
 
 div.intro {
-	margin-top: 3rem;
+	// margin-top: 1rem;
+	padding: 1rem;
+	font-variation-settings: 'wght' 100;
 	text-align: center;
 	font-size: 24px;
 	p {
@@ -282,6 +324,17 @@ div.intro {
 		}
 	}
 }
+
+.intro-actions {
+	display: flex;
+	gap: 0.5rem;
+	justify-content: center;
+	margin-bottom: 1rem;
+}
+.intro-blurb {
+	margin-top: 2rem;
+}
+
 button.submit,
 button.logout-button,
 button.approve,
@@ -671,6 +724,7 @@ a.logo {
 	gap: 0.25rem;
 	text-decoration: none;
 	text-transform: uppercase;
+	padding: 0.5rem;
 	// font-variation-settings:
 	// 	'wght' 300,
 	// 	'wdth' 30;
