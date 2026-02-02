@@ -133,6 +133,8 @@ const Friends: React.FC = () => {
 			setSearchResults(
 				searchResults.map((r) => (r.id === userId ? { ...r, hasPendingRequest: true } : r))
 			);
+			// notify header/other components to refresh pending indicator
+			document.dispatchEvent(new CustomEvent('friend-requests-updated'));
 		} catch (error: any) {
 			console.error('Error sending friend request:', error);
 			alert(error.response?.data?.error || 'Failed to send friend request');
@@ -145,6 +147,10 @@ const Friends: React.FC = () => {
 			// Immediately remove from UI
 			setRequests(requests.filter((req) => req.id !== requestId));
 			if (status === 'approved') await loadFriends();
+			// notify header/other components that pending requests changed
+			document.dispatchEvent(
+				new CustomEvent('friend-requests-updated', { detail: { cleared: true } })
+			);
 		} catch (error: any) {
 			console.error('Error responding to friend request:', error);
 			alert(error.response?.data?.error || 'Failed to update request');
@@ -169,7 +175,7 @@ const Friends: React.FC = () => {
 					/>
 
 					<button
-						className="search-icon-btn"
+						className="search-icon-btn "
 						tabIndex={-1}
 						type="button"
 						aria-label={showResults ? 'Close search' : 'Search'}
@@ -209,7 +215,7 @@ const Friends: React.FC = () => {
 												) : user.hasPendingRequest ? (
 													<span className="badge pending">Pending</span>
 												) : (
-													<button className="add-button" onClick={() => handleAddFriend(user.id)}>
+													<button className="add-button " onClick={() => handleAddFriend(user.id)}>
 														Add
 													</button>
 												)}
@@ -247,24 +253,25 @@ const Friends: React.FC = () => {
 							</div>
 						</div>
 					)}
-
-					<h2>Your Friends ({friends.length})</h2>
-					{friends.length > 0 ? (
-						<div className="friends-grid">
-							{friends.map((friend) => (
-								<div key={friend.id ?? friend.userId} className="friend-card">
-									<div className="friend-username">{friend.username}</div>
-									<div className="friend-links">
-										<button onClick={() => navigate(`/user/${friend.id ?? friend.userId}`)}>
-											View Media
-										</button>
+					<div className="friends-list">
+						<h2>Your Friends ({friends.length})</h2>
+						{friends.length > 0 ? (
+							<div className="friends-grid">
+								{friends.map((friend) => (
+									<div key={friend.id ?? friend.userId} className="friend-card">
+										<div className="friend-username">{friend.username}</div>
+										<div className="friend-links">
+											<button onClick={() => navigate(`/user/${friend.id ?? friend.userId}`)}>
+												View Media
+											</button>
+										</div>
 									</div>
-								</div>
-							))}
-						</div>
-					) : (
-						<p className="empty">No friends yet. Search to add some!</p>
-					)}
+								))}
+							</div>
+						) : (
+							<p className="empty">No friends yet. Search to add some!</p>
+						)}
+					</div>
 				</div>
 			</div>
 		</div>

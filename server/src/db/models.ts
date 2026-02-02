@@ -293,4 +293,17 @@ export const FriendModel = {
     const result = stmt.get(fromUserId, toUserId, toUserId, fromUserId, 'pending') as { count: number };
     return result.count > 0;
   }
+  ,
+  // Cancel an outgoing pending friend request
+  cancelFriendRequest: (fromUserId: number, toUserId: number) => {
+    const stmt = db.prepare('DELETE FROM friend_requests WHERE from_user_id = ? AND to_user_id = ? AND status = ?');
+    return stmt.run(fromUserId, toUserId, 'pending');
+  },
+  // Remove an existing friendship
+  removeFriend: (userId1: number, userId2: number) => {
+    const id1 = Math.min(userId1, userId2);
+    const id2 = Math.max(userId1, userId2);
+    const stmt = db.prepare('DELETE FROM friends WHERE user_id_1 = ? AND user_id_2 = ?');
+    return stmt.run(id1, id2);
+  }
 };

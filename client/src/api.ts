@@ -196,3 +196,11 @@ export const getFriendRequests = async (): Promise<any[]> => {
 export const respondToFriendRequest = async (requestId: number, status: 'approved' | 'rejected'): Promise<void> => {
   await api.post(`/friends/request/${requestId}/respond`, { status });
 };
+
+export const cancelFriendRequest = async (toUserId: number): Promise<void> => {
+  await api.delete(`/friends/request/outgoing/${toUserId}`);
+};
+
+export const removeFriend = async (friendId: number): Promise<void> => {
+  await api.delete(`/friends/${friendId}`);
+};

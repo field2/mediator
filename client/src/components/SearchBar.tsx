@@ -197,7 +197,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
 							setShowResults(false);
 							setSelectedMediaType('movie');
 						}}
-						className={`ignore-default-button-styles media-tab ${selectedMediaType === 'movie' ? 'active' : ''}`}
+						className={` media-tab ${selectedMediaType === 'movie' ? 'active' : ''}`}
 					>
 						<svg
 							width="33"
@@ -231,7 +231,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
 							setShowResults(false);
 							setSelectedMediaType('book');
 						}}
-						className={`ignore-default-button-styles media-tab ${selectedMediaType === 'book' ? 'active' : ''}`}
+						className={` media-tab ${selectedMediaType === 'book' ? 'active' : ''}`}
 					>
 						<svg
 							width="25"
@@ -265,7 +265,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
 							setShowResults(false);
 							setSelectedMediaType('album');
 						}}
-						className={`ignore-default-button-styles media-tab ${selectedMediaType === 'album' ? 'active' : ''}`}
+						className={` media-tab ${selectedMediaType === 'album' ? 'active' : ''}`}
 					>
 						<svg
 							width="35"
@@ -296,17 +296,12 @@ const SearchBar: React.FC<SearchBarProps> = ({
 					onFocus={handleInputFocus}
 				/>
 				{query.trim().length === 0 ? (
-					<button
-						className="search-icon-btn ignore-default-button-styles "
-						tabIndex={-1}
-						type="button"
-						aria-label="Search"
-					>
+					<button className="search-icon-btn  " tabIndex={-1} type="button" aria-label="Search">
 						<img src={IconSearch} alt="Search" />
 					</button>
 				) : (
 					<button
-						className="search-icon-btn ignore-default-button-styles"
+						className="search-icon-btn "
 						type="button"
 						aria-label="Clear search"
 						onClick={() => {

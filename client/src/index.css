@@ -1,4 +1,19 @@
 @import url("https://fonts.googleapis.com/css2?family=Roboto+Flex:opsz,slnt,wdth,wght,GRAD,XTRA,YOPQ,YTAS,YTDE,YTFI,YTLC,YTUC@8..144,-1,101,401,1,401,117,751,-249,601,501,726&display=swap");
+button {
+  border: none;
+}
+
+.intro-actions button {
+  font-family: "Roboto Flex", sans-serif;
+  border: none;
+  border-radius: 50px;
+  padding: 0.5rem 1rem;
+  font-size: 1rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
 * {
   margin: 0;
   padding: 0;
@@ -14,7 +29,6 @@ textarea,
 .search-icon-btn {
   touch-action: manipulation;
   -ms-touch-action: manipulation;
-  -webkit-tap-highlight-color: rgba(0, 0, 0, 0); /* optional visual polish */
 }
 
 body {
@@ -84,6 +98,14 @@ a {
   display: flex;
   gap: 0.5rem;
 }
+.media-tabs button {
+  opacity: 0.5;
+  background: none;
+  border: none;
+}
+.media-tabs button.active {
+  opacity: 1;
+}
 
 .save-prompt {
   margin: 0.5rem 0;
@@ -124,26 +146,6 @@ a {
 .save-prompt-actions button.primary {
   background: #4c6fff;
   border-color: #4c6fff;
-}
-
-button {
-  background: none;
-  border: 0;
-}
-button:not(.ignore-default-button-styles) {
-  font-family: inherit;
-  font-family: inherit;
-  background: #fff;
-  color: #000;
-  padding: 0.5rem 1rem;
-  border-radius: 0.5rem;
-  text-transform: uppercase;
-}
-button.media-tab {
-  opacity: 0.5;
-}
-button.media-tab.active {
-  opacity: 1;
 }
 
 input,
@@ -230,14 +232,23 @@ select {
   width: 28px;
   height: 28px;
   padding: 0;
+  background: none;
+}
+
+.view-title {
+  text-transform: uppercase;
+  font-variation-settings: "wdth" 150, "wght" 100;
+  letter-spacing: 0.1em;
 }
 
 .view-body {
-  padding: 0 1rem;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
   gap: 0.5rem;
+}
+.view-body.padded-content {
+  padding: 0.5rem;
 }
 
 .onboard-form {
@@ -298,11 +309,14 @@ button.submit,
 button.logout-button,
 button.approve,
 button.deny {
-  background-color: #fff;
+  font-family: "Roboto Flex", sans-serif;
+  border: none;
+  border-radius: 50px;
   padding: 0.5rem 1rem;
   font-size: 1rem;
-  opacity: 1;
-  border-radius: 0.5rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
 }
 
 a {
@@ -347,6 +361,7 @@ input[type=checkbox] {
   overflow: hidden;
   border: none;
   background: none;
+  position: relative;
   cursor: pointer;
 }
 .view-header .menu-container .menu-button svg {
@@ -358,7 +373,6 @@ input[type=checkbox] {
   position: absolute;
   right: 0;
   top: 44px;
-  padding: 1rem;
   background: #fff;
   transform: translateX(100%);
   pointer-events: none;
@@ -374,13 +388,23 @@ input[type=checkbox] {
 }
 .view-header .menu-container .menu-content nav {
   display: flex;
-  display: flex;
   flex-direction: column;
-  gap: 1;
+  padding: 0.5rem 0;
 }
 .view-header .menu-container .menu-content nav a {
   color: #000;
   text-decoration: none;
+  padding: 0.5rem 1rem;
+  text-transform: uppercase;
+  font-variation-settings: "wdth" 150, "wght" 300;
+  font-size: 1.2rem;
+  letter-spacing: 0.1em;
+}
+.view-header .menu-container .menu-content nav {
+  /* ensure menu links can show the pending indicator */
+}
+.view-header .menu-container .menu-content nav a.has-pending {
+  position: relative;
 }
 .view-header .menu-container .menu-content nav a,
 .view-header .menu-container .menu-content nav button {
@@ -395,7 +419,7 @@ input[type=checkbox] {
 
 .view-label {
   display: flex;
-  align-items: start;
+  align-items: center;
   flex: 1;
 }
 
@@ -410,6 +434,8 @@ body {
   gap: 0.5rem;
   padding: 0 0.5rem;
   position: relative;
+  align-self: stretch;
+  min-height: 40px;
 }
 
 .search-results {
@@ -486,80 +512,83 @@ input.search-input {
   fill: #fff;
 }
 
-.friend-links button {
-  background: #fff;
-  padding: 0.5rem 1rem;
-  font-size: 1rem;
-  opacity: 1;
-  border-radius: 0.5rem;
-  cursor: pointer;
+.friends-list {
+  padding: 0.5rem;
 }
 
 .directory-list {
+  width: 100%;
+  padding: 0 0.5rem;
   align-self: center;
   margin-top: 1rem;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
+  justify-items: stretch;
+  align-items: stretch;
   gap: 1rem;
 }
 
 .directory-item {
   display: flex;
-  justify-content: flex-end;
   align-items: center;
   gap: 0.5rem;
 }
 
 .directory-user-info {
   display: flex;
-  align-items: center;
+  flex: 1;
   gap: 0.5rem;
+  justify-content: space-between;
+  width: 100%;
+}
+.directory-user-info button {
+  line-height: 0;
+  width: 100%;
+  border: 0;
+  background-color: #fff;
+  color: #000;
+  padding: 1rem 0.5rem 1rem 1rem;
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
+  justify-content: center;
+  border-radius: 50px;
+  opacity: 1;
+  cursor: pointer;
+}
+.directory-user-info button.remove-friend-button {
+  background-color: rgb(141, 228, 123);
+}
+.directory-user-info button.remove-friend-button .remove-icon {
+  position: relative;
+  top: -1px;
+}
+.directory-user-info button.pending-friend-button {
+  background-color: rgb(228, 205, 123);
+}
+.directory-user-info button.pending-friend-button .pending-icon {
+  position: relative;
+  top: -7px;
 }
 
 .directory-username {
   font-size: 1rem;
   font-weight: 500;
-  text-align: right;
+  text-align: left;
+  flex: 1;
 }
 
 .directory-actions {
-  display: flex;
-  gap: 0.5rem;
-}
-
-.add-friend-button {
-  background-color: #fff;
   color: #000;
-  padding: 0.5rem;
-  width: 20px;
-  height: 20px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 10px;
-  opacity: 1;
-  cursor: pointer;
-}
-
-.friend-status,
-.pending-status {
-  padding: 0.4rem 0.8rem;
-  font-size: 0.9rem;
-  opacity: 0.6;
-}
-
-.friend-status {
-  color: #4caf50;
+  font-variation-settings: "wght" 700;
+  font-size: 1.5rem;
+  justify-self: flex-end;
 }
 
 .friend-card {
   display: flex;
   align-items: center;
   gap: 1rem;
-}
-
-.pending-status {
-  color: #ff9800;
 }
 
 .main-menu.has-pending circle:first-of-type {
@@ -578,13 +607,29 @@ input.search-input {
     fill: white;
   }
 }
-.add-button {
-  background: #fff;
+@keyframes fadeInOut {
+  0% {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.06);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+}
+.pending {
+  background: #ffe678;
+  color: #000;
+  display: flex;
+  justify-content: space-between;
+  flex: 1;
+  border-radius: 50px;
   padding: 0.5rem 1rem;
-  font-size: 1rem;
-  opacity: 1;
-  border-radius: 0.5rem;
-  cursor: pointer;
+  line-height: 1;
 }
 
 .search-user-item {
@@ -675,10 +720,69 @@ a.logo {
   text-decoration: none;
   text-transform: uppercase;
   padding: 0.5rem;
-  font-variation-settings: "wdth" 150; /* The numeric value corresponds to percentage */
+  font-variation-settings: "wdth" 150;
   letter-spacing: 0.1em;
 }
 
 .search-panel h3 {
   margin: 1em 0 0.5em;
+}
+
+.has-pending::before {
+  display: block;
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  background: #ffc107;
+  content: "";
+  left: 6px;
+  top: 8px;
+  border-radius: 50%;
+  opacity: 0;
+  pointer-events: none;
+  transform-origin: center;
+  animation: fadeInOut 1s ease-in-out infinite alternate;
+}
+
+nav a.has-pending::before {
+  left: -6px;
+  top: 0;
+}
+
+.modal {
+  position: absolute;
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  backdrop-filter: brightness(0.5);
+  align-items: center;
+}
+.modal .modal-content {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  margin: 1rem;
+  gap: 1rem;
+}
+.modal .modal-content button {
+  font-family: "Roboto Flex", sans-serif;
+  border: none;
+  border-radius: 50px;
+  padding: 0.5rem 1rem;
+  font-size: 1rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  text-transform: uppercase;
+  font-variation-settings: "wdth" 150, "wght" 300;
+  font-size: 1.2rem;
+  letter-spacing: 0.1em;
+  background-color: #fff;
+}
+.modal .modal-content .modal-close {
+  width: 38px;
+  height: 38px;
+  padding: 0;
+  display: flex;
+  justify-content: center;
 }

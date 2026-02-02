@@ -121,4 +121,30 @@ router.post('/request/:id/respond', authenticate, async (req, res) => {
   }
 });
 
+// Cancel an outgoing friend request (current user -> toUserId)
+router.delete('/request/outgoing/:toUserId', authenticate, async (req: AuthRequest, res) => {
+  try {
+    const fromUserId = req.userId as number;
+    const toUserId = parseInt(req.params.toUserId);
+    FriendModel.cancelFriendRequest(fromUserId, toUserId);
+    res.json({ message: 'Friend request cancelled' });
+  } catch (error) {
+    console.error('Cancel friend request error:', error);
+    res.status(500).json({ error: 'Failed to cancel friend request' });
+  }
+});
+
+// Remove a friend relationship
+router.delete('/:friendId', authenticate, async (req: AuthRequest, res) => {
+  try {
+    const userId = req.userId as number;
+    const friendId = parseInt(req.params.friendId);
+    FriendModel.removeFriend(userId, friendId);
+    res.json({ message: 'Friend removed' });
+  } catch (error) {
+    console.error('Remove friend error:', error);
+    res.status(500).json({ error: 'Failed to remove friend' });
+  }
+});
+
 export default router;

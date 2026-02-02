@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useContext } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../AuthContext';
+import { getFriendRequests } from '../api';
 import NavigationContext from '../NavigationContext';
 
 type HeaderProps = {
@@ -12,6 +13,7 @@ const Header: React.FC<HeaderProps> = ({ title, children }) => {
 	const navigate = useNavigate();
 	const location = useLocation();
 	const { logout, isAuthenticated } = useAuth();
+	const [hasPending, setHasPending] = useState(false);
 	const { hasPreviousView } = useContext(NavigationContext);
 	const [menuOpen, setMenuOpen] = useState(false);
 	const [menuNoAnim, setMenuNoAnim] = useState(false);
@@ -43,6 +45,39 @@ const Header: React.FC<HeaderProps> = ({ title, children }) => {
 		return () => document.removeEventListener('click', onDocClick);
 	}, []);
 
+	useEffect(() => {
+		let cancelled = false;
+		const fetchPending = async () => {
+			if (!isAuthenticated) {
+				setHasPending(false);
+				return;
+			}
+			try {
+				const reqs: any = await getFriendRequests();
+				if (cancelled) return;
+				setHasPending(Array.isArray(reqs) && reqs.some((r: any) => r.status === 'pending'));
+			} catch (err) {
+				console.error('Error fetching friend requests in Header:', err);
+				setHasPending(false);
+			}
+		};
+
+		const onUpdated = (e?: Event) => {
+			// If an updater indicates requests were resolved, clear indicator immediately
+			const detail = (e as CustomEvent)?.detail;
+			if (detail && detail.cleared) setHasPending(false);
+			// re-fetch when other parts of the app signal updates
+			fetchPending();
+		};
+
+		document.addEventListener('friend-requests-updated', onUpdated as EventListener);
+		fetchPending();
+		return () => {
+			cancelled = true;
+			document.removeEventListener('friend-requests-updated', onUpdated as EventListener);
+		};
+	}, [isAuthenticated]);
+
 	const handleLogout = () => {
 		logout();
 		navigate('/');
@@ -62,7 +97,7 @@ const Header: React.FC<HeaderProps> = ({ title, children }) => {
 		<div className="view-header">
 			{hasPreviousView && location.pathname !== '/' ? (
 				<button
-					className="back-button ignore-default-button-styles"
+					className="back-button "
 					aria-label="Back"
 					onClick={async () => {
 						// ensure menu closes and animation completes before navigating
@@ -80,7 +115,7 @@ const Header: React.FC<HeaderProps> = ({ title, children }) => {
 						<path
 							d="M15 6L9 12L15 18"
 							stroke="#fff"
-							strokeWidth="2.5"
+							strokeWidth="1.5"
 							strokeLinecap="round"
 							strokeLinejoin="round"
 						/>
@@ -112,8 +147,8 @@ const Header: React.FC<HeaderProps> = ({ title, children }) => {
 			{isAuthenticated && (
 				<div ref={menuRef} className="menu-container">
 					<button
-						className="menu-button"
-						aria-label="Menu"
+						className={`menu-button${hasPending ? ' has-pending' : ''}`}
+						aria-label={menuOpen ? 'Close menu' : 'Menu'}
 						onClick={() => {
 							setMenuNoAnim(false);
 							setMenuHidden(false);
@@ -126,29 +161,48 @@ const Header: React.FC<HeaderProps> = ({ title, children }) => {
 							}
 						}}
 					>
-						<svg
-							width="28"
-							height="28"
-							viewBox="0 0 24 24"
-							fill="none"
-							xmlns="http://www.w3.org/2000/svg"
-						>
-							<rect width="28" height="28" fill="none" />
-							<path
-								d="M4 6H20M4 12H20M4 18H20"
-								stroke="white"
-								strokeWidth="2"
-								strokeLinecap="round"
-								strokeLinejoin="round"
-							/>
-						</svg>
+						{menuOpen ? (
+							<svg
+								width="28"
+								height="28"
+								viewBox="0 0 24 24"
+								fill="none"
+								xmlns="http://www.w3.org/2000/svg"
+							>
+								<rect width="28" height="28" fill="none" />
+								<path
+									d="M6 6L18 18M6 18L18 6"
+									stroke="white"
+									strokeWidth="2"
+									strokeLinecap="round"
+									strokeLinejoin="round"
+								/>
+							</svg>
+						) : (
+							<svg
+								width="28"
+								height="28"
+								viewBox="0 0 24 24"
+								fill="none"
+								xmlns="http://www.w3.org/2000/svg"
+							>
+								<rect width="28" height="28" fill="none" />
+								<path
+									d="M4 6H20M4 12H20M4 18H20"
+									stroke="white"
+									strokeWidth="2"
+									strokeLinecap="round"
+									strokeLinejoin="round"
+								/>
+							</svg>
+						)}
 					</button>
 
 					{!menuHidden && (
 						<div
 							className={`menu-content${menuOpen ? ' open' : ''}${menuNoAnim ? ' no-anim' : ''}`}
 						>
-							<nav>
+							<nav className="main-nav">
 								<Link
 									to="/"
 									onClick={async (e) => {
@@ -161,6 +215,7 @@ const Header: React.FC<HeaderProps> = ({ title, children }) => {
 								</Link>
 								<Link
 									to="/friends"
+									className={hasPending ? 'has-pending' : ''}
 									onClick={async (e) => {
 										e.preventDefault();
 										await closeMenuAndWait();
@@ -191,14 +246,14 @@ const Header: React.FC<HeaderProps> = ({ title, children }) => {
 										>
 											Account
 										</Link>
-										<button
+										{/* <button
 											onClick={async () => {
 												await closeMenuAndWait();
 												handleLogout();
 											}}
 										>
 											Logout
-										</button>
+										</button> */}
 									</>
 								) : (
 									<Link
