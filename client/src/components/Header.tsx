@@ -12,7 +12,7 @@ type HeaderProps = {
 const Header: React.FC<HeaderProps> = ({ title, children }) => {
 	const navigate = useNavigate();
 	const location = useLocation();
-	const { logout, isAuthenticated } = useAuth();
+	const { isAuthenticated } = useAuth();
 	const [hasPending, setHasPending] = useState(false);
 	const { hasPreviousView } = useContext(NavigationContext);
 	const [menuOpen, setMenuOpen] = useState(false);
@@ -77,11 +77,6 @@ const Header: React.FC<HeaderProps> = ({ title, children }) => {
 			document.removeEventListener('friend-requests-updated', onUpdated as EventListener);
 		};
 	}, [isAuthenticated]);
-
-	const handleLogout = () => {
-		logout();
-		navigate('/');
-	};
 
 	// Close menu instantly (no slide), remove it from DOM, and wait a tick for paint
 	const closeMenuAndWait = async () => {
@@ -246,14 +241,7 @@ const Header: React.FC<HeaderProps> = ({ title, children }) => {
 										>
 											Account
 										</Link>
-										{/* <button
-											onClick={async () => {
-												await closeMenuAndWait();
-												handleLogout();
-											}}
-										>
-											Logout
-										</button> */}
+										{/* logout removed */}
 									</>
 								) : (
 									<Link
