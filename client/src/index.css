@@ -244,21 +244,11 @@ select {
 .view-body {
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
+  align-items: center;
   gap: 0.5rem;
 }
 .view-body.padded-content {
   padding: 0.5rem;
-}
-
-.onboard-form {
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: stretch;
-}
-.onboard-form button[type=submit] {
-  align-self: center;
 }
 
 .logo-splash {
@@ -472,13 +462,39 @@ body {
   object-fit: cover;
 }
 
-input.search-input {
+form.onboard-form {
+  display: flex;
+  gap: 1rem;
+  align-items: stretch;
+  max-width: 400px;
+  flex-direction: column;
+}
+form.onboard-form h2 {
+  text-align: left;
+}
+form.onboard-form div {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+form.onboard-form div label {
+  flex: 1;
+}
+form.onboard-form button {
+  align-self: center;
+}
+
+input {
   position: relative;
-  width: 100%;
   padding: 0.5rem;
   border: none;
   outline: none;
   font-size: 1rem;
+  border-radius: 0.25rem;
+}
+
+input.search-input {
+  width: 100%;
   border-radius: 50px;
 }
 input.search-input::placeholder {
@@ -785,4 +801,8 @@ nav a.has-pending::before {
   padding: 0;
   display: flex;
   justify-content: center;
+}
+
+.pad1 {
+  padding: 0.5rem;
 }

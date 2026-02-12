@@ -88,37 +88,33 @@ const Auth: React.FC = () => {
 	return (
 		<div className="page-container">
 			<Header title="" />
-			<div className="view-body">
+			<div className="view-body pad1">
 				<h2>{getTitle()}</h2>
 				<form onSubmit={handleSubmit} className="onboard-form">
 					{view === 'register' && (
-						<div style={{ marginBottom: '15px' }}>
-							<label style={{ display: 'block', marginBottom: '5px' }}>Username</label>
+						<div>
+							<label>Username</label>
 							<input
 								type="text"
 								value={username}
 								onChange={(e) => setUsername(e.target.value)}
 								required
-								style={{ width: '100%', padding: '8px', boxSizing: 'border-box' }}
 							/>
 						</div>
 					)}
 					{view !== 'reset' && !(view === 'forgot' && resetLinkSent) && (
-						<div style={{ marginBottom: '15px' }}>
-							<label style={{ display: 'block', marginBottom: '5px' }}>
-								{view === 'login' ? 'Email or Username' : 'Email'}
-							</label>
+						<div>
+							<label>{view === 'login' ? 'Email or Username' : 'Email'}</label>
 							<input
 								type="text"
 								value={identifier}
 								onChange={(e) => setIdentifier(e.target.value)}
 								required
-								style={{ width: '100%', padding: '8px', boxSizing: 'border-box' }}
 							/>
 						</div>
 					)}
 					{(view === 'login' || view === 'register' || view === 'reset') && (
-						<div style={{ marginBottom: '15px' }}>
+						<div>
 							<label style={{ display: 'block', marginBottom: '5px' }}>
 								{view === 'reset' ? 'New Password' : 'Password'}
 							</label>
@@ -127,14 +123,11 @@ const Auth: React.FC = () => {
 								value={password}
 								onChange={(e) => setPassword(e.target.value)}
 								required
-								style={{ width: '100%', padding: '8px', boxSizing: 'border-box' }}
 							/>
 						</div>
 					)}
 					{view === 'login' && (
-						<div
-							style={{ marginBottom: '15px', display: 'flex', alignItems: 'center', gap: '8px' }}
-						>
+						<div>
 							<input
 								id="rememberMe"
 								type="checkbox"

@@ -5,7 +5,12 @@ export async function getCurrentUser(token: string) {
       Authorization: `Bearer ${token}`
     }
   });
-  if (!res.ok) throw new Error('Failed to fetch user profile');
+  if (!res.ok) {
+    if (res.status === 401) {
+      throw new Error('401 Unauthorized');
+    }
+    throw new Error('Failed to fetch user profile');
+  }
   return await res.json();
 }
 import axios from 'axios';
@@ -25,6 +30,27 @@ api.interceptors.request.use((config) => {
   }
   return config;
 });
+
+// Handle 401 responses globally by clearing auth state
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      // Clear stored credentials on 401
+      localStorage.removeItem('token');
+      localStorage.removeItem('userId');
+      localStorage.removeItem('username');
+      localStorage.removeItem('email');
+      sessionStorage.removeItem('token');
+      sessionStorage.removeItem('userId');
+      sessionStorage.removeItem('username');
+      sessionStorage.removeItem('email');
+      // Reload page to reset auth state
+      window.location.href = '/';
+    }
+    return Promise.reject(error);
+  }
+);
 
 // Auth
 export const register = async (username: string, email: string, password: string): Promise<User> => {
