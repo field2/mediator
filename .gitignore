@@ -43,3 +43,6 @@ tmp/
 Thumbs.db
 deploy/
 mediator.field2.com/
+
+
+# scripts/*

@@ -98,7 +98,7 @@ router.get('/me', async (req, res) => {
       return res.status(401).json({ error: 'Invalid token' });
     }
     const user = await UserModel.findById(payload.userId);
-    if (!user) return res.status(404).json({ error: 'User not found' });
+    if (!user) return res.status(401).json({ error: 'User not found' });
     res.json({
       userId: user.id,
       username: user.username,
