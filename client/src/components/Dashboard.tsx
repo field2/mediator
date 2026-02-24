@@ -13,7 +13,7 @@ import {
 	getUserAutoList,
 } from '../api';
 import { MediaItem } from '../types';
-import StarRating from './StarRating';
+import AutoItemCard from './AutoItemCard';
 
 const Dashboard: React.FC = () => {
 	// Add missing helper functions
@@ -300,29 +300,13 @@ const Dashboard: React.FC = () => {
 						) : (isAuthenticated ? autoItems : guestItems[selectedMediaType]).length > 0 ? (
 							<div className="auto-items-grid">
 								{(isAuthenticated ? autoItems : guestItems[selectedMediaType]).map((mi) => (
-									<div key={mi.id} className="auto-item-card">
-										<button
-											className="auto-item-remove"
-											onClick={() => handleRemove(mi.id)}
-											aria-label="Remove item"
-										>
-											×
-										</button>
-										<img
-											src={mi.poster_url || '/placeholder.png'}
-											alt={mi.title}
-											className="auto-item-img"
-										/>
-										<div className="auto-item-title">{mi.title}</div>
-										{mi.year && <div className="auto-item-year">{mi.year}</div>}
-										<div className="auto-item-rating">
-											<StarRating
-												rating={mi.userRating || 0}
-												onRate={(r) => handleRate(mi.id, r)}
-												readonly={!user || !isAuthenticated}
-											/>
-										</div>
-									</div>
+									<AutoItemCard
+										key={mi.id}
+										item={mi}
+										isAuthenticated={isAuthenticated}
+										onRate={handleRate}
+										onRemove={handleRemove}
+									/>
 								))}
 							</div>
 						) : null}
