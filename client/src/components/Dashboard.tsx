@@ -95,11 +95,28 @@ const Dashboard: React.FC = () => {
 	const [showSavePrompt, setShowSavePrompt] = useState(false);
 	const [, setHasPendingFriendRequests] = useState(false);
 	const [flippedCardId, setFlippedCardId] = useState<number | null>(null);
+	const [cardTransform, setCardTransform] = useState({ x: 0, y: 0 });
 
 	// Reset flipped card when media type changes
 	useEffect(() => {
 		setFlippedCardId(null);
 	}, [selectedMediaType]);
+
+	// Close flipped card when clicking anywhere
+	useEffect(() => {
+		const handleClickOutside = () => {
+			if (flippedCardId !== null) {
+				setFlippedCardId(null);
+			}
+		};
+
+		if (flippedCardId !== null) {
+			document.addEventListener('click', handleClickOutside);
+			return () => {
+				document.removeEventListener('click', handleClickOutside);
+			};
+		}
+	}, [flippedCardId]);
 
 	useEffect(() => {
 		const fetchFriendRequests = async () => {
@@ -194,8 +211,36 @@ const Dashboard: React.FC = () => {
 		}
 	};
 
-	const handleFlipCard = (mediaId: number) => {
-		setFlippedCardId((prev) => (prev === mediaId ? null : mediaId));
+	const handleFlipCard = (mediaId: number, event: React.MouseEvent) => {
+		event.stopPropagation();
+		if (flippedCardId === mediaId) {
+			setFlippedCardId(null);
+			return;
+		}
+
+		// Calculate transform to center the card
+		const card = (event.currentTarget as HTMLElement).closest('.auto-item-card') as HTMLElement;
+		if (card) {
+			const rect = card.getBoundingClientRect();
+			const root = document.getElementById('root');
+			if (root) {
+				const rootRect = root.getBoundingClientRect();
+				const scale = 4;
+
+				// Calculate how much to translate to center the scaled card
+				const centerX = rootRect.width / 2;
+				const centerY = rootRect.height / 2;
+				const cardCenterX = rect.left - rootRect.left + rect.width / 2;
+				const cardCenterY = rect.top - rootRect.top + rect.height / 2;
+
+				// Translate values need to account for the scale
+				const translateX = (centerX - cardCenterX) / scale;
+				const translateY = (centerY - cardCenterY) / scale;
+
+				setCardTransform({ x: translateX, y: translateY });
+			}
+		}
+		setFlippedCardId(mediaId);
 	};
 
 	const handleRemove = async (mediaId: number) => {
@@ -313,9 +358,25 @@ const Dashboard: React.FC = () => {
 									<div
 										key={mi.id}
 										className={`auto-item-card${flippedCardId === mi.id ? ' flipped' : ''}`}
+										style={
+											flippedCardId === mi.id
+												? ({
+														'--card-translate-x': `${cardTransform.x}px`,
+														'--card-translate-y': `${cardTransform.y}px`,
+													} as React.CSSProperties)
+												: {}
+										}
+										onClick={(e) => {
+											if (flippedCardId === mi.id) {
+												e.stopPropagation();
+											}
+										}}
 									>
 										<div className="auto-item-card-front">
-											<div className="auto-item-card-menu" onClick={() => handleFlipCard(mi.id)}>
+											<div
+												className="auto-item-card-menu"
+												onClick={(e) => handleFlipCard(mi.id, e)}
+											>
 												<svg
 													width="30"
 													height="16"

@@ -97,7 +97,7 @@ a {
   transition: opacity 0.2s ease;
 }
 .auto-items .auto-item-card.flipped {
-  transform: scale(4) translateX(39px) translateY(50%);
+  transform: scale(4) translateX(var(--card-translate-x, 39px)) translateY(var(--card-translate-y, 50%));
   z-index: 1000;
 }
 .auto-items .auto-item-card.flipped .auto-item-card-back {
