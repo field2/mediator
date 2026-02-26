@@ -301,26 +301,43 @@ const Dashboard: React.FC = () => {
 							<div className="auto-items-grid">
 								{(isAuthenticated ? autoItems : guestItems[selectedMediaType]).map((mi) => (
 									<div key={mi.id} className="auto-item-card">
-										<button
-											className="auto-item-remove"
-											onClick={() => handleRemove(mi.id)}
-											aria-label="Remove item"
-										>
-											×
-										</button>
-										<img
-											src={mi.poster_url || '/placeholder.png'}
-											alt={mi.title}
-											className="auto-item-img"
-										/>
-										<div className="auto-item-title">{mi.title}</div>
-										{mi.year && <div className="auto-item-year">{mi.year}</div>}
-										<div className="auto-item-rating">
-											<StarRating
-												rating={mi.userRating || 0}
-												onRate={(r) => handleRate(mi.id, r)}
-												readonly={!user || !isAuthenticated}
+										<div className="auto-item-card-front">
+											<div className="auto-item-card-menu">
+												<svg
+													width="30"
+													height="16"
+													viewBox="0 0 30 16"
+													fill="none"
+													xmlns="http://www.w3.org/2000/svg"
+												>
+													<circle cx="7" cy="8" r="2" fill="white" />
+													<circle cx="15" cy="8" r="2" fill="white" />
+													<circle cx="23" cy="8" r="2" fill="white" />
+												</svg>
+											</div>
+											<img
+												src={mi.poster_url || '/placeholder.png'}
+												alt={mi.title}
+												className="auto-item-img"
 											/>
+										</div>
+										<div className="auto-item-card-back">
+											<div className="auto-item-title">{mi.title}</div>
+											{mi.year && <div className="auto-item-year">{mi.year}</div>}
+											<div className="auto-item-rating">
+												<StarRating
+													rating={mi.userRating || 0}
+													onRate={(r) => handleRate(mi.id, r)}
+													readonly={!user || !isAuthenticated}
+												/>
+											</div>
+											<button
+												className="auto-item-remove"
+												onClick={() => handleRemove(mi.id)}
+												aria-label="Remove item"
+											>
+												×
+											</button>
 										</div>
 									</div>
 								))}

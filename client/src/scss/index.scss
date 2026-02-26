@@ -82,6 +82,25 @@ a {
 	}
 	.auto-item-card {
 		position: relative;
+		transform-origin: center;
+		.auto-item-card-front {
+			position: relative;
+		}
+		.auto-item-card-menu {
+			position: absolute;
+			right: 4px;
+			top: 4px;
+			z-index: 100;
+		}
+	}
+	.auto-item-card-back {
+		position: absolute;
+		left: 0;
+		top: 0;
+		z-index: -1;
+	}
+	.auto-item-card.flipped {
+		transform: scale(4) translateX(39px) translateY(50%);
 	}
 	.auto-item-remove {
 		position: absolute;
