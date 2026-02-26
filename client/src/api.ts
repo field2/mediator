@@ -239,6 +239,11 @@ export const getFriendRequests = async (): Promise<any[]> => {
   return response.data;
 };
 
+export const getOutgoingFriendRequests = async (): Promise<any[]> => {
+  const response = await api.get('/friends/requests/outgoing');
+  return response.data;
+};
+
 export const respondToFriendRequest = async (requestId: number, status: 'approved' | 'rejected'): Promise<void> => {
   await api.post(`/friends/request/${requestId}/respond`, { status });
 };

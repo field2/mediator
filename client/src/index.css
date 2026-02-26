@@ -1016,3 +1016,99 @@ nav a.has-pending::before {
 .pad1 {
   padding: 0.5rem;
 }
+
+.friend-requests {
+  margin-bottom: 2rem;
+  padding: 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 0.25rem;
+  background: rgba(0, 0, 0, 0.3);
+}
+.friend-requests h2 {
+  font-size: 0.8rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  color: #fff;
+}
+.friend-requests .requests-section {
+  margin-bottom: 1.5rem;
+}
+.friend-requests .requests-section:last-child {
+  margin-bottom: 0;
+}
+.friend-requests .requests-section h3 {
+  font-size: 0.6rem;
+  color: rgba(255, 255, 255, 0.7);
+  text-transform: uppercase;
+  letter-spacing: 0.05rem;
+  margin-bottom: 0.7rem;
+}
+.friend-requests .friend-requests-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+}
+.friend-requests .friend-request-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.6rem;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 0.15rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+.friend-requests .friend-request-item.outgoing {
+  opacity: 0.85;
+}
+.friend-requests .friend-request-item .request-name {
+  font-size: 0.5rem;
+  color: #fff;
+  flex: 1;
+}
+.friend-requests .friend-request-item .request-actions {
+  display: flex;
+  gap: 0.4rem;
+  align-items: center;
+}
+.friend-requests .friend-request-item .request-actions button,
+.friend-requests .friend-request-item .request-actions .pending-badge {
+  font-size: 0.35rem;
+  padding: 0.3rem 0.6rem;
+  border: none;
+  border-radius: 0.1rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.friend-requests .friend-request-item .request-actions .approve {
+  background: rgba(76, 175, 80, 0.8);
+  color: #fff;
+}
+.friend-requests .friend-request-item .request-actions .approve:hover {
+  background: rgb(76, 175, 80);
+  transform: scale(1.05);
+}
+.friend-requests .friend-request-item .request-actions .deny {
+  background: rgba(244, 67, 54, 0.8);
+  color: #fff;
+}
+.friend-requests .friend-request-item .request-actions .deny:hover {
+  background: rgb(244, 67, 54);
+  transform: scale(1.05);
+}
+.friend-requests .friend-request-item .request-actions .cancel-btn {
+  background: rgba(158, 158, 158, 0.8);
+  color: #fff;
+}
+.friend-requests .friend-request-item .request-actions .cancel-btn:hover {
+  background: rgb(158, 158, 158);
+  transform: scale(1.05);
+}
+.friend-requests .friend-request-item .request-actions .pending-badge {
+  background: none;
+  color: rgba(255, 255, 255, 0.6);
+  font-style: italic;
+  cursor: default;
+}
+.friend-requests .friend-request-item .request-actions .pending-badge:hover {
+  transform: none;
+}

@@ -6,6 +6,7 @@ import {
 	sendFriendRequest,
 	getFriends,
 	getFriendRequests,
+	getOutgoingFriendRequests,
 	respondToFriendRequest,
 } from '../api';
 // ...existing code...
@@ -20,7 +21,8 @@ const Friends: React.FC = () => {
 	const [searchResults, setSearchResults] = useState<any[]>([]);
 	const [friends, setFriends] = useState<User[]>([]);
 	const [loading, setLoading] = useState(false);
-	const [requests, setRequests] = useState<any[]>([]);
+	const [incomingRequests, setIncomingRequests] = useState<any[]>([]);
+	const [outgoingRequests, setOutgoingRequests] = useState<any[]>([]);
 	const [showResults, setShowResults] = useState(false);
 	const debounceTimer = useRef<number | null>(null);
 	const inputRef = useRef<HTMLInputElement | null>(null);
@@ -72,8 +74,12 @@ const Friends: React.FC = () => {
 
 	const loadRequests = async () => {
 		try {
-			const reqs = await getFriendRequests();
-			setRequests(reqs);
+			const [incoming, outgoing] = await Promise.all([
+				getFriendRequests(),
+				getOutgoingFriendRequests(),
+			]);
+			setIncomingRequests(incoming);
+			setOutgoingRequests(outgoing);
 		} catch (error) {
 			console.error('Error loading friend requests:', error);
 		}
@@ -145,7 +151,7 @@ const Friends: React.FC = () => {
 		try {
 			await respondToFriendRequest(requestId, status);
 			// Immediately remove from UI
-			setRequests(requests.filter((req) => req.id !== requestId));
+			setIncomingRequests(incomingRequests.filter((req) => req.id !== requestId));
 			if (status === 'approved') await loadFriends();
 			// notify header/other components that pending requests changed
 			document.dispatchEvent(
@@ -158,6 +164,10 @@ const Friends: React.FC = () => {
 			await loadRequests();
 		}
 	};
+
+	// Filter to only show pending requests
+	const pendingIncoming = incomingRequests.filter((req) => req.status === 'pending');
+	const pendingOutgoing = outgoingRequests.filter((req) => req.status === 'pending');
 
 	return (
 		<div className="page-container">
@@ -233,23 +243,57 @@ const Friends: React.FC = () => {
 					: null}
 
 				<div className="friends-list">
-					{requests.length > 0 && (
+					{(pendingIncoming.length > 0 || pendingOutgoing.length > 0) && (
 						<div className="friend-requests">
-							<h2>Friend Requests</h2>
+							<h2>Pending Requests</h2>
 							<div className="friend-requests-list">
-								{requests.map((req) => (
-									<div key={req.id} className="friend-request-item">
-										<div className="request-name">{req.username}</div>
-										<div className="request-actions">
-											<button className="approve" onClick={() => handleRespond(req.id, 'approved')}>
-												Approve
-											</button>
-											<button className="deny" onClick={() => handleRespond(req.id, 'rejected')}>
-												Deny
-											</button>
-										</div>
+								{pendingIncoming.length > 0 && (
+									<div className="requests-section">
+										<h3>Received</h3>
+										{pendingIncoming.map((req) => (
+											<div key={req.id} className="friend-request-item">
+												<div className="request-name">{req.username}</div>
+												<div className="request-actions">
+													<button
+														className="approve"
+														onClick={() => handleRespond(req.id, 'approved')}
+													>
+														Approve
+													</button>
+													<button
+														className="deny"
+														onClick={() => handleRespond(req.id, 'rejected')}
+													>
+														Deny
+													</button>
+												</div>
+											</div>
+										))}
 									</div>
-								))}
+								)}
+
+								{pendingOutgoing.length > 0 && (
+									<div className="requests-section">
+										<h3>Sent</h3>
+										{pendingOutgoing.map((req) => (
+											<div key={req.id} className="friend-request-item outgoing">
+												<div className="request-name">{req.username}</div>
+												<div className="request-actions">
+													<span className="pending-badge">Pending...</span>
+													<button
+														className="cancel-btn"
+														onClick={() => {
+															// TODO: Add cancel outgoing request functionality
+															alert('Cancel functionality coming soon');
+														}}
+													>
+														Cancel
+													</button>
+												</div>
+											</div>
+										))}
+									</div>
+								)}
 							</div>
 						</div>
 					)}

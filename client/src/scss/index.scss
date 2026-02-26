@@ -1042,3 +1042,117 @@ nav a.has-pending::before {
 .pad1 {
 	padding: 0.5rem;
 }
+// Friend requests styling
+.friend-requests {
+	margin-bottom: 2rem;
+	padding: 1rem;
+	border: 1px solid rgba(255, 255, 255, 0.2);
+	border-radius: 0.25rem;
+	background: rgba(0, 0, 0, 0.3);
+
+	h2 {
+		font-size: 0.8rem;
+		font-weight: 600;
+		margin-bottom: 1rem;
+		color: #fff;
+	}
+
+	.requests-section {
+		margin-bottom: 1.5rem;
+
+		&:last-child {
+			margin-bottom: 0;
+		}
+
+		h3 {
+			font-size: 0.6rem;
+			color: rgba(255, 255, 255, 0.7);
+			text-transform: uppercase;
+			letter-spacing: 0.05rem;
+			margin-bottom: 0.7rem;
+		}
+	}
+
+	.friend-requests-list {
+		display: flex;
+		flex-direction: column;
+		gap: 0.7rem;
+	}
+
+	.friend-request-item {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		padding: 0.6rem;
+		background: rgba(255, 255, 255, 0.05);
+		border-radius: 0.15rem;
+		border: 1px solid rgba(255, 255, 255, 0.1);
+
+		&.outgoing {
+			opacity: 0.85;
+		}
+
+		.request-name {
+			font-size: 0.5rem;
+			color: #fff;
+			flex: 1;
+		}
+
+		.request-actions {
+			display: flex;
+			gap: 0.4rem;
+			align-items: center;
+
+			button,
+			.pending-badge {
+				font-size: 0.35rem;
+				padding: 0.3rem 0.6rem;
+				border: none;
+				border-radius: 0.1rem;
+				cursor: pointer;
+				transition: all 0.2s ease;
+			}
+
+			.approve {
+				background: rgba(76, 175, 80, 0.8);
+				color: #fff;
+
+				&:hover {
+					background: rgba(76, 175, 80, 1);
+					transform: scale(1.05);
+				}
+			}
+
+			.deny {
+				background: rgba(244, 67, 54, 0.8);
+				color: #fff;
+
+				&:hover {
+					background: rgba(244, 67, 54, 1);
+					transform: scale(1.05);
+				}
+			}
+
+			.cancel-btn {
+				background: rgba(158, 158, 158, 0.8);
+				color: #fff;
+
+				&:hover {
+					background: rgba(158, 158, 158, 1);
+					transform: scale(1.05);
+				}
+			}
+
+			.pending-badge {
+				background: none;
+				color: rgba(255, 255, 255, 0.6);
+				font-style: italic;
+				cursor: default;
+
+				&:hover {
+					transform: none;
+				}
+			}
+		}
+	}
+}

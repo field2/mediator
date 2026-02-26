@@ -1,6 +1,7 @@
 import express from 'express';
 import { FriendModel } from '../db/models';
 import { authenticate, AuthRequest } from '../middleware/auth';
+import db from '../db/database';
 
 const router = express.Router();
 
@@ -102,7 +103,24 @@ router.get('/requests/incoming', authenticate, async (req: AuthRequest, res) => 
     res.status(500).json({ error: 'Failed to get friend requests' });
   }
 });
-
+// Get outgoing friend requests (sent by current user)
+router.get('/requests/outgoing', authenticate, async (req: AuthRequest, res) => {
+  try {
+    const userId = req.userId as number;
+    const stmt = db.prepare(`
+      SELECT fr.id, fr.to_user_id as from_user_id, u.username, u.email, fr.requested_at, fr.status
+      FROM friend_requests fr
+      JOIN users u ON fr.to_user_id = u.id
+      WHERE fr.from_user_id = ?
+      ORDER BY fr.requested_at DESC
+    `);
+    const requests = stmt.all(userId) as any[];
+    res.json(requests);
+  } catch (error) {
+    console.error('Get outgoing friend requests error:', error);
+    res.status(500).json({ error: 'Failed to get outgoing friend requests' });
+  }
+});
 // Respond to friend request
 router.post('/request/:id/respond', authenticate, async (req, res) => {
   try {
