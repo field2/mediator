@@ -169,6 +169,21 @@ export const updateMediaNotes = async (listId: number, mediaId: number, notes: s
   return response.data;
 };
 
+export const getWatchedWithFriends = async (listId: number, mediaId: number): Promise<any[]> => {
+  const response = await api.get(`/lists/${listId}/media/${mediaId}/watched-with`);
+  return response.data;
+};
+
+export const addWatchedWithFriend = async (listId: number, mediaId: number, userId: number): Promise<any[]> => {
+  const response = await api.post(`/lists/${listId}/media/${mediaId}/watched-with`, { userId });
+  return response.data;
+};
+
+export const removeWatchedWithFriend = async (listId: number, mediaId: number, userId: number): Promise<any[]> => {
+  const response = await api.delete(`/lists/${listId}/media/${mediaId}/watched-with/${userId}`);
+  return response.data;
+};
+
 export const deleteMediaFromList = async (listId: number, mediaId: number): Promise<void> => {
   await api.delete(`/lists/${listId}/media/${mediaId}`);
 };

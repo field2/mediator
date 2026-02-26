@@ -12,8 +12,12 @@ import {
 	updateMediaNotes,
 	getFriendRequests,
 	getUserAutoList,
+	getWatchedWithFriends,
+	addWatchedWithFriend,
+	removeWatchedWithFriend,
+	getFriends,
 } from '../api';
-import { MediaItem } from '../types';
+import { MediaItem, User } from '../types';
 import StarRating from './StarRating';
 
 const Dashboard: React.FC = () => {
@@ -100,6 +104,10 @@ const Dashboard: React.FC = () => {
 	const [cardNotes, setCardNotes] = useState<{ [key: number]: string }>({});
 	const [editingNotes, setEditingNotes] = useState<{ [key: number]: boolean }>({});
 	const textareaRefs = React.useRef<{ [key: number]: HTMLTextAreaElement | null }>({});
+	const [watchedWith, setWatchedWith] = useState<{ [key: number]: User[] }>({});
+	const [editingWatchedWith, setEditingWatchedWith] = useState<{ [key: number]: boolean }>({});
+	const [friendsList, setFriendsList] = useState<User[]>([]);
+	const [watchedWithSearch, setWatchedWithSearch] = useState<{ [key: number]: string }>({});
 
 	// Reset flipped card when media type changes
 	useEffect(() => {
@@ -139,6 +147,24 @@ const Dashboard: React.FC = () => {
 			}
 		};
 		fetchFriendRequests();
+	}, [isAuthenticated]);
+
+	// Load friends list for watched with feature
+	useEffect(() => {
+		const loadFriends = async () => {
+			if (!isAuthenticated) {
+				setFriendsList([]);
+				return;
+			}
+			try {
+				const friends = await getFriends();
+				setFriendsList(Array.isArray(friends) ? friends : []);
+			} catch (err) {
+				console.error('Error loading friends:', err);
+				setFriendsList([]);
+			}
+		};
+		loadFriends();
 	}, [isAuthenticated]);
 
 	// load items (server or guest) when media type or auth state changes
@@ -283,6 +309,47 @@ const Dashboard: React.FC = () => {
 				textarea.selectionEnd = textarea.value.length;
 			}
 		}, 0);
+	};
+
+	const handleLoadWatchedWith = async (mediaId: number, listId: number) => {
+		if (!isAuthenticated) return;
+		try {
+			const friends = await getWatchedWithFriends(listId, mediaId);
+			setWatchedWith((prev) => ({ ...prev, [mediaId]: Array.isArray(friends) ? friends : [] }));
+		} catch (err) {
+			console.error('Error loading watched with:', err);
+		}
+	};
+
+	const handleAddWatchedWithFriend = async (mediaId: number, listId: number, friendId: number) => {
+		if (!isAuthenticated) return;
+		try {
+			const updatedFriends = await addWatchedWithFriend(listId, mediaId, friendId);
+			setWatchedWith((prev) => ({
+				...prev,
+				[mediaId]: Array.isArray(updatedFriends) ? updatedFriends : [],
+			}));
+			setWatchedWithSearch((prev) => ({ ...prev, [mediaId]: '' }));
+		} catch (err) {
+			console.error('Error adding watched with friend:', err);
+		}
+	};
+
+	const handleRemoveWatchedWithFriend = async (
+		mediaId: number,
+		listId: number,
+		friendId: number
+	) => {
+		if (!isAuthenticated) return;
+		try {
+			const updatedFriends = await removeWatchedWithFriend(listId, mediaId, friendId);
+			setWatchedWith((prev) => ({
+				...prev,
+				[mediaId]: Array.isArray(updatedFriends) ? updatedFriends : [],
+			}));
+		} catch (err) {
+			console.error('Error removing watched with friend:', err);
+		}
 	};
 
 	const handleRemove = async (mediaId: number) => {
@@ -528,6 +595,138 @@ const Dashboard: React.FC = () => {
 																	>
 																		<path
 																			d="M13.0052 4.16637C13.3958 3.77585 14.0289 3.77585 14.4194 4.16637L15.8337 5.58059C16.2242 5.97111 16.2242 6.60427 15.8337 6.9948L14.4194 8.40901L11.591 5.58059L13.0052 4.16637ZM5.93417 11.2374L10.8839 6.28769L13.7123 9.11612L8.76259 14.0659L4.87351 15.1265L5.93417 11.2374Z"
+																			fill="white"
+																		/>
+																	</svg>
+																) : (
+																	<svg
+																		className="icon-plus"
+																		width="20"
+																		height="20"
+																		viewBox="0 0 20 20"
+																		fill="none"
+																		xmlns="http://www.w3.org/2000/svg"
+																	>
+																		<path
+																			d="M10 4C10.5523 4 11 4.44772 11 5V9H15C15.5523 9 16 9.44772 16 10C16 10.5523 15.5523 11 15 11H11V15C11 15.5523 10.5523 16 10 16C9.44772 16 9 15.5523 9 15V11H5C4.44772 11 4 10.5523 4 10C4 9.44772 4.44772 9 5 9H9V5C9 4.44772 9.44772 4 10 4Z"
+																			fill="white"
+																		/>
+																	</svg>
+																)}
+															</button>
+														</div>
+													</div>
+													<div className="card-info">
+														<h3>Watched with</h3>
+														<div className="auto-item-watched-with-container">
+															{/* Watched with friends list */}
+															{(!watchedWith[mi.id] || watchedWith[mi.id].length === 0) &&
+															!editingWatchedWith[mi.id] ? (
+																<p className="auto-item-watched-with-empty">No friends added yet</p>
+															) : (
+																<div className="auto-item-watched-with-list">
+																	{watchedWith[mi.id]?.map((friend) => (
+																		<div
+																			key={friend.id || friend.userId}
+																			className="watched-with-friend"
+																		>
+																			<span>{friend.username}</span>
+																			<button
+																				className="remove-watched-with-btn"
+																				onClick={() =>
+																					handleRemoveWatchedWithFriend(
+																						mi.id,
+																						mi.list_id,
+																						friend.id || friend.userId
+																					)
+																				}
+																				aria-label={`Remove ${friend.username}`}
+																			>
+																				×
+																			</button>
+																		</div>
+																	))}
+																</div>
+															)}
+
+															{/* Search/Add friends */}
+															{editingWatchedWith[mi.id] && (
+																<div className="auto-item-watched-with-search">
+																	<input
+																		type="text"
+																		placeholder="Search friends..."
+																		value={watchedWithSearch[mi.id] || ''}
+																		onChange={(e) =>
+																			setWatchedWithSearch((prev) => ({
+																				...prev,
+																				[mi.id]: e.target.value,
+																			}))
+																		}
+																		className="watched-with-search-input"
+																	/>
+																	<div className="watched-with-search-results">
+																		{(watchedWithSearch[mi.id] || '').trim() &&
+																			friendsList
+																				.filter(
+																					(friend) =>
+																						friend.username
+																							.toLowerCase()
+																							.includes(
+																								(watchedWithSearch[mi.id] || '').toLowerCase()
+																							) &&
+																						!watchedWith[mi.id]?.some(
+																							(w) =>
+																								(w.id || w.userId) === (friend.id || friend.userId)
+																						)
+																				)
+																				.map((friend) => (
+																					<button
+																						key={friend.id || friend.userId}
+																						className="search-result-item"
+																						onClick={() =>
+																							handleAddWatchedWithFriend(
+																								mi.id,
+																								mi.list_id,
+																								friend.id || friend.userId
+																							)
+																						}
+																					>
+																						{friend.username}
+																					</button>
+																				))}
+																	</div>
+																</div>
+															)}
+
+															<button
+																className="auto-item-watched-with-btn"
+																onClick={() => {
+																	if (!editingWatchedWith[mi.id]) {
+																		// Load watched with data when first opening
+																		if (!watchedWith[mi.id]) {
+																			handleLoadWatchedWith(mi.id, mi.list_id);
+																		}
+																	}
+																	setEditingWatchedWith((prev) => ({
+																		...prev,
+																		[mi.id]: !prev[mi.id],
+																	}));
+																}}
+																aria-label={
+																	editingWatchedWith[mi.id] ? 'Done' : 'Edit watched with'
+																}
+															>
+																{editingWatchedWith[mi.id] ? (
+																	<svg
+																		className="icon-checkmark"
+																		width="20"
+																		height="20"
+																		viewBox="0 0 20 20"
+																		fill="none"
+																		xmlns="http://www.w3.org/2000/svg"
+																	>
+																		<path
+																			d="M16.2187 4.12666C16.5637 3.6954 17.1937 3.6254 17.6249 3.97041C18.0562 4.31542 18.1262 4.9454 17.7812 5.37666L9.08293 16.2487L3.29289 10.4587C2.90237 10.0682 2.90237 9.43515 3.29289 9.04463C3.68342 8.65411 4.31643 8.65411 4.70696 9.04463L8.91594 13.2536L16.2187 4.12666Z"
 																			fill="white"
 																		/>
 																	</svg>

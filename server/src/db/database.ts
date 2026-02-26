@@ -160,6 +160,18 @@ export async function initializeDatabase() {
   }
 
   db.exec(`
+    CREATE TABLE IF NOT EXISTS watched_with (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      media_item_id INTEGER NOT NULL,
+      user_id INTEGER NOT NULL,
+      added_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      UNIQUE(media_item_id, user_id),
+      FOREIGN KEY (media_item_id) REFERENCES media_items(id) ON DELETE CASCADE,
+      FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    )
+  `);
+
+  db.exec(`
     CREATE TABLE IF NOT EXISTS ratings (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       media_item_id INTEGER NOT NULL,

@@ -313,3 +313,27 @@ export const FriendModel = {
     return stmt.run(id1, id2);
   }
 };
+// Watched with operations
+export const WatchedWithModel = {
+  addFriend: (mediaItemId: number, userId: number) => {
+    const stmt = db.prepare('INSERT OR IGNORE INTO watched_with (media_item_id, user_id) VALUES (?, ?)');
+    const result = stmt.run(mediaItemId, userId);
+    return result.lastInsertRowid;
+  },
+
+  removeFriend: (mediaItemId: number, userId: number) => {
+    const stmt = db.prepare('DELETE FROM watched_with WHERE media_item_id = ? AND user_id = ?');
+    return stmt.run(mediaItemId, userId);
+  },
+
+  getWatchedWithFriends: (mediaItemId: number): User[] => {
+    const stmt = db.prepare(`
+      SELECT u.id, u.username, u.email, u.created_at
+      FROM watched_with ww
+      JOIN users u ON ww.user_id = u.id
+      WHERE ww.media_item_id = ?
+      ORDER BY u.username
+    `);
+    return stmt.all(mediaItemId) as User[];
+  }
+};
