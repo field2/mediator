@@ -505,257 +505,277 @@ const Dashboard: React.FC = () => {
 												/>
 											</div>
 											<div className="auto-item-card-back">
-												<header>
-													<div className="auto-item-title">{mi.title}</div>
-													{mi.year && <div className="auto-item-year">{mi.year}</div>}
-												</header>
-												<main>
-													<div className="card-info">
-														<h3>Date added</h3>
-														<div className="auto-item-date">{formatDate(mi.added_at)}</div>
+												<div
+													className="auto-item-card-back-close"
+													onClick={() => setFlippedCardId(null)}
+													style={{ cursor: 'pointer' }}
+												>
+													<svg
+														width="20"
+														height="20"
+														viewBox="0 0 20 20"
+														fill="none"
+														xmlns="http://www.w3.org/2000/svg"
+													>
+														<path
+															d="M14.2427 5.75736C14.6332 6.14788 14.6332 6.78104 14.2427 7.17157L11.4142 10L14.2427 12.8284C14.6332 13.2189 14.6332 13.8521 14.2427 14.2426C13.8521 14.6332 13.219 14.6332 12.8284 14.2426L10 11.4142L7.17158 14.2426C6.78106 14.6332 6.1479 14.6332 5.75737 14.2426C5.36685 13.8521 5.36685 13.2189 5.75737 12.8284L8.5858 10L5.75737 7.17157C5.36685 6.78104 5.36685 6.14788 5.75737 5.75736C6.1479 5.36683 6.78106 5.36683 7.17158 5.75736L10 8.58578L12.8284 5.75736C13.219 5.36683 13.8521 5.36683 14.2427 5.75736Z"
+															fill="white"
+														/>
+													</svg>
+												</div>
+												<div className="card-info">
+													<div className="auto-item-title">
+														{mi.title} ({mi.year})
 													</div>
-													<div className="card-info">
-														<h3>Rating</h3>
-														<div className="auto-item-rating">
-															<StarRating
-																rating={mi.userRating || 0}
-																onRate={(r) => handleRate(mi.id, r)}
-																readonly={!user || !isAuthenticated}
-															/>
-														</div>
+												</div>
+												<div className="card-info">
+													<div className="card-info-label">Date added</div>
+													<div className="auto-item-date">{formatDate(mi.added_at)}</div>
+												</div>
+												<div className="card-info">
+													<div className="card-info-label">Rating</div>
+													<div className="auto-item-rating">
+														<StarRating
+															rating={mi.userRating || 0}
+															onRate={(r) => handleRate(mi.id, r)}
+															readonly={!user || !isAuthenticated}
+														/>
 													</div>
-													<div className="card-info">
-														<h3>Notes</h3>
+												</div>
+												<div className="card-info">
+													<div className="card-info-label">Notes</div>
 
-														<div className="auto-item-notes-container">
-															{editingNotes[mi.id] ||
-															!(cardNotes[mi.id] !== undefined ? cardNotes[mi.id] : mi.notes) ? (
-																<textarea
-																	ref={(el) => {
-																		if (el) textareaRefs.current[mi.id] = el;
-																	}}
-																	className="auto-item-notes"
-																	placeholder="Add notes..."
-																	value={
-																		cardNotes[mi.id] !== undefined
-																			? cardNotes[mi.id]
-																			: mi.notes || ''
-																	}
-																	onChange={(e) => handleNotesChange(mi.id, e.target.value)}
-																	onFocus={() => {
-																		if (!editingNotes[mi.id]) {
-																			handleEditNotes(mi.id);
-																		}
-																	}}
-																/>
-															) : (
-																<div className="auto-item-notes-display">
-																	{cardNotes[mi.id] !== undefined ? cardNotes[mi.id] : mi.notes}
-																</div>
-															)}
-															<button
-																className="auto-item-notes-btn"
-																onClick={() => {
-																	const hasNotes =
-																		cardNotes[mi.id] !== undefined ? cardNotes[mi.id] : mi.notes;
-																	if (editingNotes[mi.id]) {
-																		handleSaveNotes(mi.id, mi.list_id);
-																	} else if (!hasNotes) {
-																		handleEditNotes(mi.id);
-																	} else {
-																		handleEditNotes(mi.id);
-																	}
+													<div className="auto-item-notes-container">
+														{editingNotes[mi.id] ||
+														!(cardNotes[mi.id] !== undefined ? cardNotes[mi.id] : mi.notes) ? (
+															<textarea
+																ref={(el) => {
+																	if (el) textareaRefs.current[mi.id] = el;
 																}}
-																aria-label={editingNotes[mi.id] ? 'Save notes' : 'Edit notes'}
-															>
-																{editingNotes[mi.id] ? (
-																	<svg
-																		className="icon-checkmark"
-																		width="20"
-																		height="20"
-																		viewBox="0 0 20 20"
-																		fill="none"
-																		xmlns="http://www.w3.org/2000/svg"
-																	>
-																		<path
-																			d="M16.2187 4.12666C16.5637 3.6954 17.1937 3.6254 17.6249 3.97041C18.0562 4.31542 18.1262 4.9454 17.7812 5.37666L9.08293 16.2487L3.29289 10.4587C2.90237 10.0682 2.90237 9.43515 3.29289 9.04463C3.68342 8.65411 4.31643 8.65411 4.70696 9.04463L8.91594 13.2536L16.2187 4.12666Z"
-																			fill="white"
-																		/>
-																	</svg>
-																) : (
-																		cardNotes[mi.id] !== undefined ? cardNotes[mi.id] : mi.notes
-																  ) ? (
-																	<svg
-																		className="icon-pencil"
-																		width="20"
-																		height="20"
-																		viewBox="0 0 20 20"
-																		fill="none"
-																		xmlns="http://www.w3.org/2000/svg"
-																	>
-																		<path
-																			d="M13.0052 4.16637C13.3958 3.77585 14.0289 3.77585 14.4194 4.16637L15.8337 5.58059C16.2242 5.97111 16.2242 6.60427 15.8337 6.9948L14.4194 8.40901L11.591 5.58059L13.0052 4.16637ZM5.93417 11.2374L10.8839 6.28769L13.7123 9.11612L8.76259 14.0659L4.87351 15.1265L5.93417 11.2374Z"
-																			fill="white"
-																		/>
-																	</svg>
-																) : (
-																	<svg
-																		className="icon-plus"
-																		width="20"
-																		height="20"
-																		viewBox="0 0 20 20"
-																		fill="none"
-																		xmlns="http://www.w3.org/2000/svg"
-																	>
-																		<path
-																			d="M10 4C10.5523 4 11 4.44772 11 5V9H15C15.5523 9 16 9.44772 16 10C16 10.5523 15.5523 11 15 11H11V15C11 15.5523 10.5523 16 10 16C9.44772 16 9 15.5523 9 15V11H5C4.44772 11 4 10.5523 4 10C4 9.44772 4.44772 9 5 9H9V5C9 4.44772 9.44772 4 10 4Z"
-																			fill="white"
-																		/>
-																	</svg>
-																)}
-															</button>
-														</div>
-													</div>
-													<div className="card-info">
-														<h3>Watched with</h3>
-														<div className="auto-item-watched-with-container">
-															{/* Watched with friends list */}
-															{(!watchedWith[mi.id] || watchedWith[mi.id].length === 0) &&
-															!editingWatchedWith[mi.id] ? (
-																<p className="auto-item-watched-with-empty">No friends added yet</p>
-															) : (
-																<div className="auto-item-watched-with-list">
-																	{watchedWith[mi.id]?.map((friend) => (
-																		<div
-																			key={friend.id || friend.userId}
-																			className="watched-with-friend"
-																		>
-																			<span>{friend.username}</span>
-																			<button
-																				className="remove-watched-with-btn"
-																				onClick={() =>
-																					handleRemoveWatchedWithFriend(
-																						mi.id,
-																						mi.list_id,
-																						friend.id || friend.userId
-																					)
-																				}
-																				aria-label={`Remove ${friend.username}`}
-																			>
-																				×
-																			</button>
-																		</div>
-																	))}
-																</div>
-															)}
-
-															{/* Search/Add friends */}
-															{editingWatchedWith[mi.id] && (
-																<div className="auto-item-watched-with-search">
-																	<input
-																		type="text"
-																		placeholder="Search friends..."
-																		value={watchedWithSearch[mi.id] || ''}
-																		onChange={(e) =>
-																			setWatchedWithSearch((prev) => ({
-																				...prev,
-																				[mi.id]: e.target.value,
-																			}))
-																		}
-																		className="watched-with-search-input"
-																	/>
-																	<div className="watched-with-search-results">
-																		{(watchedWithSearch[mi.id] || '').trim() &&
-																			friendsList
-																				.filter(
-																					(friend) =>
-																						friend.username
-																							.toLowerCase()
-																							.includes(
-																								(watchedWithSearch[mi.id] || '').toLowerCase()
-																							) &&
-																						!watchedWith[mi.id]?.some(
-																							(w) =>
-																								(w.id || w.userId) === (friend.id || friend.userId)
-																						)
-																				)
-																				.map((friend) => (
-																					<button
-																						key={friend.id || friend.userId}
-																						className="search-result-item"
-																						onClick={() =>
-																							handleAddWatchedWithFriend(
-																								mi.id,
-																								mi.list_id,
-																								friend.id || friend.userId
-																							)
-																						}
-																					>
-																						{friend.username}
-																					</button>
-																				))}
-																	</div>
-																</div>
-															)}
-
-															<button
-																className="auto-item-watched-with-btn"
-																onClick={() => {
-																	if (!editingWatchedWith[mi.id]) {
-																		// Load watched with data when first opening
-																		if (!watchedWith[mi.id]) {
-																			handleLoadWatchedWith(mi.id, mi.list_id);
-																		}
-																	}
-																	setEditingWatchedWith((prev) => ({
-																		...prev,
-																		[mi.id]: !prev[mi.id],
-																	}));
-																}}
-																aria-label={
-																	editingWatchedWith[mi.id] ? 'Done' : 'Edit watched with'
+																className="auto-item-notes"
+																placeholder="Add notes..."
+																value={
+																	cardNotes[mi.id] !== undefined ? cardNotes[mi.id] : mi.notes || ''
 																}
-															>
-																{editingWatchedWith[mi.id] ? (
-																	<svg
-																		className="icon-checkmark"
-																		width="20"
-																		height="20"
-																		viewBox="0 0 20 20"
-																		fill="none"
-																		xmlns="http://www.w3.org/2000/svg"
-																	>
-																		<path
-																			d="M16.2187 4.12666C16.5637 3.6954 17.1937 3.6254 17.6249 3.97041C18.0562 4.31542 18.1262 4.9454 17.7812 5.37666L9.08293 16.2487L3.29289 10.4587C2.90237 10.0682 2.90237 9.43515 3.29289 9.04463C3.68342 8.65411 4.31643 8.65411 4.70696 9.04463L8.91594 13.2536L16.2187 4.12666Z"
-																			fill="white"
-																		/>
-																	</svg>
-																) : (
-																	<svg
-																		className="icon-plus"
-																		width="20"
-																		height="20"
-																		viewBox="0 0 20 20"
-																		fill="none"
-																		xmlns="http://www.w3.org/2000/svg"
-																	>
-																		<path
-																			d="M10 4C10.5523 4 11 4.44772 11 5V9H15C15.5523 9 16 9.44772 16 10C16 10.5523 15.5523 11 15 11H11V15C11 15.5523 10.5523 16 10 16C9.44772 16 9 15.5523 9 15V11H5C4.44772 11 4 10.5523 4 10C4 9.44772 4.44772 9 5 9H9V5C9 4.44772 9.44772 4 10 4Z"
-																			fill="white"
-																		/>
-																	</svg>
-																)}
-															</button>
-														</div>
+																onChange={(e) => handleNotesChange(mi.id, e.target.value)}
+																onFocus={() => {
+																	if (!editingNotes[mi.id]) {
+																		handleEditNotes(mi.id);
+																	}
+																}}
+															/>
+														) : (
+															<div className="auto-item-notes-display">
+																{cardNotes[mi.id] !== undefined ? cardNotes[mi.id] : mi.notes}
+															</div>
+														)}
+														<button
+															className="auto-item-notes-btn"
+															onClick={() => {
+																const hasNotes =
+																	cardNotes[mi.id] !== undefined ? cardNotes[mi.id] : mi.notes;
+																if (editingNotes[mi.id]) {
+																	handleSaveNotes(mi.id, mi.list_id);
+																} else if (!hasNotes) {
+																	handleEditNotes(mi.id);
+																} else {
+																	handleEditNotes(mi.id);
+																}
+															}}
+															aria-label={editingNotes[mi.id] ? 'Save notes' : 'Edit notes'}
+														>
+															{editingNotes[mi.id] ? (
+																<svg
+																	className="icon-checkmark"
+																	width="20"
+																	height="20"
+																	viewBox="0 0 20 20"
+																	fill="none"
+																	xmlns="http://www.w3.org/2000/svg"
+																>
+																	<path
+																		d="M16.2187 4.12666C16.5637 3.6954 17.1937 3.6254 17.6249 3.97041C18.0562 4.31542 18.1262 4.9454 17.7812 5.37666L9.08293 16.2487L3.29289 10.4587C2.90237 10.0682 2.90237 9.43515 3.29289 9.04463C3.68342 8.65411 4.31643 8.65411 4.70696 9.04463L8.91594 13.2536L16.2187 4.12666Z"
+																		fill="white"
+																	/>
+																</svg>
+															) : (cardNotes[mi.id] !== undefined ? cardNotes[mi.id] : mi.notes) ? (
+																<svg
+																	className="icon-pencil"
+																	width="20"
+																	height="20"
+																	viewBox="0 0 20 20"
+																	fill="none"
+																	xmlns="http://www.w3.org/2000/svg"
+																>
+																	<path
+																		d="M13.0052 4.16637C13.3958 3.77585 14.0289 3.77585 14.4194 4.16637L15.8337 5.58059C16.2242 5.97111 16.2242 6.60427 15.8337 6.9948L14.4194 8.40901L11.591 5.58059L13.0052 4.16637ZM5.93417 11.2374L10.8839 6.28769L13.7123 9.11612L8.76259 14.0659L4.87351 15.1265L5.93417 11.2374Z"
+																		fill="white"
+																	/>
+																</svg>
+															) : (
+																<svg
+																	className="icon-plus"
+																	width="20"
+																	height="20"
+																	viewBox="0 0 20 20"
+																	fill="none"
+																	xmlns="http://www.w3.org/2000/svg"
+																>
+																	<path
+																		d="M10 4C10.5523 4 11 4.44772 11 5V9H15C15.5523 9 16 9.44772 16 10C16 10.5523 15.5523 11 15 11H11V15C11 15.5523 10.5523 16 10 16C9.44772 16 9 15.5523 9 15V11H5C4.44772 11 4 10.5523 4 10C4 9.44772 4.44772 9 5 9H9V5C9 4.44772 9.44772 4 10 4Z"
+																		fill="white"
+																	/>
+																</svg>
+															)}
+														</button>
 													</div>
+												</div>
+												<div className="card-info">
+													<div className="card-info-label">Watched with</div>
+													<div className="auto-item-watched-with-container">
+														{/* Watched with friends list */}
+														{watchedWith[mi.id] && watchedWith[mi.id].length > 0 && (
+															<div className="auto-item-watched-with-list">
+																{watchedWith[mi.id].map((friend) => (
+																	<div
+																		key={friend.id || friend.userId}
+																		className="watched-with-friend"
+																	>
+																		<span>{friend.username}</span>
+																		<button
+																			className="remove-watched-with-btn"
+																			onClick={() =>
+																				handleRemoveWatchedWithFriend(
+																					mi.id,
+																					mi.list_id,
+																					friend.id || friend.userId
+																				)
+																			}
+																			aria-label={`Remove ${friend.username}`}
+																		>
+																			×
+																		</button>
+																	</div>
+																))}
+															</div>
+														)}
+
+														{/* Search/Add friends */}
+														{editingWatchedWith[mi.id] && (
+															<div className="auto-item-watched-with-search">
+																<input
+																	type="text"
+																	placeholder="Search friends..."
+																	value={watchedWithSearch[mi.id] || ''}
+																	onChange={(e) =>
+																		setWatchedWithSearch((prev) => ({
+																			...prev,
+																			[mi.id]: e.target.value,
+																		}))
+																	}
+																	className="watched-with-search-input"
+																/>
+																<div className="watched-with-search-results">
+																	{(watchedWithSearch[mi.id] || '').trim() &&
+																		friendsList
+																			.filter(
+																				(friend) =>
+																					friend.username
+																						.toLowerCase()
+																						.includes(
+																							(watchedWithSearch[mi.id] || '').toLowerCase()
+																						) &&
+																					!watchedWith[mi.id]?.some(
+																						(w) =>
+																							(w.id || w.userId) === (friend.id || friend.userId)
+																					)
+																			)
+																			.map((friend) => (
+																				<button
+																					key={friend.id || friend.userId}
+																					className="search-result-item"
+																					onClick={() =>
+																						handleAddWatchedWithFriend(
+																							mi.id,
+																							mi.list_id,
+																							friend.id || friend.userId
+																						)
+																					}
+																				>
+																					{friend.username}
+																				</button>
+																			))}
+																</div>
+															</div>
+														)}
+
+														<button
+															className="auto-item-watched-with-btn"
+															onClick={() => {
+																if (!editingWatchedWith[mi.id]) {
+																	// Load watched with data when first opening
+																	if (!watchedWith[mi.id]) {
+																		handleLoadWatchedWith(mi.id, mi.list_id);
+																	}
+																}
+																setEditingWatchedWith((prev) => ({
+																	...prev,
+																	[mi.id]: !prev[mi.id],
+																}));
+															}}
+															aria-label={editingWatchedWith[mi.id] ? 'Done' : 'Edit watched with'}
+														>
+															<span>Add Friend</span>
+															{editingWatchedWith[mi.id] ? (
+																<svg
+																	className="icon-checkmark"
+																	width="20"
+																	height="20"
+																	viewBox="0 0 20 20"
+																	fill="none"
+																	xmlns="http://www.w3.org/2000/svg"
+																>
+																	<path
+																		d="M16.2187 4.12666C16.5637 3.6954 17.1937 3.6254 17.6249 3.97041C18.0562 4.31542 18.1262 4.9454 17.7812 5.37666L9.08293 16.2487L3.29289 10.4587C2.90237 10.0682 2.90237 9.43515 3.29289 9.04463C3.68342 8.65411 4.31643 8.65411 4.70696 9.04463L8.91594 13.2536L16.2187 4.12666Z"
+																		fill="white"
+																	/>
+																</svg>
+															) : (
+																<svg
+																	className="icon-plus"
+																	width="20"
+																	height="20"
+																	viewBox="0 0 20 20"
+																	fill="none"
+																	xmlns="http://www.w3.org/2000/svg"
+																>
+																	<path
+																		d="M10 4C10.5523 4 11 4.44772 11 5V9H15C15.5523 9 16 9.44772 16 10C16 10.5523 15.5523 11 15 11H11V15C11 15.5523 10.5523 16 10 16C9.44772 16 9 15.5523 9 15V11H5C4.44772 11 4 10.5523 4 10C4 9.44772 4.44772 9 5 9H9V5C9 4.44772 9.44772 4 10 4Z"
+																		fill="black"
+																	/>
+																</svg>
+															)}
+														</button>
+													</div>
+												</div>
+												<div className="card-info">
 													<button
 														className="auto-item-remove"
 														onClick={() => handleRemove(mi.id)}
 														aria-label="Remove item"
 													>
-														Remove
+														<span>Remove from list</span>
+														<svg
+															width="20"
+															height="20"
+															viewBox="0 0 20 20"
+															fill="none"
+															xmlns="http://www.w3.org/2000/svg"
+														>
+															<rect x="4" y="9" width="12" height="2" rx="1" fill="#000" />
+														</svg>
 													</button>
-												</main>
+												</div>
 											</div>
 										</div>{' '}
 										{flippedCardId === mi.id && <div className="backdrop-overlay" />}{' '}

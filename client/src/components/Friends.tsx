@@ -6,7 +6,6 @@ import {
 	sendFriendRequest,
 	getFriends,
 	getFriendRequests,
-	getOutgoingFriendRequests,
 	respondToFriendRequest,
 } from '../api';
 // ...existing code...
@@ -21,8 +20,7 @@ const Friends: React.FC = () => {
 	const [searchResults, setSearchResults] = useState<any[]>([]);
 	const [friends, setFriends] = useState<User[]>([]);
 	const [loading, setLoading] = useState(false);
-	const [incomingRequests, setIncomingRequests] = useState<any[]>([]);
-	const [outgoingRequests, setOutgoingRequests] = useState<any[]>([]);
+	const [requests, setRequests] = useState<any[]>([]);
 	const [showResults, setShowResults] = useState(false);
 	const debounceTimer = useRef<number | null>(null);
 	const inputRef = useRef<HTMLInputElement | null>(null);
@@ -74,12 +72,8 @@ const Friends: React.FC = () => {
 
 	const loadRequests = async () => {
 		try {
-			const [incoming, outgoing] = await Promise.all([
-				getFriendRequests(),
-				getOutgoingFriendRequests(),
-			]);
-			setIncomingRequests(incoming);
-			setOutgoingRequests(outgoing);
+			const reqs = await getFriendRequests();
+			setRequests(reqs);
 		} catch (error) {
 			console.error('Error loading friend requests:', error);
 		}
@@ -151,7 +145,7 @@ const Friends: React.FC = () => {
 		try {
 			await respondToFriendRequest(requestId, status);
 			// Immediately remove from UI
-			setIncomingRequests(incomingRequests.filter((req) => req.id !== requestId));
+			setRequests(requests.filter((req) => req.id !== requestId));
 			if (status === 'approved') await loadFriends();
 			// notify header/other components that pending requests changed
 			document.dispatchEvent(
@@ -164,10 +158,6 @@ const Friends: React.FC = () => {
 			await loadRequests();
 		}
 	};
-
-	// Filter to only show pending requests
-	const pendingIncoming = incomingRequests.filter((req) => req.status === 'pending');
-	const pendingOutgoing = outgoingRequests.filter((req) => req.status === 'pending');
 
 	return (
 		<div className="page-container">
@@ -243,79 +233,43 @@ const Friends: React.FC = () => {
 					: null}
 
 				<div className="friends-list">
-					{(pendingIncoming.length > 0 || pendingOutgoing.length > 0) && (
+					{requests.length > 0 && (
 						<div className="friend-requests">
-							<h2>Pending Requests</h2>
+							<h2>Friend Requests</h2>
 							<div className="friend-requests-list">
-								{pendingIncoming.length > 0 && (
-									<div className="requests-section">
-										<h3>Received</h3>
-										{pendingIncoming.map((req) => (
-											<div key={req.id} className="friend-request-item">
-												<div className="request-name">{req.username}</div>
-												<div className="request-actions">
-													<button
-														className="approve"
-														onClick={() => handleRespond(req.id, 'approved')}
-													>
-														Approve
-													</button>
-													<button
-														className="deny"
-														onClick={() => handleRespond(req.id, 'rejected')}
-													>
-														Deny
-													</button>
-												</div>
-											</div>
-										))}
-									</div>
-								)}
-
-								{pendingOutgoing.length > 0 && (
-									<div className="requests-section">
-										<h3>Sent</h3>
-										{pendingOutgoing.map((req) => (
-											<div key={req.id} className="friend-request-item outgoing">
-												<div className="request-name">{req.username}</div>
-												<div className="request-actions">
-													<span className="pending-badge">Pending...</span>
-													<button
-														className="cancel-btn"
-														onClick={() => {
-															// TODO: Add cancel outgoing request functionality
-															alert('Cancel functionality coming soon');
-														}}
-													>
-														Cancel
-													</button>
-												</div>
-											</div>
-										))}
-									</div>
-								)}
-							</div>
-						</div>
-					)}
-					<div className="friends-list">
-						<h2>Your Friends ({friends.length})</h2>
-						{friends.length > 0 ? (
-							<div className="friends-grid">
-								{friends.map((friend) => (
-									<div key={friend.id ?? friend.userId} className="friend-card">
-										<div className="friend-username">{friend.username}</div>
-										<div className="friend-links">
-											<button onClick={() => navigate(`/user/${friend.id ?? friend.userId}`)}>
-												View Media
+								{requests.map((req) => (
+									<div key={req.id} className="friend-request-item">
+										<div className="request-name">{req.username}</div>
+										<div className="request-actions">
+											<button className="approve" onClick={() => handleRespond(req.id, 'approved')}>
+												Approve
+											</button>
+											<button className="deny" onClick={() => handleRespond(req.id, 'rejected')}>
+												Deny
 											</button>
 										</div>
 									</div>
 								))}
 							</div>
-						) : (
-							<p className="empty">No friends yet. Search to add some!</p>
-						)}
-					</div>
+						</div>
+					)}
+					<h2>Your Friends ({friends.length})</h2>
+					{friends.length > 0 ? (
+						<div className="friends-grid">
+							{friends.map((friend) => (
+								<div key={friend.id ?? friend.userId} className="friend-card">
+									<div className="friend-username">{friend.username}</div>
+									<div className="friend-links">
+										<button onClick={() => navigate(`/user/${friend.id ?? friend.userId}`)}>
+											View Media
+										</button>
+									</div>
+								</div>
+							))}
+						</div>
+					) : (
+						<p className="empty">No friends yet. Search to add some!</p>
+					)}
 				</div>
 			</div>
 		</div>
