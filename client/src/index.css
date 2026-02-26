@@ -132,14 +132,13 @@ a {
   opacity: 1;
   transform: scale(1.04);
 }
-.auto-items .auto-item-card.flipped .auto-item-title,
-.auto-items .auto-item-card.flipped .auto-item-year,
-.auto-items .auto-item-card.flipped .auto-item-date {
+.auto-items .auto-item-card.flipped {
   color: #fff;
   font-size: 0.25rem;
 }
 .auto-items .auto-item-card.flipped .auto-item-title {
   font-weight: bold;
+  font-size: 0.35rem;
 }
 .auto-items .auto-item-card.flipped .auto-item-date {
   font-size: 0.2rem;
@@ -158,6 +157,12 @@ a {
   font-family: inherit;
   resize: none;
   display: block;
+}
+.auto-items .auto-item-card.flipped .auto-item-notes:focus {
+  outline: none;
+  border-color: #fff;
+  background: rgba(255, 255, 255, 0.2);
+  box-shadow: 0 0 0.2rem rgba(255, 255, 255, 0.3);
 }
 .auto-items .auto-item-card.flipped .auto-item-notes::placeholder {
   color: rgba(255, 255, 255, 0.5);
