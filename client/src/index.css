@@ -68,6 +68,7 @@ a {
 .auto-items .auto-item-card {
   position: relative;
   transform-origin: center;
+  transition: transform 0.3s ease-in-out;
 }
 .auto-items .auto-item-card .auto-item-card-front {
   position: relative;
@@ -77,30 +78,42 @@ a {
   right: 4px;
   top: 4px;
   z-index: 100;
+  cursor: pointer;
 }
 .auto-items .auto-item-card-back {
   position: absolute;
   left: 0;
   top: 0;
+  width: 100%;
+  height: 100%;
   z-index: -1;
+  opacity: 0;
+  pointer-events: none;
+  background: rgba(0, 0, 0, 0.9);
+  padding: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  transition: opacity 0.2s ease;
 }
 .auto-items .auto-item-card.flipped {
   transform: scale(4) translateX(39px) translateY(50%);
+  z-index: 1000;
+}
+.auto-items .auto-item-card.flipped .auto-item-card-back {
+  z-index: 10;
+  opacity: 1;
+  pointer-events: auto;
+}
+.auto-items .auto-item-card.flipped .auto-item-card-menu {
+  display: none;
 }
 .auto-items .auto-item-remove {
-  position: absolute;
-  top: 6px;
-  right: 6px;
-  width: 26px;
-  height: 26px;
-  border-radius: 50%;
+  border-radius: 6px;
   border: 1px solid rgba(255, 255, 255, 0.6);
-  background: rgba(0, 0, 0, 0.6);
-  color: #fff;
-  font-size: 16px;
-  line-height: 1;
-  display: grid;
-  place-items: center;
+  background: #fff;
+  color: #000;
+  opacity: 0.8;
   cursor: pointer;
   transition: transform 120ms ease, opacity 120ms ease;
 }
@@ -111,6 +124,15 @@ a {
 .auto-items .auto-item-title,
 .auto-items .auto-item-year {
   display: none;
+}
+.auto-items .auto-item-card.flipped .auto-item-title,
+.auto-items .auto-item-card.flipped .auto-item-year {
+  display: block;
+  color: #fff;
+  font-size: 0.25rem;
+}
+.auto-items .auto-item-card.flipped .auto-item-title {
+  font-weight: bold;
 }
 
 .media-tabs {

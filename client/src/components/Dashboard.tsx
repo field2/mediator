@@ -94,6 +94,12 @@ const Dashboard: React.FC = () => {
 	});
 	const [showSavePrompt, setShowSavePrompt] = useState(false);
 	const [, setHasPendingFriendRequests] = useState(false);
+	const [flippedCardId, setFlippedCardId] = useState<number | null>(null);
+
+	// Reset flipped card when media type changes
+	useEffect(() => {
+		setFlippedCardId(null);
+	}, [selectedMediaType]);
 
 	useEffect(() => {
 		const fetchFriendRequests = async () => {
@@ -186,6 +192,10 @@ const Dashboard: React.FC = () => {
 		} catch (err) {
 			console.error('Error rating item:', err);
 		}
+	};
+
+	const handleFlipCard = (mediaId: number) => {
+		setFlippedCardId((prev) => (prev === mediaId ? null : mediaId));
 	};
 
 	const handleRemove = async (mediaId: number) => {
@@ -300,9 +310,12 @@ const Dashboard: React.FC = () => {
 						) : (isAuthenticated ? autoItems : guestItems[selectedMediaType]).length > 0 ? (
 							<div className="auto-items-grid">
 								{(isAuthenticated ? autoItems : guestItems[selectedMediaType]).map((mi) => (
-									<div key={mi.id} className="auto-item-card">
+									<div
+										key={mi.id}
+										className={`auto-item-card${flippedCardId === mi.id ? ' flipped' : ''}`}
+									>
 										<div className="auto-item-card-front">
-											<div className="auto-item-card-menu">
+											<div className="auto-item-card-menu" onClick={() => handleFlipCard(mi.id)}>
 												<svg
 													width="30"
 													height="16"
@@ -336,7 +349,7 @@ const Dashboard: React.FC = () => {
 												onClick={() => handleRemove(mi.id)}
 												aria-label="Remove item"
 											>
-												×
+												Remove
 											</button>
 										</div>
 									</div>
