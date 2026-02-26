@@ -164,6 +164,11 @@ export const rateMedia = async (listId: number, mediaId: number, rating: number)
   return response.data;
 };
 
+export const updateMediaNotes = async (listId: number, mediaId: number, notes: string): Promise<any> => {
+  const response = await api.put(`/lists/${listId}/media/${mediaId}/notes`, { notes });
+  return response.data;
+};
+
 export const deleteMediaFromList = async (listId: number, mediaId: number): Promise<void> => {
   await api.delete(`/lists/${listId}/media/${mediaId}`);
 };

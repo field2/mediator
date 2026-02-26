@@ -26,6 +26,7 @@ export interface MediaItem {
   year: string | null;
   poster_url: string | null;
   additional_data: string | null;
+  notes: string | null;
   added_by: number;
   added_at: string;
   averageRating?: number | null;

@@ -227,7 +227,7 @@ router.post('/:id/media', authenticate, (req: AuthRequest, res) => {
       return res.status(403).json({ error: 'Access denied' });
     }
 
-    const { mediaType, externalId, title, year, posterUrl, additionalData } = req.body;
+    const { mediaType, externalId, title, year, posterUrl, additionalData, notes } = req.body;
 
     if (!mediaType || !externalId || !title) {
       return res.status(400).json({ error: 'Media type, external ID, and title are required' });
@@ -247,7 +247,8 @@ router.post('/:id/media', authenticate, (req: AuthRequest, res) => {
       req.userId!,
       year,
       posterUrl,
-      additionalData
+      additionalData,
+      notes
     );
 
     const mediaItem = MediaItemModel.findById(mediaItemId as number);
@@ -294,6 +295,40 @@ router.post('/:listId/media/:mediaId/rate', authenticate, (req: AuthRequest, res
   } catch (error) {
     console.error('Error rating media item:', error);
     res.status(500).json({ error: 'Failed to rate media item' });
+  }
+});
+
+// Update notes for a media item
+router.put('/:listId/media/:mediaId/notes', authenticate, (req: AuthRequest, res) => {
+  try {
+    const mediaId = parseInt(req.params.mediaId);
+    const { notes } = req.body;
+
+    const mediaItem = MediaItemModel.findById(mediaId);
+    if (!mediaItem) {
+      return res.status(404).json({ error: 'Media item not found' });
+    }
+
+    const list = ListModel.findById(mediaItem.list_id);
+    if (!list) {
+      return res.status(404).json({ error: 'List not found' });
+    }
+
+    // Check if user has access
+    const isOwner = list.user_id === req.userId;
+    const isCollaborator = CollaborationModel.isCollaborator(list.id, req.userId!);
+
+    if (!isOwner && !isCollaborator) {
+      return res.status(403).json({ error: 'Access denied' });
+    }
+
+    MediaItemModel.updateNotes(mediaId, notes || '');
+    const updatedItem = MediaItemModel.findById(mediaId);
+
+    res.json(updatedItem);
+  } catch (error) {
+    console.error('Error updating notes:', error);
+    res.status(500).json({ error: 'Failed to update notes' });
   }
 });
 

@@ -9,6 +9,7 @@ import {
 	getList,
 	rateMedia,
 	deleteMediaFromList,
+	updateMediaNotes,
 	getFriendRequests,
 	getUserAutoList,
 } from '../api';
@@ -96,6 +97,9 @@ const Dashboard: React.FC = () => {
 	const [, setHasPendingFriendRequests] = useState(false);
 	const [flippedCardId, setFlippedCardId] = useState<number | null>(null);
 	const [cardTransform, setCardTransform] = useState({ x: 0, y: 0 });
+	const [cardNotes, setCardNotes] = useState<{ [key: number]: string }>({});
+	const [editingNotes, setEditingNotes] = useState<{ [key: number]: boolean }>({});
+	const textareaRefs = React.useRef<{ [key: number]: HTMLTextAreaElement | null }>({});
 
 	// Reset flipped card when media type changes
 	useEffect(() => {
@@ -241,6 +245,38 @@ const Dashboard: React.FC = () => {
 			}
 		}
 		setFlippedCardId(mediaId);
+	};
+
+	const formatDate = (dateString: string | null): string => {
+		if (!dateString) return '';
+		const date = new Date(dateString);
+		const day = String(date.getDate()).padStart(2, '0');
+		const month = String(date.getMonth() + 1).padStart(2, '0');
+		const year = String(date.getFullYear()).slice(-2);
+		return `${day}/${month}/${year}`;
+	};
+
+	const handleNotesChange = (mediaId: number, notes: string) => {
+		setCardNotes((prev) => ({ ...prev, [mediaId]: notes }));
+	};
+
+	const handleSaveNotes = async (mediaId: number, listId: number) => {
+		if (!isAuthenticated) return;
+		try {
+			const notes = cardNotes[mediaId] || '';
+			await updateMediaNotes(listId, mediaId, notes);
+			setEditingNotes((prev) => ({ ...prev, [mediaId]: false }));
+		} catch (err) {
+			console.error('Error saving notes:', err);
+		}
+	};
+
+	const handleEditNotes = (mediaId: number) => {
+		setEditingNotes((prev) => ({ ...prev, [mediaId]: true }));
+		// Focus the textarea after state updates
+		setTimeout(() => {
+			textareaRefs.current[mediaId]?.focus();
+		}, 0);
 	};
 
 	const handleRemove = async (mediaId: number) => {
@@ -396,14 +432,101 @@ const Dashboard: React.FC = () => {
 											/>
 										</div>
 										<div className="auto-item-card-back">
-											<div className="auto-item-title">{mi.title}</div>
-											{mi.year && <div className="auto-item-year">{mi.year}</div>}
+											<header>
+												<div className="auto-item-title">{mi.title}</div>
+												{mi.year && <div className="auto-item-year">{mi.year}</div>}
+												<div className="auto-item-date">Added: {formatDate(mi.added_at)}</div>
+											</header>
 											<div className="auto-item-rating">
 												<StarRating
 													rating={mi.userRating || 0}
 													onRate={(r) => handleRate(mi.id, r)}
 													readonly={!user || !isAuthenticated}
 												/>
+											</div>
+											<div className="auto-item-notes-container">
+												{editingNotes[mi.id] ||
+												!(cardNotes[mi.id] !== undefined ? cardNotes[mi.id] : mi.notes) ? (
+													<textarea
+														ref={(el) => {
+															if (el) textareaRefs.current[mi.id] = el;
+														}}
+														className="auto-item-notes"
+														placeholder="Add notes..."
+														value={
+															cardNotes[mi.id] !== undefined ? cardNotes[mi.id] : mi.notes || ''
+														}
+														onChange={(e) => handleNotesChange(mi.id, e.target.value)}
+														onFocus={() => {
+															if (!editingNotes[mi.id]) {
+																handleEditNotes(mi.id);
+															}
+														}}
+													/>
+												) : (
+													<div className="auto-item-notes-display">
+														{cardNotes[mi.id] !== undefined ? cardNotes[mi.id] : mi.notes}
+													</div>
+												)}
+												<button
+													className="auto-item-notes-btn"
+													onClick={() => {
+														const hasNotes =
+															cardNotes[mi.id] !== undefined ? cardNotes[mi.id] : mi.notes;
+														if (editingNotes[mi.id]) {
+															handleSaveNotes(mi.id, mi.list_id);
+														} else if (!hasNotes) {
+															handleEditNotes(mi.id);
+														} else {
+															handleEditNotes(mi.id);
+														}
+													}}
+													aria-label={editingNotes[mi.id] ? 'Save notes' : 'Edit notes'}
+												>
+													{editingNotes[mi.id] ? (
+														<svg
+															className="icon-checkmark"
+															width="20"
+															height="20"
+															viewBox="0 0 20 20"
+															fill="none"
+															xmlns="http://www.w3.org/2000/svg"
+														>
+															<path
+																d="M16.2187 4.12666C16.5637 3.6954 17.1937 3.6254 17.6249 3.97041C18.0562 4.31542 18.1262 4.9454 17.7812 5.37666L9.08293 16.2487L3.29289 10.4587C2.90237 10.0682 2.90237 9.43515 3.29289 9.04463C3.68342 8.65411 4.31643 8.65411 4.70696 9.04463L8.91594 13.2536L16.2187 4.12666Z"
+																fill="white"
+															/>
+														</svg>
+													) : (cardNotes[mi.id] !== undefined ? cardNotes[mi.id] : mi.notes) ? (
+														<svg
+															className="icon-pencil"
+															width="20"
+															height="20"
+															viewBox="0 0 20 20"
+															fill="none"
+															xmlns="http://www.w3.org/2000/svg"
+														>
+															<path
+																d="M13.0052 4.16637C13.3958 3.77585 14.0289 3.77585 14.4194 4.16637L15.8337 5.58059C16.2242 5.97111 16.2242 6.60427 15.8337 6.9948L14.4194 8.40901L11.591 5.58059L13.0052 4.16637ZM5.93417 11.2374L10.8839 6.28769L13.7123 9.11612L8.76259 14.0659L4.87351 15.1265L5.93417 11.2374Z"
+																fill="white"
+															/>
+														</svg>
+													) : (
+														<svg
+															className="icon-plus"
+															width="20"
+															height="20"
+															viewBox="0 0 20 20"
+															fill="none"
+															xmlns="http://www.w3.org/2000/svg"
+														>
+															<path
+																d="M10 4C10.5523 4 11 4.44772 11 5V9H15C15.5523 9 16 9.44772 16 10C16 10.5523 15.5523 11 15 11H11V15C11 15.5523 10.5523 16 10 16C9.44772 16 9 15.5523 9 15V11H5C4.44772 11 4 10.5523 4 10C4 9.44772 4.44772 9 5 9H9V5C9 4.44772 9.44772 4 10 4Z"
+																fill="white"
+															/>
+														</svg>
+													)}
+												</button>
 											</div>
 											<button
 												className="auto-item-remove"

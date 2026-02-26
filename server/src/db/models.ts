@@ -28,6 +28,7 @@ export interface MediaItem {
   year: string | null;
   poster_url: string | null;
   additional_data: string | null;
+  notes: string | null;
   added_by: number;
   added_at: string;
 }
@@ -126,9 +127,9 @@ export const ListModel = {
 
 // Media item operations
 export const MediaItemModel = {
-  create: (listId: number, mediaType: string, externalId: string, title: string, addedBy: number, year?: string, posterUrl?: string, additionalData?: any) => {
-    const stmt = db.prepare('INSERT INTO media_items (list_id, media_type, external_id, title, year, poster_url, additional_data, added_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?)');
-    const result = stmt.run(listId, mediaType, externalId, title, year || null, posterUrl || null, additionalData ? JSON.stringify(additionalData) : null, addedBy);
+  create: (listId: number, mediaType: string, externalId: string, title: string, addedBy: number, year?: string, posterUrl?: string, additionalData?: any, notes?: string) => {
+    const stmt = db.prepare('INSERT INTO media_items (list_id, media_type, external_id, title, year, poster_url, additional_data, notes, added_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)');
+    const result = stmt.run(listId, mediaType, externalId, title, year || null, posterUrl || null, additionalData ? JSON.stringify(additionalData) : null, notes || null, addedBy);
     return result.lastInsertRowid;
   },
 
@@ -150,6 +151,11 @@ export const MediaItemModel = {
   findByListIdAndExternalId: (listId: number, externalId: string): MediaItem | undefined => {
     const stmt = db.prepare('SELECT * FROM media_items WHERE list_id = ? AND external_id = ?');
     return stmt.get(listId, externalId) as MediaItem | undefined;
+  },
+
+  updateNotes: (id: number, notes: string) => {
+    const stmt = db.prepare('UPDATE media_items SET notes = ? WHERE id = ?');
+    return stmt.run(notes, id);
   },
 
   delete: (id: number) => {
