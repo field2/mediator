@@ -59,7 +59,6 @@ a {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 0.5rem;
-  perspective: 1000px;
 }
 .auto-items .auto-items-grid img {
   width: 100%;
@@ -95,6 +94,8 @@ a {
   padding: 0.25rem;
   display: flex;
   flex-direction: column;
+  border: 0.25px solid rgba(255, 255, 255, 0.2823529412);
+  border-radius: 2px;
   gap: 0.5rem;
 }
 .auto-items .auto-item-card-back header {
@@ -107,6 +108,16 @@ a {
 }
 .auto-items .auto-item-card.flipped .auto-item-card-menu {
   display: none;
+}
+.auto-items .backdrop-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.7);
+  z-index: 999;
+  pointer-events: none;
 }
 .auto-items .auto-item-remove {
   border-radius: 6px;

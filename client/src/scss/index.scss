@@ -73,7 +73,6 @@ a {
 		display: grid;
 		grid-template-columns: repeat(4, minmax(0, 1fr));
 		gap: 0.5rem;
-		perspective: 1000px;
 	}
 	.auto-items-grid img {
 		width: 100%;
@@ -110,6 +109,8 @@ a {
 		padding: 0.25rem;
 		display: flex;
 		flex-direction: column;
+		border: 0.25px solid #ffffff48;
+		border-radius: 2px;
 		gap: 0.5rem;
 		header {
 			display: flex;
@@ -123,6 +124,16 @@ a {
 		.auto-item-card-menu {
 			display: none;
 		}
+	}
+	.backdrop-overlay {
+		position: fixed;
+		top: 0;
+		left: 0;
+		width: 100vw;
+		height: 100vh;
+		background: rgba(0, 0, 0, 0.7);
+		z-index: 999;
+		pointer-events: none;
 	}
 	.auto-item-remove {
 		// position: absolute;
