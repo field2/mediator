@@ -71,11 +71,11 @@ a {
   transform-style: preserve-3d;
   transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
 }
-.auto-items .auto-item-card .auto-item-card-front {
+.auto-items .auto-item-slot .auto-item-card-front {
   position: relative;
   backface-visibility: hidden;
 }
-.auto-items .auto-item-card .auto-item-card-menu {
+.auto-items .auto-item-slot .auto-item-card-menu {
   position: absolute;
   right: 4px;
   top: 4px;
