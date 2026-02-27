@@ -24,9 +24,9 @@ git fetch --all --prune
 
 # Backup database if it exists
 DB_BACKUP="/tmp/mediator-db-backup-$(date +%s).db"
-if [ -f "mediator.db" ]; then
+if [ -f "server/mediator.db" ]; then
   echo "Backing up database to $DB_BACKUP"
-  cp mediator.db "$DB_BACKUP"
+  cp server/mediator.db "$DB_BACKUP"
 fi
 
 echo "Cleaning working directory"
@@ -44,8 +44,10 @@ git reset --hard "origin/$BRANCH"
 # Restore database if backup exists
 if [ -f "$DB_BACKUP" ]; then
   echo "Restoring database from backup"
-  cp "$DB_BACKUP" mediator.db
+  mkdir -p server
+  cp "$DB_BACKUP" server/mediator.db
   rm "$DB_BACKUP"
+  echo "✓ Database restored"
 fi
 
 if [ -f package.json ]; then
