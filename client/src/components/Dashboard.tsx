@@ -374,6 +374,9 @@ const Dashboard: React.FC = () => {
 
 	return (
 		<div className="page-container">
+			<div style={{ color: 'red', fontWeight: 'bold', padding: '10px' }}>
+				SYNC TEST MARKER - {new Date().toLocaleTimeString()}
+			</div>
 			<Header title="" />
 			{!viewingOtherUser && (
 				<SearchBar
@@ -385,6 +388,7 @@ const Dashboard: React.FC = () => {
 				/>
 			)}
 			<div className="media-section-body">
+				<div className="test-marker">SYNC TEST - {new Date().toLocaleTimeString()}</div>
 				<div className="search-panel">
 					{showSavePrompt && !isAuthenticated && (
 						<div className="save-prompt">
@@ -456,7 +460,7 @@ const Dashboard: React.FC = () => {
 									</div>
 								</>
 							) : (
-								`No ${selectedMediaType === 'movie' ? 'Movies' : selectedMediaType === 'book' ? 'Books' : 'Albums'} yet. Search for some!`
+								`No ${selectedMediaType === 'movie' ? 'Movies' : selectedMediaType === 'book' ? 'Books' : 'Albums'} yet. Search for some!!`
 							)}
 						</h3>
 						{loadingItems ? (

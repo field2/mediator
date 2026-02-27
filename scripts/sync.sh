@@ -23,9 +23,13 @@ rsync -avz --delete \
   dist/ \
   "${SSH_USER}@${SSH_HOST}:${REMOTE_PATH}/server/public/"
 
+# Also copy index.html to root so Apache serves the latest version
+echo "Updating root index.html..."
+ssh -p "$SSH_PORT" "${SSH_USER}@${SSH_HOST}" "cp ${REMOTE_PATH}/server/public/index.html ${REMOTE_PATH}/index.html"
+
 # Clean up stale root files that might be served instead
 echo "Cleaning stale root files..."
-ssh -p "$SSH_PORT" "${SSH_USER}@${SSH_HOST}" "cd ${REMOTE_PATH} && rm -f index.html assets/*"
+ssh -p "$SSH_PORT" "${SSH_USER}@${SSH_HOST}" "cd ${REMOTE_PATH} && rm -f assets/*"
 
 # Restart PM2 to clear cached index.html
 echo "Restarting server..."
