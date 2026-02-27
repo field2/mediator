@@ -258,10 +258,9 @@ const Friends: React.FC = () => {
 						<div className="friends-grid">
 							{friends.map((friend) => (
 								<div key={friend.id ?? friend.userId} className="friend-card">
-									<div className="friend-username">{friend.username}</div>
 									<div className="friend-links">
 										<button onClick={() => navigate(`/user/${friend.id ?? friend.userId}`)}>
-											View Media
+											{friend.username}
 										</button>
 									</div>
 								</div>

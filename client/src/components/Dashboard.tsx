@@ -487,15 +487,25 @@ const Dashboard: React.FC = () => {
 													onClick={(e) => handleFlipCard(mi.id, e)}
 												>
 													<svg
-														width="30"
-														height="16"
-														viewBox="0 0 30 16"
+														width="31"
+														height="21"
+														viewBox="0 0 31 21"
 														fill="none"
 														xmlns="http://www.w3.org/2000/svg"
 													>
-														<circle cx="7" cy="8" r="2" fill="white" />
-														<circle cx="15" cy="8" r="2" fill="white" />
-														<circle cx="23" cy="8" r="2" fill="white" />
+														<rect
+															opacity="0.5"
+															x="5"
+															y="6"
+															width="21"
+															height="9"
+															rx="4.5"
+															fill="white"
+														/>
+														<rect x="6" y="7" width="19" height="7" rx="3.5" fill="black" />
+														<circle cx="10.5" cy="10.5" r="1.5" fill="white" />
+														<circle cx="15.5" cy="10.5" r="1.5" fill="white" />
+														<circle cx="20.5" cy="10.5" r="1.5" fill="white" />
 													</svg>
 												</div>
 												<img

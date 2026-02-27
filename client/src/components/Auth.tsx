@@ -3,6 +3,7 @@ import { useSearchParams, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../AuthContext';
 import Header from './Header';
 import { login as apiLogin, register as apiRegister, forgotPassword, resetPassword } from '../api';
+import { isValidEmail, normalizeEmail } from '../utils/emailValidation';
 
 type AuthView = 'login' | 'register' | 'forgot' | 'reset';
 
@@ -47,11 +48,21 @@ const Auth: React.FC = () => {
 				await login(userData, rememberMe ? 'local' : 'session');
 				navigate(fromPath, { replace: true });
 			} else if (view === 'register') {
-				const userData = await apiRegister(username, identifier, password);
+				const email = normalizeEmail(identifier);
+				if (!isValidEmail(email)) {
+					setError('Please enter a valid email address');
+					return;
+				}
+				const userData = await apiRegister(username, email, password);
 				await login(userData, rememberMe ? 'local' : 'session');
 				navigate(fromPath, { replace: true });
 			} else if (view === 'forgot') {
-				await forgotPassword(identifier);
+				const email = normalizeEmail(identifier);
+				if (!isValidEmail(email)) {
+					setError('Please enter a valid email address');
+					return;
+				}
+				await forgotPassword(email);
 				setSuccess('If that email exists, a password reset link has been sent');
 				setIdentifier('');
 				setResetLinkSent(true);
@@ -106,10 +117,11 @@ const Auth: React.FC = () => {
 						<div>
 							<label>{view === 'login' ? 'Email or Username' : 'Email'}</label>
 							<input
-								type="text"
+								type={view === 'register' || view === 'forgot' ? 'email' : 'text'}
 								value={identifier}
 								onChange={(e) => setIdentifier(e.target.value)}
 								required
+								autoComplete={view === 'register' || view === 'forgot' ? 'email' : 'username'}
 							/>
 						</div>
 					)}

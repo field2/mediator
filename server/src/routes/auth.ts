@@ -3,6 +3,7 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
 import { UserModel } from '../db/models';
+import { isValidEmail, normalizeEmail } from '../utils/emailValidation';
 
 const router: Router = express.Router();
 
@@ -10,13 +11,18 @@ const router: Router = express.Router();
 router.post('/register', async (req, res) => {
   try {
     const { username, email, password } = req.body;
+    const normalizedEmail = normalizeEmail(email);
 
-    if (!username || !email || !password) {
+    if (!username || !normalizedEmail || !password) {
       return res.status(400).json({ error: 'All fields are required' });
     }
 
+    if (!isValidEmail(normalizedEmail)) {
+      return res.status(400).json({ error: 'Please enter a valid email address', field: 'email' });
+    }
+
     // Check if email exists
-    const existingUserByEmail = await UserModel.findByEmail(email);
+    const existingUserByEmail = await UserModel.findByEmail(normalizedEmail);
     if (existingUserByEmail) {
       return res.status(400).json({ error: 'Email already exists', field: 'email' });
     }
@@ -31,7 +37,7 @@ router.post('/register', async (req, res) => {
     const passwordHash = await bcrypt.hash(password, 10);
 
     // Create user
-    const user = UserModel.create(username, email, passwordHash);
+    const user = UserModel.create(username, normalizedEmail, passwordHash);
 
     // Generate token
     const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET || 'fallback-secret', { expiresIn: '7d' });
@@ -115,11 +121,17 @@ router.get('/me', async (req, res) => {
 router.post('/forgot-password', async (req, res) => {
   try {
     const { email } = req.body;
-    if (!email) {
+    const normalizedEmail = normalizeEmail(email);
+
+    if (!normalizedEmail) {
       return res.status(400).json({ error: 'Email is required' });
     }
 
-    const user = await UserModel.findByEmail(email);
+    if (!isValidEmail(normalizedEmail)) {
+      return res.status(400).json({ error: 'Please enter a valid email address', field: 'email' });
+    }
+
+    const user = await UserModel.findByEmail(normalizedEmail);
     if (!user) {
       // Don't reveal if email exists or not for security
       return res.json({ message: 'If that email exists, a password reset link has been sent' });
@@ -129,7 +141,7 @@ router.post('/forgot-password', async (req, res) => {
     const resetToken = crypto.randomBytes(32).toString('hex');
     const expires = new Date(Date.now() + 3600000).toISOString(); // 1 hour from now
 
-    UserModel.setResetToken(email, resetToken, expires);
+    UserModel.setResetToken(normalizedEmail, resetToken, expires);
 
     // For now, just log the token (in production, send via email)
     console.log(`Password reset token for ${email}: ${resetToken}`);
