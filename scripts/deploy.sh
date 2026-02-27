@@ -22,6 +22,13 @@ cd "$REMOTE_PATH" || { echo "Remote path not found: $REMOTE_PATH"; exit 2; }
 echo "Fetching latest from origin"
 git fetch --all --prune
 
+# Backup database if it exists
+DB_BACKUP="/tmp/mediator-db-backup-$(date +%s).db"
+if [ -f "mediator.db" ]; then
+  echo "Backing up database to $DB_BACKUP"
+  cp mediator.db "$DB_BACKUP"
+fi
+
 echo "Cleaning working directory"
 git clean -fd
 
@@ -33,6 +40,13 @@ fi
 
 echo "Hard reset to origin/$BRANCH"
 git reset --hard "origin/$BRANCH"
+
+# Restore database if backup exists
+if [ -f "$DB_BACKUP" ]; then
+  echo "Restoring database from backup"
+  cp "$DB_BACKUP" mediator.db
+  rm "$DB_BACKUP"
+fi
 
 if [ -f package.json ]; then
   echo "Installing root dependencies and running root build (if any)"

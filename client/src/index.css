@@ -127,7 +127,6 @@ a {
 }
 .auto-items .auto-item-card.flipped .auto-item-date {
   opacity: 0.8;
-  margin-top: 0.1rem;
 }
 .auto-items .auto-item-card.flipped .auto-item-notes {
   flex: 1;
@@ -140,6 +139,8 @@ a {
   font-family: inherit;
   resize: none;
   display: block;
+  height: 40px;
+  font-size: 0.25rem;
 }
 .auto-items .auto-item-card.flipped .auto-item-notes:focus {
   outline: none;
@@ -159,9 +160,12 @@ a {
 }
 .auto-items .auto-item-card.flipped .auto-item-notes-container {
   display: flex;
-  gap: 0.1rem;
   align-items: flex-start;
-  margin: 0.2rem 0;
+}
+.auto-items .auto-item-card.flipped .card-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
 }
 .auto-items .auto-item-card.flipped .auto-item-notes-btn {
   width: 0.5rem;
@@ -182,7 +186,6 @@ a {
   display: flex;
   align-items: center;
   gap: 0.15rem;
-  margin: 0.2rem 0;
 }
 .auto-items .auto-item-card.flipped .auto-item-watched-with-empty {
   color: rgba(255, 255, 255, 0.5);
@@ -231,6 +234,7 @@ a {
   color: #fff;
   border-radius: 0.1rem;
   font-family: inherit;
+  font-size: 0.25rem;
 }
 .auto-items .auto-item-card.flipped .watched-with-search-input:focus {
   outline: none;
@@ -275,6 +279,10 @@ a {
   border-radius: 0.2rem;
   height: 0.35rem;
 }
+.auto-items .auto-item-card.flipped .auto-item-remove {
+  align-self: center;
+  background-color: rgb(255, 94, 123);
+}
 .auto-items .auto-item-card.flipped .auto-item-card-back-close {
   position: absolute;
   right: -10px;
@@ -296,6 +304,7 @@ a {
   font-size: 0.35rem;
   font-style: normal;
   font-variation-settings: "slnt" 0;
+  text-box-trim: trim-both;
 }
 
 .media-tabs {
@@ -1137,7 +1146,8 @@ nav a.has-pending::before {
   .auto-items .auto-item-card.flipped .star,
   .auto-items .auto-item-card.flipped .auto-item-notes::placeholder,
   .auto-items .auto-item-card.flipped .auto-item-watched-with-btn,
-  .auto-items .auto-item-card.flipped .auto-item-remove {
+  .auto-items .auto-item-card.flipped .auto-item-remove,
+  .auto-items .auto-item-card.flipped .watched-with-search-input {
     font-size: 1rem;
   }
   .auto-items .auto-item-card.flipped .auto-item-notes {
