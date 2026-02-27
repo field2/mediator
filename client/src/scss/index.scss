@@ -1223,3 +1223,82 @@ nav a.has-pending::before {
 		}
 	}
 }
+
+// Markdown content styling
+.view-body {
+	h1,
+	h2,
+	h3,
+	h4,
+	h5,
+	h6 {
+		margin: 1em 0 0.5em 0;
+		&:first-child {
+			margin-top: 0;
+		}
+		text-transform: uppercase;
+		font-variation-settings:
+			'wdth' 150,
+			'wght' 300;
+	}
+
+	p {
+		margin: 0.75em 0;
+		line-height: 1.6;
+	}
+
+	ul,
+	ol {
+		margin: 0.75em 0;
+		padding-left: 2em;
+		line-height: 1.6;
+
+		li {
+			margin: 0.25em 0;
+		}
+	}
+
+	a {
+		color: #fff;
+		text-decoration: underline;
+		&:hover {
+			opacity: 0.8;
+		}
+	}
+
+	code {
+		background: rgba(255, 255, 255, 0.1);
+		padding: 0.2em 0.4em;
+		border-radius: 3px;
+		font-family: monospace;
+	}
+
+	pre {
+		background: rgba(255, 255, 255, 0.05);
+		padding: 1em;
+		border-radius: 5px;
+		overflow-x: auto;
+		margin: 1em 0;
+
+		code {
+			background: none;
+			padding: 0;
+		}
+	}
+
+	blockquote {
+		border-left: 3px solid rgba(255, 255, 255, 0.3);
+		padding-left: 1em;
+		margin: 1em 0;
+		opacity: 0.9;
+	}
+}
+body.home-view .page-container {
+	height: 100vh;
+	overflow-y: auto;
+	display: flex;
+	flex-direction: column;
+	.padded-content {
+		padding: 0 1rem;
+	}
+}

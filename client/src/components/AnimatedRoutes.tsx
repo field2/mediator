@@ -7,6 +7,7 @@ import Collaborations from './Collaborations';
 import Account from './Account';
 import Friends from './Friends';
 import Directory from './Directory';
+import About from './About';
 import { useAuth } from '../AuthContext';
 import NavigationContext from '../NavigationContext';
 
@@ -180,6 +181,7 @@ const AnimatedRoutes: React.FC = () => {
 					</PrivateRoute>
 				}
 			/>
+			<Route path="/about" element={<About />} />
 		</Routes>
 	);
 

@@ -241,6 +241,16 @@ const Header: React.FC<HeaderProps> = ({ title, children }) => {
 										>
 											Account
 										</Link>
+										<Link
+											to="/about"
+											onClick={async (e) => {
+												e.preventDefault();
+												await closeMenuAndWait();
+												navigate('/about');
+											}}
+										>
+											About
+										</Link>
 										{/* logout removed */}
 									</>
 								) : (

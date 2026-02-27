@@ -1181,3 +1181,82 @@ nav a.has-pending::before {
     justify-content: center;
   }
 }
+.view-body h1,
+.view-body h2,
+.view-body h3,
+.view-body h4,
+.view-body h5,
+.view-body h6 {
+  margin: 1em 0 0.5em 0;
+}
+.view-body h1:first-child,
+.view-body h2:first-child,
+.view-body h3:first-child,
+.view-body h4:first-child,
+.view-body h5:first-child,
+.view-body h6:first-child {
+  margin-top: 0;
+}
+.view-body h1,
+.view-body h2,
+.view-body h3,
+.view-body h4,
+.view-body h5,
+.view-body h6 {
+  text-transform: uppercase;
+  font-variation-settings: "wdth" 150, "wght" 300;
+}
+.view-body p {
+  margin: 0.75em 0;
+  line-height: 1.6;
+}
+.view-body ul,
+.view-body ol {
+  margin: 0.75em 0;
+  padding-left: 2em;
+  line-height: 1.6;
+}
+.view-body ul li,
+.view-body ol li {
+  margin: 0.25em 0;
+}
+.view-body a {
+  color: #fff;
+  text-decoration: underline;
+}
+.view-body a:hover {
+  opacity: 0.8;
+}
+.view-body code {
+  background: rgba(255, 255, 255, 0.1);
+  padding: 0.2em 0.4em;
+  border-radius: 3px;
+  font-family: monospace;
+}
+.view-body pre {
+  background: rgba(255, 255, 255, 0.05);
+  padding: 1em;
+  border-radius: 5px;
+  overflow-x: auto;
+  margin: 1em 0;
+}
+.view-body pre code {
+  background: none;
+  padding: 0;
+}
+.view-body blockquote {
+  border-left: 3px solid rgba(255, 255, 255, 0.3);
+  padding-left: 1em;
+  margin: 1em 0;
+  opacity: 0.9;
+}
+
+body.home-view .page-container {
+  height: 100vh;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+body.home-view .page-container .padded-content {
+  padding: 0 1rem;
+}
