@@ -197,7 +197,7 @@ const AnimatedRoutes: React.FC = () => {
 		<NavigationContext.Provider value={{ hasPreviousView, setHasPreviousView }}>
 			<div
 				className="route-animate"
-				style={{ position: 'relative', overflow: 'hidden', width: '100%', minHeight: '100vh' }}
+				style={{ position: 'relative', overflowX: 'hidden', width: '100%', minHeight: '100vh' }}
 			>
 				{prevLocation && prevDirection && (
 					<div key={exitingKey} className={`route outgoing ${prevDirection}`} style={{ zIndex: 0 }}>
