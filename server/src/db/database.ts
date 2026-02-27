@@ -144,10 +144,30 @@ export async function initializeDatabase() {
       year TEXT,
       poster_url TEXT,
       additional_data TEXT,
+      notes TEXT,
       added_by INTEGER NOT NULL,
       added_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       FOREIGN KEY (list_id) REFERENCES lists(id) ON DELETE CASCADE,
       FOREIGN KEY (added_by) REFERENCES users(id) ON DELETE CASCADE
+    )
+  `);
+
+  // Add notes column if it doesn't exist (for existing databases)
+  try {
+    db.exec('ALTER TABLE media_items ADD COLUMN notes TEXT');
+  } catch (e) {
+    // Column already exists
+  }
+
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS watched_with (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      media_item_id INTEGER NOT NULL,
+      user_id INTEGER NOT NULL,
+      added_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      UNIQUE(media_item_id, user_id),
+      FOREIGN KEY (media_item_id) REFERENCES media_items(id) ON DELETE CASCADE,
+      FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
     )
   `);
 

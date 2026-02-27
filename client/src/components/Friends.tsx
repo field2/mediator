@@ -253,25 +253,23 @@ const Friends: React.FC = () => {
 							</div>
 						</div>
 					)}
-					<div className="friends-list">
-						<h2>Your Friends ({friends.length})</h2>
-						{friends.length > 0 ? (
-							<div className="friends-grid">
-								{friends.map((friend) => (
-									<div key={friend.id ?? friend.userId} className="friend-card">
-										<div className="friend-username">{friend.username}</div>
-										<div className="friend-links">
-											<button onClick={() => navigate(`/user/${friend.id ?? friend.userId}`)}>
-												View Media
-											</button>
-										</div>
+					<h2>Your Friends ({friends.length})</h2>
+					{friends.length > 0 ? (
+						<div className="friends-grid">
+							{friends.map((friend) => (
+								<div key={friend.id ?? friend.userId} className="friend-card">
+									<div className="friend-username">{friend.username}</div>
+									<div className="friend-links">
+										<button onClick={() => navigate(`/user/${friend.id ?? friend.userId}`)}>
+											View Media
+										</button>
 									</div>
-								))}
-							</div>
-						) : (
-							<p className="empty">No friends yet. Search to add some!</p>
-						)}
-					</div>
+								</div>
+							))}
+						</div>
+					) : (
+						<p className="empty">No friends yet. Search to add some!</p>
+					)}
 				</div>
 			</div>
 		</div>

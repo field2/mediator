@@ -164,6 +164,26 @@ export const rateMedia = async (listId: number, mediaId: number, rating: number)
   return response.data;
 };
 
+export const updateMediaNotes = async (listId: number, mediaId: number, notes: string): Promise<any> => {
+  const response = await api.put(`/lists/${listId}/media/${mediaId}/notes`, { notes });
+  return response.data;
+};
+
+export const getWatchedWithFriends = async (listId: number, mediaId: number): Promise<any[]> => {
+  const response = await api.get(`/lists/${listId}/media/${mediaId}/watched-with`);
+  return response.data;
+};
+
+export const addWatchedWithFriend = async (listId: number, mediaId: number, userId: number): Promise<any[]> => {
+  const response = await api.post(`/lists/${listId}/media/${mediaId}/watched-with`, { userId });
+  return response.data;
+};
+
+export const removeWatchedWithFriend = async (listId: number, mediaId: number, userId: number): Promise<any[]> => {
+  const response = await api.delete(`/lists/${listId}/media/${mediaId}/watched-with/${userId}`);
+  return response.data;
+};
+
 export const deleteMediaFromList = async (listId: number, mediaId: number): Promise<void> => {
   await api.delete(`/lists/${listId}/media/${mediaId}`);
 };
@@ -216,6 +236,11 @@ export const sendFriendRequest = async (toUserId: number): Promise<void> => {
 
 export const getFriendRequests = async (): Promise<any[]> => {
   const response = await api.get('/friends/requests/incoming');
+  return response.data;
+};
+
+export const getOutgoingFriendRequests = async (): Promise<any[]> => {
+  const response = await api.get('/friends/requests/outgoing');
   return response.data;
 };
 

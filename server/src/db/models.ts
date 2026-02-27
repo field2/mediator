@@ -28,6 +28,7 @@ export interface MediaItem {
   year: string | null;
   poster_url: string | null;
   additional_data: string | null;
+  notes: string | null;
   added_by: number;
   added_at: string;
 }
@@ -126,9 +127,9 @@ export const ListModel = {
 
 // Media item operations
 export const MediaItemModel = {
-  create: (listId: number, mediaType: string, externalId: string, title: string, addedBy: number, year?: string, posterUrl?: string, additionalData?: any) => {
-    const stmt = db.prepare('INSERT INTO media_items (list_id, media_type, external_id, title, year, poster_url, additional_data, added_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?)');
-    const result = stmt.run(listId, mediaType, externalId, title, year || null, posterUrl || null, additionalData ? JSON.stringify(additionalData) : null, addedBy);
+  create: (listId: number, mediaType: string, externalId: string, title: string, addedBy: number, year?: string, posterUrl?: string, additionalData?: any, notes?: string) => {
+    const stmt = db.prepare('INSERT INTO media_items (list_id, media_type, external_id, title, year, poster_url, additional_data, notes, added_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)');
+    const result = stmt.run(listId, mediaType, externalId, title, year || null, posterUrl || null, additionalData ? JSON.stringify(additionalData) : null, notes || null, addedBy);
     return result.lastInsertRowid;
   },
 
@@ -150,6 +151,11 @@ export const MediaItemModel = {
   findByListIdAndExternalId: (listId: number, externalId: string): MediaItem | undefined => {
     const stmt = db.prepare('SELECT * FROM media_items WHERE list_id = ? AND external_id = ?');
     return stmt.get(listId, externalId) as MediaItem | undefined;
+  },
+
+  updateNotes: (id: number, notes: string) => {
+    const stmt = db.prepare('UPDATE media_items SET notes = ? WHERE id = ?');
+    return stmt.run(notes, id);
   },
 
   delete: (id: number) => {
@@ -305,5 +311,29 @@ export const FriendModel = {
     const id2 = Math.max(userId1, userId2);
     const stmt = db.prepare('DELETE FROM friends WHERE user_id_1 = ? AND user_id_2 = ?');
     return stmt.run(id1, id2);
+  }
+};
+// Watched with operations
+export const WatchedWithModel = {
+  addFriend: (mediaItemId: number, userId: number) => {
+    const stmt = db.prepare('INSERT OR IGNORE INTO watched_with (media_item_id, user_id) VALUES (?, ?)');
+    const result = stmt.run(mediaItemId, userId);
+    return result.lastInsertRowid;
+  },
+
+  removeFriend: (mediaItemId: number, userId: number) => {
+    const stmt = db.prepare('DELETE FROM watched_with WHERE media_item_id = ? AND user_id = ?');
+    return stmt.run(mediaItemId, userId);
+  },
+
+  getWatchedWithFriends: (mediaItemId: number): User[] => {
+    const stmt = db.prepare(`
+      SELECT u.id, u.username, u.email, u.created_at
+      FROM watched_with ww
+      JOIN users u ON ww.user_id = u.id
+      WHERE ww.media_item_id = ?
+      ORDER BY u.username
+    `);
+    return stmt.all(mediaItemId) as User[];
   }
 };
