@@ -23,4 +23,8 @@ rsync -avz --delete \
   dist/ \
   "${SSH_USER}@${SSH_HOST}:${REMOTE_PATH}/server/public/"
 
-echo "✓ Sync complete (no server restart needed for static files)"
+# Restart PM2 to clear cached index.html
+echo "Restarting server..."
+ssh -p "$SSH_PORT" "${SSH_USER}@${SSH_HOST}" "cd ${REMOTE_PATH} && pm2 restart mediator-server"
+
+echo "✓ Sync complete"

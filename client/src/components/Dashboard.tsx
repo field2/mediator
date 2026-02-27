@@ -456,7 +456,7 @@ const Dashboard: React.FC = () => {
 									</div>
 								</>
 							) : (
-								`No ${selectedMediaType === 'movie' ? 'Movies' : selectedMediaType === 'book' ? 'Books' : 'Albums'} yet.`
+								`No ${selectedMediaType === 'movie' ? 'Movies' : selectedMediaType === 'book' ? 'Books' : 'Albums'} yet. Search for some!`
 							)}
 						</h3>
 						{loadingItems ? (
