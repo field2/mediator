@@ -22,29 +22,29 @@ cd "$REMOTE_PATH" || { echo "Remote path not found: $REMOTE_PATH"; exit 2; }
 echo "Fetching latest from origin"
 git fetch --all --prune
 
+echo "Cleaning working directory"
+git clean -fd
+
 if git show-ref --verify --quiet "refs/heads/$BRANCH"; then
   git checkout "$BRANCH"
 else
   git checkout -b "$BRANCH" || true
 fi
 
+echo "Hard reset to origin/$BRANCH"
 git reset --hard "origin/$BRANCH"
 
 if [ -f package.json ]; then
   echo "Installing root dependencies and running root build (if any)"
   npm ci --prefer-offline --no-audit --no-fund
-  if npm run build --silent; then
-    echo "Root build succeeded"
-  else
-    echo "Root build either not defined or failed; continuing"
-  fi
+  npm run build || echo "Root build not defined; skipping"
 fi
 
 if [ -d client ]; then
   echo "Building client"
   cd client
   npm ci --prefer-offline --no-audit --no-fund
-  npm run build --silent || echo "Client build failed or not defined"
+  npm run build || { echo "Client build failed"; exit 3; }
   cd ..
 
   # Copy client build to server/public so Express can serve it
@@ -59,13 +59,13 @@ if [ -d server ]; then
   echo "Building server"
   cd server
   npm ci --prefer-offline --no-audit --no-fund
-  npm run build --silent || echo "Server build failed or not defined"
+  npm run build || { echo "Server build failed"; exit 4; }
 
-  echo "Restarting pm2 using ecosystem.config.js if available"
+  echo "Restarting pm2 using ecosystem.config.js"
   if [ -f ecosystem.config.js ]; then
-    npm run pm2:restart --silent || pm2 restart ecosystem.config.js --env production || pm2 restart all || true
+    npm run pm2:restart || pm2 restart ecosystem.config.js --env production || pm2 restart all
   else
-    pm2 restart all || true
+    pm2 restart all
   fi
 
   cd ..
