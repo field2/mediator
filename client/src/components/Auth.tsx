@@ -140,13 +140,15 @@ const Auth: React.FC = () => {
 					)}
 					{view === 'login' && (
 						<div>
-							<input
-								id="rememberMe"
-								type="checkbox"
-								checked={rememberMe}
-								onChange={(e) => setRememberMe(e.target.checked)}
-							/>
-							<label htmlFor="rememberMe">Stay signed in</label>
+							<label htmlFor="rememberMe">
+								<input
+									id="rememberMe"
+									type="checkbox"
+									checked={rememberMe}
+									onChange={(e) => setRememberMe(e.target.checked)}
+								/>
+								Stay signed in
+							</label>
 						</div>
 					)}
 					{error && <div style={{ color: 'red', marginBottom: '15px' }}>{error}</div>}

@@ -36,17 +36,26 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      // Clear stored credentials on 401
-      localStorage.removeItem('token');
-      localStorage.removeItem('userId');
-      localStorage.removeItem('username');
-      localStorage.removeItem('email');
-      sessionStorage.removeItem('token');
-      sessionStorage.removeItem('userId');
-      sessionStorage.removeItem('username');
-      sessionStorage.removeItem('email');
-      // Reload page to reset auth state
-      window.location.href = '/';
+      // Only redirect if user was previously authenticated
+      // (check if token exists in storage)
+      const wasAuthenticated = !!(
+        localStorage.getItem('token') || sessionStorage.getItem('token')
+      );
+
+      if (wasAuthenticated) {
+        // Clear stored credentials on 401
+        localStorage.removeItem('token');
+        localStorage.removeItem('userId');
+        localStorage.removeItem('username');
+        localStorage.removeItem('email');
+        sessionStorage.removeItem('token');
+        sessionStorage.removeItem('userId');
+        sessionStorage.removeItem('username');
+        sessionStorage.removeItem('email');
+        // Reload page to reset auth state
+        window.location.href = '/';
+      }
+      // If not authenticated, let the component handle the error (e.g., login form)
     }
     return Promise.reject(error);
   }

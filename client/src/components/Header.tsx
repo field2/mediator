@@ -139,7 +139,11 @@ const Header: React.FC<HeaderProps> = ({ title, children }) => {
 				<h1 className="view-title">{title}</h1>
 			</div>
 
-			{isAuthenticated && (
+			{!isAuthenticated ? (
+				<button className="login-button" onClick={() => navigate('/auth')} aria-label="Login">
+					Login
+				</button>
+			) : (
 				<div ref={menuRef} className="menu-container">
 					<button
 						className={`menu-button${hasPending ? ' has-pending' : ''}`}
@@ -229,42 +233,27 @@ const Header: React.FC<HeaderProps> = ({ title, children }) => {
 								>
 									Directory
 								</Link>
-								{isAuthenticated ? (
-									<>
-										<Link
-											to="/account"
-											onClick={async (e) => {
-												e.preventDefault();
-												await closeMenuAndWait();
-												navigate('/account');
-											}}
-										>
-											Account
-										</Link>
-										<Link
-											to="/about"
-											onClick={async (e) => {
-												e.preventDefault();
-												await closeMenuAndWait();
-												navigate('/about');
-											}}
-										>
-											About
-										</Link>
-										{/* logout removed */}
-									</>
-								) : (
-									<Link
-										to="/login"
-										onClick={async (e) => {
-											e.preventDefault();
-											await closeMenuAndWait();
-											navigate('/login');
-										}}
-									>
-										Login
-									</Link>
-								)}
+								<Link
+									to="/account"
+									onClick={async (e) => {
+										e.preventDefault();
+										await closeMenuAndWait();
+										navigate('/account');
+									}}
+								>
+									Account
+								</Link>
+								<Link
+									to="/about"
+									onClick={async (e) => {
+										e.preventDefault();
+										await closeMenuAndWait();
+										navigate('/about');
+									}}
+								>
+									About
+								</Link>
+								{/* logout removed */}
 							</nav>
 							{children}
 						</div>
