@@ -388,7 +388,6 @@ const Dashboard: React.FC = () => {
 				/>
 			)}
 			<div className="media-section-body">
-				<div className="test-marker">SYNC TEST - {new Date().toLocaleTimeString()}</div>
 				<div className="search-panel">
 					{showSavePrompt && !isAuthenticated && (
 						<div className="save-prompt">

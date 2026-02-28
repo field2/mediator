@@ -50,12 +50,6 @@ if [ -f "$DB_BACKUP" ]; then
   echo "✓ Database restored"
 fi
 
-if [ -f package.json ]; then
-  echo "Installing root dependencies and running root build (if any)"
-  npm ci --prefer-offline --no-audit --no-fund
-  npm run build || echo "Root build not defined; skipping"
-fi
-
 if [ -d client ]; then
   echo "Building client"
   cd client
@@ -76,6 +70,9 @@ if [ -d server ]; then
   cd server
   npm ci --prefer-offline --no-audit --no-fund
   npm run build || { echo "Server build failed"; exit 4; }
+
+  echo "Pruning server dev dependencies for production runtime"
+  npm prune --omit=dev --no-audit --no-fund
 
   echo "Restarting pm2 using ecosystem.config.js"
   if [ -f ecosystem.config.js ]; then
