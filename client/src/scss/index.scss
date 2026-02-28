@@ -557,6 +557,7 @@ button.deny {
 	// opacity: 1;
 	// border-radius: 0.5rem;
 	@include button();
+	color: #000;
 }
 
 a {
