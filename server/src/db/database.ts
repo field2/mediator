@@ -3,13 +3,15 @@ import path from 'path';
 
 let db: any = null;
 let _sqlJs: any = null; // reference to sql.js runtime when used
+let _rawSqlJsDb: any = null; // underlying sql.js DB instance (not wrapper)
+let _dbPath: string = path.resolve(__dirname, '../../mediator.db');
 
 // Helper to persist database when using sql.js
 function persistSqlJsDb() {
-  if (!_sqlJs || !db) return;
+  if (!_sqlJs || !_rawSqlJsDb) return;
   try {
-    const data = db.export();
-    fs.writeFileSync(path.join(process.cwd(), 'mediator.db'), Buffer.from(data));
+    const data = _rawSqlJsDb.export();
+    fs.writeFileSync(_dbPath, Buffer.from(data));
   } catch (err) {
     console.warn('Failed to persist sql.js DB:', err);
   }
@@ -69,14 +71,14 @@ function createSqlJsWrapper(sqlDb: any) {
 
 // Try to use better-sqlite3 first; if not available (e.g., server can't build native addons) fall back to sql.js
 export async function initializeDatabase() {
-  const dbPath = process.env.DB_PATH
+  _dbPath = process.env.DB_PATH
     ? path.resolve(process.env.DB_PATH)
     : path.resolve(__dirname, '../../mediator.db');
 
   try {
     // eslint-disable-next-line @typescript-eslint/no-var-requires
     const BetterDB = require('better-sqlite3');
-    db = new BetterDB(dbPath);
+    db = new BetterDB(_dbPath);
     // Enable foreign keys
     db.pragma('foreign_keys = ON');
   } catch (err) {
@@ -87,15 +89,15 @@ export async function initializeDatabase() {
       const initSqlJs = require('sql.js');
       _sqlJs = await initSqlJs();
 
-      if (fs.existsSync(dbPath)) {
-        const file = fs.readFileSync(dbPath);
-        db = new _sqlJs.Database(new Uint8Array(file));
+      if (fs.existsSync(_dbPath)) {
+        const file = fs.readFileSync(_dbPath);
+        _rawSqlJsDb = new _sqlJs.Database(new Uint8Array(file));
       } else {
-        db = new _sqlJs.Database();
+        _rawSqlJsDb = new _sqlJs.Database();
       }
 
       // wrap the sql.js instance to match better-sqlite3's minimal interface used
-      db = createSqlJsWrapper(db);
+      db = createSqlJsWrapper(_rawSqlJsDb);
 
       console.info('Using sql.js (WASM) fallback for SQLite');
     } catch (werr) {
