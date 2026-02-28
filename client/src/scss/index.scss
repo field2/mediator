@@ -717,7 +717,7 @@ form.onboard-form {
 	display: flex;
 	gap: 1rem;
 	align-items: stretch;
-	max-width: 400px;
+	max-width: 600px;
 	flex-direction: column;
 	h2 {
 		text-align: left;
@@ -1184,7 +1184,7 @@ nav a.has-pending::before {
 	}
 }
 
-@media (orientation: landscape) {
+@media (min-width: 600px) {
 	.auto-items {
 		height: 100%;
 		.auto-item-card.flipped {
