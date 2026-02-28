@@ -9,6 +9,7 @@ button {
   font-size: 1rem;
   opacity: 1;
   border-radius: 0.5rem;
+  color: #000;
 }
 
 * {
@@ -166,6 +167,12 @@ a {
   display: flex;
   flex-direction: column;
   gap: 0.2rem;
+}
+.auto-items .auto-item-card.flipped .card-info .card-info-label {
+  text-transform: uppercase;
+  font-variation-settings: "wdth" 150, "wght" 300;
+  letter-spacing: 0.1em;
+  font-size: 0.8rem;
 }
 .auto-items .auto-item-card.flipped .auto-item-notes-btn {
   width: 0.5rem;
@@ -1018,6 +1025,7 @@ nav a.has-pending::before {
   font-size: 1.2rem;
   letter-spacing: 0.1em;
   background-color: #fff;
+  color: #000;
 }
 .modal .modal-content .modal-close {
   width: 38px;
@@ -1142,6 +1150,9 @@ nav a.has-pending::before {
     padding: 1rem;
     gap: 1rem;
   }
+  .auto-items .auto-item-card.flipped .auto-item-title {
+    font-size: 1.5rem;
+  }
   .auto-items .auto-item-card.flipped div,
   .auto-items .auto-item-card.flipped .star,
   .auto-items .auto-item-card.flipped .auto-item-notes::placeholder,
@@ -1151,7 +1162,7 @@ nav a.has-pending::before {
     font-size: 1rem;
   }
   .auto-items .auto-item-card.flipped .auto-item-notes {
-    height: auto;
+    height: 200px;
   }
   .auto-items .auto-item-card.flipped .auto-item-watched-with-btn,
   .auto-items .auto-item-card.flipped .auto-item-remove {

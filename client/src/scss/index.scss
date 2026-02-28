@@ -20,6 +20,14 @@ button {
 	letter-spacing: 0.1em;
 }
 
+@mixin headings {
+	text-transform: uppercase;
+	font-variation-settings:
+		'wdth' 150,
+		'wght' 300;
+	letter-spacing: 0.1em;
+}
+
 @mixin button($border-radius: 0.5rem) {
 	background-color: #fff;
 	padding: 0.5rem 1rem;
@@ -30,6 +38,7 @@ button {
 
 .intro-actions button {
 	@include button;
+	color: #000;
 }
 * {
 	margin: 0;
@@ -185,6 +194,10 @@ a {
 			display: flex;
 			flex-direction: column;
 			gap: 0.2rem;
+			.card-info-label {
+				@include headings;
+				font-size: 0.8rem;
+			}
 		}
 		.auto-item-notes-btn {
 			width: 0.5rem;
@@ -1040,6 +1053,7 @@ nav a.has-pending::before {
 			@include button;
 			@include all-caps();
 			background-color: #fff;
+			color: #000;
 		}
 		.modal-close {
 			width: 38px;
@@ -1182,6 +1196,9 @@ nav a.has-pending::before {
 				padding: 1rem;
 				gap: 1rem;
 			}
+			.auto-item-title {
+				font-size: 1.5rem;
+			}
 
 			div,
 			.star,
@@ -1192,7 +1209,7 @@ nav a.has-pending::before {
 				font-size: 1rem;
 			}
 			.auto-item-notes {
-				height: auto;
+				height: 200px;
 			}
 			.auto-item-watched-with-btn,
 			.auto-item-remove {
