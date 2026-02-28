@@ -374,9 +374,6 @@ const Dashboard: React.FC = () => {
 
 	return (
 		<div className="page-container">
-			<div style={{ color: 'red', fontWeight: 'bold', padding: '10px' }}>
-				SYNC TEST MARKER - {new Date().toLocaleTimeString()}
-			</div>
 			<Header title="" />
 			{!viewingOtherUser && (
 				<SearchBar
@@ -459,7 +456,7 @@ const Dashboard: React.FC = () => {
 									</div>
 								</>
 							) : (
-								`No ${selectedMediaType === 'movie' ? 'Movies' : selectedMediaType === 'book' ? 'Books' : 'Albums'} yet. Search for some!!`
+								`No ${selectedMediaType === 'movie' ? 'Movies' : selectedMediaType === 'book' ? 'Books' : 'Albums'} yet. Search for some!`
 							)}
 						</h3>
 						{loadingItems ? (
