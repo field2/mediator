@@ -22,15 +22,21 @@ cd "$REMOTE_PATH" || { echo "Remote path not found: $REMOTE_PATH"; exit 2; }
 echo "Fetching latest from origin"
 git fetch --all --prune
 
-# Backup database if it exists
-DB_BACKUP="/tmp/mediator-db-backup-$(date +%s).db"
-if [ -f "server/mediator.db" ]; then
-  echo "Backing up database to $DB_BACKUP"
-  cp server/mediator.db "$DB_BACKUP"
-fi
+# Backup database(s) if they exist.
+# Runtime DB path depends on process cwd, so preserve both common locations.
+DB_BACKUP_DIR="$(mktemp -d /tmp/mediator-db-backup-XXXXXX)"
+DB_FILES=()
+for DB_FILE in "mediator.db" "server/mediator.db"; do
+  if [ -f "$DB_FILE" ]; then
+    SAFE_NAME="${DB_FILE//\//__}"
+    echo "Backing up $DB_FILE to $DB_BACKUP_DIR/$SAFE_NAME"
+    cp "$DB_FILE" "$DB_BACKUP_DIR/$SAFE_NAME"
+    DB_FILES+=("$DB_FILE")
+  fi
+done
 
 echo "Cleaning working directory"
-git clean -fd
+git clean -fd -e mediator.db -e server/mediator.db
 
 if git show-ref --verify --quiet "refs/heads/$BRANCH"; then
   git checkout "$BRANCH"
@@ -41,14 +47,19 @@ fi
 echo "Hard reset to origin/$BRANCH"
 git reset --hard "origin/$BRANCH"
 
-# Restore database if backup exists
-if [ -f "$DB_BACKUP" ]; then
-  echo "Restoring database from backup"
-  mkdir -p server
-  cp "$DB_BACKUP" server/mediator.db
-  rm "$DB_BACKUP"
-  echo "✓ Database restored"
+# Restore any backed-up database files to their original paths
+if [ ${#DB_FILES[@]} -gt 0 ]; then
+  echo "Restoring database files from backup"
+  for DB_FILE in "${DB_FILES[@]}"; do
+    SAFE_NAME="${DB_FILE//\//__}"
+    if [ -f "$DB_BACKUP_DIR/$SAFE_NAME" ]; then
+      mkdir -p "$(dirname "$DB_FILE")"
+      cp "$DB_BACKUP_DIR/$SAFE_NAME" "$DB_FILE"
+      echo "✓ Restored $DB_FILE"
+    fi
+  done
 fi
+rm -rf "$DB_BACKUP_DIR"
 
 if [ -d client ]; then
   echo "Building client"

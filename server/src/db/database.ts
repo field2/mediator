@@ -69,7 +69,9 @@ function createSqlJsWrapper(sqlDb: any) {
 
 // Try to use better-sqlite3 first; if not available (e.g., server can't build native addons) fall back to sql.js
 export async function initializeDatabase() {
-  const dbPath = path.join(process.cwd(), 'mediator.db');
+  const dbPath = process.env.DB_PATH
+    ? path.resolve(process.env.DB_PATH)
+    : path.resolve(__dirname, '../../mediator.db');
 
   try {
     // eslint-disable-next-line @typescript-eslint/no-var-requires
