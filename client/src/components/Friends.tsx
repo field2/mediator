@@ -73,7 +73,7 @@ const Friends: React.FC = () => {
 	const loadRequests = async () => {
 		try {
 			const reqs = await getFriendRequests();
-			setRequests(reqs);
+			setRequests((Array.isArray(reqs) ? reqs : []).filter((req) => req.status === 'pending'));
 		} catch (error) {
 			console.error('Error loading friend requests:', error);
 		}

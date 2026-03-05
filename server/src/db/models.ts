@@ -253,6 +253,7 @@ export const FriendModel = {
       FROM friend_requests fr
       JOIN users u ON fr.from_user_id = u.id
       WHERE fr.to_user_id = ?
+        AND fr.status = 'pending'
       ORDER BY fr.requested_at DESC
     `);
     return stmt.all(userId) as any[];
