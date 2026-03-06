@@ -289,7 +289,8 @@ a {
 			}
 		}
 		&.flipped {
-			transform: scale(4) translateX(var(--card-translate-x, 39px))
+			--card-scale: 4;
+			transform: scale(var(--card-scale)) translateX(var(--card-translate-x, 39px))
 				translateY(var(--card-translate-y, 50%)) rotateY(180deg);
 			--back-scale: 0.5;
 			z-index: 1000;
@@ -299,8 +300,11 @@ a {
 				}
 			}
 			.auto-item-card-back {
-				transform: rotateY(180deg) scale(var(--back-scale));
-				transform-origin: center;
+				left: 50%;
+				width: calc(90vw / (var(--card-scale) * var(--back-scale)));
+				// max-width: calc(100vw / (var(--card-scale) * var(--back-scale)));
+				transform: translateX(-50%) rotateY(180deg) scale(var(--back-scale));
+				transform-origin: top center;
 			}
 		}
 	}
@@ -1214,6 +1218,11 @@ nav a.has-pending::before {
 			height: 100%;
 			flex: 1;
 			.auto-item-card-back {
+				left: 0;
+				width: 100%;
+				max-width: 100%;
+				transform: rotateY(180deg);
+				transform-origin: center;
 				height: 100%;
 				padding: 1rem;
 				gap: 1rem;
