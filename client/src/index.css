@@ -268,11 +268,9 @@ a {
 .auto-items .auto-item-card.flipped .auto-item-card-front .auto-item-card-menu {
   display: none;
 }
-.auto-items .auto-item-card.flipped .auto-item-card-back * {
+.auto-items .auto-item-card.flipped .auto-item-card-back {
   transform: rotateY(180deg) scale(var(--back-scale));
-  transform-origin: top left;
-  width: calc(100% / var(--back-scale));
-  height: calc(100% / var(--back-scale));
+  transform-origin: center;
 }
 
 .backdrop-overlay {

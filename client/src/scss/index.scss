@@ -298,14 +298,9 @@ a {
 					display: none;
 				}
 			}
-			.auto-item-card-back * {
-				// keep your existing rotateY, add scale to the same transform
+			.auto-item-card-back {
 				transform: rotateY(180deg) scale(var(--back-scale));
-				transform-origin: top left;
-
-				// compensate layout size after scaling
-				width: calc(100% / var(--back-scale));
-				height: calc(100% / var(--back-scale));
+				transform-origin: center;
 			}
 		}
 	}
