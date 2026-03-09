@@ -20,18 +20,25 @@ button {
 	letter-spacing: 0.1em;
 }
 
-@mixin headings {
-	text-transform: uppercase;
-	font-variation-settings:
+@mixin headings(
+	$fvs: (
 		'wdth' 150,
-		'wght' 300;
+		'wght' 300,
+	)
+) {
+	text-transform: uppercase;
+	font-variation-settings: $fvs;
 	letter-spacing: 0.1em;
 }
 
-@mixin button($border-radius: 0.5rem) {
+@mixin button($border-radius: 1rem, $bg: #fff) {
 	font-family: 'Roboto Flex', sans-serif;
 
-	background-color: #fff;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 0.5rem;
+	background-color: $bg;
 	padding: 0.5rem 1rem;
 	font-size: 1rem;
 	opacity: 1;
@@ -171,7 +178,9 @@ a {
 				display: flex;
 				flex-direction: column;
 				.card-info-label {
-					@include headings;
+					@include headings(('wdth' 200, 'wght' 800));
+					font-size: 0.8rem;
+					margin-bottom: 0.25rem;
 				}
 			}
 			.auto-item-notes-btn {
@@ -255,13 +264,10 @@ a {
 			}
 			.auto-item-watched-with-btn,
 			.auto-item-remove {
-				@include button;
+				@include button(24px);
 				background: #fff;
 				color: #000;
 				cursor: pointer;
-				display: flex;
-				align-items: center;
-				justify-content: center;
 				flex-shrink: 0;
 			}
 			.auto-item-remove {

@@ -5,11 +5,15 @@ button {
 
 .intro-actions button {
   font-family: "Roboto Flex", sans-serif;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
   background-color: #fff;
   padding: 0.5rem 1rem;
   font-size: 1rem;
   opacity: 1;
-  border-radius: 0.5rem;
+  border-radius: 1rem;
   transition: opacity 0.25s ease;
 }
 .intro-actions button:hover {
@@ -146,8 +150,10 @@ a {
 }
 .auto-items .auto-item-card .auto-item-card-back .card-info .card-info-label {
   text-transform: uppercase;
-  font-variation-settings: "wdth" 150, "wght" 300;
+  font-variation-settings: "wdth" 200, "wght" 800;
   letter-spacing: 0.1em;
+  font-size: 0.8rem;
+  margin-bottom: 0.25rem;
 }
 .auto-items .auto-item-card .auto-item-card-back .auto-item-notes-btn {
   background: transparent;
@@ -183,11 +189,15 @@ a {
 }
 .auto-items .auto-item-card .auto-item-card-back .remove-watched-with-btn {
   font-family: "Roboto Flex", sans-serif;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
   background-color: #fff;
   padding: 0.5rem 1rem;
   font-size: 1rem;
   opacity: 1;
-  border-radius: 0.5rem;
+  border-radius: 1rem;
   transition: opacity 0.25s ease;
 }
 .auto-items .auto-item-card .auto-item-card-back .remove-watched-with-btn:hover {
@@ -242,11 +252,15 @@ a {
 .auto-items .auto-item-card .auto-item-card-back .auto-item-watched-with-btn,
 .auto-items .auto-item-card .auto-item-card-back .auto-item-remove {
   font-family: "Roboto Flex", sans-serif;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
   background-color: #fff;
   padding: 0.5rem 1rem;
   font-size: 1rem;
   opacity: 1;
-  border-radius: 0.5rem;
+  border-radius: 24px;
   transition: opacity 0.25s ease;
 }
 .auto-items .auto-item-card .auto-item-card-back .auto-item-watched-with-btn:hover,
@@ -258,9 +272,6 @@ a {
   background: #fff;
   color: #000;
   cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
   flex-shrink: 0;
 }
 .auto-items .auto-item-card .auto-item-card-back .auto-item-remove {
@@ -525,11 +536,15 @@ button.logout-button,
 button.approve,
 button.deny {
   font-family: "Roboto Flex", sans-serif;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
   background-color: #fff;
   padding: 0.5rem 1rem;
   font-size: 1rem;
   opacity: 1;
-  border-radius: 0.5rem;
+  border-radius: 1rem;
   transition: opacity 0.25s ease;
 }
 button.submit:hover,
@@ -878,6 +893,10 @@ input.search-input {
 }
 .friend-card .friend-links button {
   font-family: "Roboto Flex", sans-serif;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
   background-color: #fff;
   padding: 0.5rem 1rem;
   font-size: 1rem;
@@ -1075,11 +1094,15 @@ nav a.has-pending::before {
 }
 .modal .modal-content button {
   font-family: "Roboto Flex", sans-serif;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
   background-color: #fff;
   padding: 0.5rem 1rem;
   font-size: 1rem;
   opacity: 1;
-  border-radius: 0.5rem;
+  border-radius: 1rem;
   transition: opacity 0.25s ease;
 }
 .modal .modal-content button:hover {
@@ -1205,6 +1228,10 @@ nav a.has-pending::before {
 
 .login-button {
   font-family: "Roboto Flex", sans-serif;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
   background-color: #fff;
   padding: 0.5rem 1rem;
   font-size: 1rem;

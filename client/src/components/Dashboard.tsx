@@ -553,8 +553,6 @@ const Dashboard: React.FC = () => {
 													</div>
 												</div>
 												<div className="card-info">
-													<div className="card-info-label">Notes</div>
-
 													<div className="auto-item-notes-container">
 														{editingNotes[mi.id] ||
 														!(cardNotes[mi.id] !== undefined ? cardNotes[mi.id] : mi.notes) ? (
