@@ -315,6 +315,8 @@ a {
 				// max-width: calc(100vw / (var(--card-scale) * var(--back-scale)));
 				transform: translateX(-50%) rotateY(180deg) scale(var(--back-scale));
 				transform-origin: top center;
+				background: rgba(0, 0, 0, 0.5);
+				backdrop-filter: blur(10px);
 			}
 		}
 	}
@@ -1096,16 +1098,15 @@ nav a.has-pending::before {
 .friend-requests {
 	margin-bottom: 2rem;
 	padding: 1rem;
-	border: 1px solid rgba(255, 255, 255, 0.2);
 	border-radius: 0.25rem;
 	background: rgba(0, 0, 0, 0.3);
 
-	h2 {
-		font-size: 0.8rem;
-		font-weight: 600;
-		margin-bottom: 1rem;
-		color: #fff;
-	}
+	// h2 {
+	// 	font-size: 0.8rem;
+	// 	font-weight: 600;
+	// 	margin-bottom: 1rem;
+	// 	color: #fff;
+	// }
 
 	.requests-section {
 		margin-bottom: 1.5rem;
@@ -1134,18 +1135,14 @@ nav a.has-pending::before {
 		justify-content: space-between;
 		align-items: center;
 		padding: 0.6rem;
-		background: rgba(255, 255, 255, 0.05);
-		border-radius: 0.15rem;
-		border: 1px solid rgba(255, 255, 255, 0.1);
 
 		&.outgoing {
 			opacity: 0.85;
 		}
 
 		.request-name {
-			font-size: 0.5rem;
-			color: #fff;
-			flex: 1;
+			// color: #fff;
+			// flex: 1;
 		}
 
 		.request-actions {

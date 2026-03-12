@@ -242,10 +242,33 @@ const Friends: React.FC = () => {
 										<div className="request-name">{req.username}</div>
 										<div className="request-actions">
 											<button className="approve" onClick={() => handleRespond(req.id, 'approved')}>
-												Approve
+												<svg
+													className="icon-checkmark"
+													width="20"
+													height="20"
+													viewBox="0 0 20 20"
+													fill="none"
+													xmlns="http://www.w3.org/2000/svg"
+												>
+													<path
+														d="M16.2187 4.12666C16.5637 3.6954 17.1937 3.6254 17.6249 3.97041C18.0562 4.31542 18.1262 4.9454 17.7812 5.37666L9.08293 16.2487L3.29289 10.4587C2.90237 10.0682 2.90237 9.43515 3.29289 9.04463C3.68342 8.65411 4.31643 8.65411 4.70696 9.04463L8.91594 13.2536L16.2187 4.12666Z"
+														fill="white"
+													/>
+												</svg>
 											</button>
 											<button className="deny" onClick={() => handleRespond(req.id, 'rejected')}>
-												Deny
+												<svg
+													width="20"
+													height="20"
+													viewBox="0 0 20 20"
+													fill="none"
+													xmlns="http://www.w3.org/2000/svg"
+												>
+													<path
+														d="M4.222 4.222a1 1 0 0 1 1.414 0L10 8.586l4.364-4.364a1 1 0 1 1 1.414 1.414L11.414 10l4.364 4.364a1 1 0 0 1-1.414 1.414L10 11.414l-4.364 4.364a1 1 0 0 1-1.414-1.414L8.586 10 4.222 5.636a1 1 0 0 1 0-1.414z"
+														fill="#fff"
+													/>
+												</svg>
 											</button>
 										</div>
 									</div>
