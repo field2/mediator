@@ -400,15 +400,27 @@ const Dashboard: React.FC = () => {
 			.map(({ friend }) => friend);
 	};
 
-	const handleRecommendSearch = (mediaId: number) => {
-		const query = (recommendSearch[mediaId] || '').trim();
-		if (!query) {
+	const updateRecommendMatches = (mediaId: number, query: string) => {
+		const trimmedQuery = query.trim();
+		if (!trimmedQuery) {
 			setRecommendMatches((prev) => ({ ...prev, [mediaId]: [] }));
 			return;
 		}
 
-		const matches = getFuzzyFriendMatches(query);
+		const matches = getFuzzyFriendMatches(trimmedQuery);
 		setRecommendMatches((prev) => ({ ...prev, [mediaId]: matches }));
+	};
+
+	const handleRecommendSearch = (mediaId: number) => {
+		updateRecommendMatches(mediaId, recommendSearch[mediaId] || '');
+	};
+
+	const handleRecommendInputChange = (mediaId: number, query: string) => {
+		setRecommendSearch((prev) => ({
+			...prev,
+			[mediaId]: query,
+		}));
+		updateRecommendMatches(mediaId, query);
 	};
 
 	const handleSendRecommendation = async (mediaItem: MediaItem, friend: User) => {
@@ -876,11 +888,9 @@ const Dashboard: React.FC = () => {
 																	placeholder="Search friends..."
 																	value={recommendSearch[mi.id] || ''}
 																	onChange={(e) =>
-																		setRecommendSearch((prev) => ({
-																			...prev,
-																			[mi.id]: e.target.value,
-																		}))
+																		handleRecommendInputChange(mi.id, e.target.value)
 																	}
+																	onFocus={() => handleRecommendSearch(mi.id)}
 																	onKeyDown={(e) => {
 																		if (e.key === 'Enter') {
 																			e.preventDefault();
