@@ -219,6 +219,72 @@ a {
   flex-direction: column;
   gap: 1rem;
 }
+.auto-items .auto-item-card .auto-item-card-back .auto-item-recommend-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+.auto-items .auto-item-card .auto-item-card-back .auto-item-recommend-search-row {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+.auto-items .auto-item-card .auto-item-card-back .recommend-search-input {
+  flex: 1;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+  font-family: inherit;
+  padding: 0.35rem 0.5rem;
+}
+.auto-items .auto-item-card .auto-item-card-back .recommend-search-input:focus {
+  outline: none;
+  border-color: #fff;
+  background: rgba(255, 255, 255, 0.2);
+  box-shadow: 0 0 0.2rem rgba(255, 255, 255, 0.3);
+}
+.auto-items .auto-item-card .auto-item-card-back .recommend-search-input::placeholder {
+  color: rgba(255, 255, 255, 0.5);
+}
+.auto-items .auto-item-card .auto-item-card-back .auto-item-recommend-search-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  background: rgba(255, 255, 255, 0.12);
+  padding: 0.35rem;
+  border-radius: 0.35rem;
+}
+.auto-items .auto-item-card .auto-item-card-back .auto-item-recommend-search-btn img {
+  display: block;
+  width: 14px;
+  height: 14px;
+  filter: invert(1);
+}
+.auto-items .auto-item-card .auto-item-card-back .auto-item-recommend-results {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+.auto-items .auto-item-card .auto-item-card-back .recommend-friend-btn {
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  border-radius: 0.75rem;
+  padding: 0.2rem 0.5rem;
+  font-size: 0.75rem;
+}
+.auto-items .auto-item-card .auto-item-card-back .recommend-friend-btn:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+.auto-items .auto-item-card .auto-item-card-back .recommend-friend-btn:disabled {
+  opacity: 0.7;
+  cursor: default;
+}
+.auto-items .auto-item-card .auto-item-card-back .recommend-no-results {
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.6);
+}
 .auto-items .auto-item-card .auto-item-card-back .watched-with-search-input {
   border: 1px solid rgba(255, 255, 255, 0.3);
   background: rgba(255, 255, 255, 0.1);
@@ -1165,6 +1231,11 @@ nav a.has-pending::before {
 .friend-requests .friend-request-item.outgoing {
   opacity: 0.85;
 }
+.friend-requests .friend-request-item .request-name .request-meta {
+  font-size: 0.7rem;
+  opacity: 0.75;
+  margin-top: 0.2rem;
+}
 .friend-requests .friend-request-item .request-actions {
   display: flex;
   gap: 0.4rem;
@@ -1272,7 +1343,9 @@ nav a.has-pending::before {
   .auto-items .auto-item-card.flipped .auto-item-notes::placeholder,
   .auto-items .auto-item-card.flipped .auto-item-watched-with-btn,
   .auto-items .auto-item-card.flipped .auto-item-remove,
-  .auto-items .auto-item-card.flipped .watched-with-search-input {
+  .auto-items .auto-item-card.flipped .watched-with-search-input,
+  .auto-items .auto-item-card.flipped .recommend-search-input,
+  .auto-items .auto-item-card.flipped .recommend-friend-btn {
     font-size: 1rem;
   }
   .auto-items .auto-item-card.flipped .auto-item-notes {

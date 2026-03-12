@@ -229,6 +229,25 @@ export async function initializeDatabase() {
     )
   `);
 
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS media_recommendations (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      from_user_id INTEGER NOT NULL,
+      to_user_id INTEGER NOT NULL,
+      media_type TEXT NOT NULL CHECK(media_type IN ('movie', 'book', 'album')),
+      external_id TEXT NOT NULL,
+      title TEXT NOT NULL,
+      year TEXT,
+      poster_url TEXT,
+      additional_data TEXT,
+      status TEXT NOT NULL CHECK(status IN ('pending', 'approved', 'rejected')),
+      recommended_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      responded_at DATETIME,
+      FOREIGN KEY (from_user_id) REFERENCES users(id) ON DELETE CASCADE,
+      FOREIGN KEY (to_user_id) REFERENCES users(id) ON DELETE CASCADE
+    )
+  `);
+
   console.log('Database initialized successfully');
 }
 

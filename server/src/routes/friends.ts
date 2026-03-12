@@ -1,5 +1,5 @@
 import express from 'express';
-import { FriendModel } from '../db/models';
+import { FriendModel, RecommendationModel, ListModel, MediaItemModel } from '../db/models';
 import { authenticate, AuthRequest } from '../middleware/auth';
 import db from '../db/database';
 
@@ -89,6 +89,142 @@ router.post('/request', authenticate, async (req: AuthRequest, res) => {
   } catch (error) {
     console.error('Send friend request error:', error);
     res.status(500).json({ error: 'Failed to send friend request' });
+  }
+});
+
+// Send a media recommendation to a friend
+router.post('/recommend', authenticate, async (req: AuthRequest, res) => {
+  try {
+    const fromUserId = req.userId as number;
+    const {
+      toUserId,
+      mediaType,
+      externalId,
+      title,
+      year,
+      posterUrl,
+      additionalData
+    } = req.body;
+
+    if (!toUserId || !mediaType || !externalId || !title) {
+      return res.status(400).json({ error: 'toUserId, mediaType, externalId, and title are required' });
+    }
+
+    if (!['movie', 'book', 'album'].includes(mediaType)) {
+      return res.status(400).json({ error: 'Invalid mediaType' });
+    }
+
+    if (fromUserId === toUserId) {
+      return res.status(400).json({ error: 'Cannot recommend media to yourself' });
+    }
+
+    if (!FriendModel.areFriends(fromUserId, toUserId)) {
+      return res.status(403).json({ error: 'You can only recommend media to friends' });
+    }
+
+    if (RecommendationModel.hasPendingRecommendation(fromUserId, toUserId, externalId)) {
+      return res.status(400).json({ error: 'Recommendation already pending for this friend' });
+    }
+
+    const recommendationId = RecommendationModel.create(
+      fromUserId,
+      toUserId,
+      mediaType,
+      externalId,
+      title,
+      year,
+      posterUrl,
+      additionalData
+    );
+
+    res.json({ message: 'Recommendation sent', recommendationId });
+  } catch (error) {
+    console.error('Send recommendation error:', error);
+    res.status(500).json({ error: 'Failed to send recommendation' });
+  }
+});
+
+// Get incoming media recommendations
+router.get('/recommendations/incoming', authenticate, async (req: AuthRequest, res) => {
+  try {
+    const userId = req.userId as number;
+    const recommendations = RecommendationModel.getIncomingRecommendations(userId);
+    res.json(recommendations);
+  } catch (error) {
+    console.error('Get incoming recommendations error:', error);
+    res.status(500).json({ error: 'Failed to get recommendations' });
+  }
+});
+
+// Respond to recommendation (approve/deny)
+router.post('/recommendations/:id/respond', authenticate, async (req: AuthRequest, res) => {
+  try {
+    const recommendationId = parseInt(req.params.id);
+    const toUserId = req.userId as number;
+    const { status } = req.body as { status?: 'approved' | 'rejected' };
+
+    if (!['approved', 'rejected'].includes(status || '')) {
+      return res.status(400).json({ error: 'Invalid status' });
+    }
+
+    const recommendation = RecommendationModel.respondToRecommendation(
+      recommendationId,
+      toUserId,
+      status as 'approved' | 'rejected'
+    );
+
+    if (!recommendation) {
+      return res.status(404).json({ error: 'Recommendation not found' });
+    }
+
+    if (status === 'approved') {
+      const listName = `My ${recommendation.media_type.charAt(0).toUpperCase() + recommendation.media_type.slice(1)}s`;
+
+      let autoList = ListModel.findByUserId(toUserId).find((list) => list.name === listName);
+      if (!autoList) {
+        const listId = ListModel.create(
+          listName,
+          toUserId,
+          `Auto-generated list for ${recommendation.media_type}s`,
+          false
+        );
+        autoList = ListModel.findById(listId as number);
+      }
+
+      if (autoList) {
+        const existingItem = MediaItemModel.findByListIdAndExternalId(
+          autoList.id,
+          recommendation.external_id
+        );
+
+        if (!existingItem) {
+          let parsedAdditionalData: unknown = undefined;
+          if (recommendation.additional_data) {
+            try {
+              parsedAdditionalData = JSON.parse(recommendation.additional_data);
+            } catch {
+              parsedAdditionalData = undefined;
+            }
+          }
+
+          MediaItemModel.create(
+            autoList.id,
+            recommendation.media_type,
+            recommendation.external_id,
+            recommendation.title,
+            toUserId,
+            recommendation.year || undefined,
+            recommendation.poster_url || undefined,
+            parsedAdditionalData
+          );
+        }
+      }
+    }
+
+    res.json({ message: `Recommendation ${status}` });
+  } catch (error) {
+    console.error('Respond to recommendation error:', error);
+    res.status(500).json({ error: 'Failed to respond to recommendation' });
   }
 });
 

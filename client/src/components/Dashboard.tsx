@@ -16,9 +16,11 @@ import {
 	addWatchedWithFriend,
 	removeWatchedWithFriend,
 	getFriends,
+	sendRecommendation,
 } from '../api';
 import { MediaItem, User } from '../types';
 import StarRating from './StarRating';
+import IconSearch from '../assets/icon-search.svg';
 
 const Dashboard: React.FC = () => {
 	// Add missing helper functions
@@ -108,6 +110,11 @@ const Dashboard: React.FC = () => {
 	const [editingWatchedWith, setEditingWatchedWith] = useState<{ [key: number]: boolean }>({});
 	const [friendsList, setFriendsList] = useState<User[]>([]);
 	const [watchedWithSearch, setWatchedWithSearch] = useState<{ [key: number]: string }>({});
+	const [recommendSearch, setRecommendSearch] = useState<{ [key: number]: string }>({});
+	const [recommendMatches, setRecommendMatches] = useState<{ [key: number]: User[] }>({});
+	const [sendingRecommendation, setSendingRecommendation] = useState<{ [key: string]: boolean }>(
+		{}
+	);
 
 	// Reset flipped card when media type changes
 	useEffect(() => {
@@ -349,6 +356,97 @@ const Dashboard: React.FC = () => {
 			}));
 		} catch (err) {
 			console.error('Error removing watched with friend:', err);
+		}
+	};
+
+	const fuzzyFriendScore = (query: string, username: string): number => {
+		const q = query.toLowerCase().trim();
+		const candidate = username.toLowerCase();
+
+		if (!q) return -1;
+
+		if (candidate.includes(q)) {
+			const idx = candidate.indexOf(q);
+			return 100 - idx * 2 - (candidate.length - q.length);
+		}
+
+		let qIndex = 0;
+		let score = 0;
+		for (let i = 0; i < candidate.length && qIndex < q.length; i++) {
+			if (candidate[i] === q[qIndex]) {
+				score += 3;
+				if (i === 0 || candidate[i - 1] === q[qIndex - 1]) {
+					score += 2;
+				}
+				qIndex++;
+			} else {
+				score -= 1;
+			}
+		}
+
+		if (qIndex !== q.length) {
+			return -1;
+		}
+
+		return score - (candidate.length - q.length);
+	};
+
+	const getFuzzyFriendMatches = (query: string): User[] => {
+		return friendsList
+			.map((friend) => ({ friend, score: fuzzyFriendScore(query, friend.username) }))
+			.filter(({ score }) => score >= 0)
+			.sort((a, b) => b.score - a.score)
+			.slice(0, 8)
+			.map(({ friend }) => friend);
+	};
+
+	const handleRecommendSearch = (mediaId: number) => {
+		const query = (recommendSearch[mediaId] || '').trim();
+		if (!query) {
+			setRecommendMatches((prev) => ({ ...prev, [mediaId]: [] }));
+			return;
+		}
+
+		const matches = getFuzzyFriendMatches(query);
+		setRecommendMatches((prev) => ({ ...prev, [mediaId]: matches }));
+	};
+
+	const handleSendRecommendation = async (mediaItem: MediaItem, friend: User) => {
+		if (!isAuthenticated) return;
+
+		const friendId = friend.id || friend.userId;
+		if (!friendId) return;
+
+		let additionalDataPayload: unknown = undefined;
+		if (mediaItem.additional_data) {
+			try {
+				additionalDataPayload = JSON.parse(mediaItem.additional_data);
+			} catch {
+				additionalDataPayload = mediaItem.additional_data;
+			}
+		}
+
+		const key = `${mediaItem.id}:${friendId}`;
+		setSendingRecommendation((prev) => ({ ...prev, [key]: true }));
+
+		try {
+			await sendRecommendation(friendId, {
+				mediaType: mediaItem.media_type,
+				externalId: mediaItem.external_id,
+				title: mediaItem.title,
+				year: mediaItem.year || undefined,
+				posterUrl: mediaItem.poster_url || undefined,
+				additionalData: additionalDataPayload,
+			});
+
+			alert(`Recommendation sent to ${friend.username}`);
+			setRecommendSearch((prev) => ({ ...prev, [mediaItem.id]: '' }));
+			setRecommendMatches((prev) => ({ ...prev, [mediaItem.id]: [] }));
+		} catch (err: any) {
+			console.error('Error sending recommendation:', err);
+			alert(err.response?.data?.error || 'Failed to send recommendation');
+		} finally {
+			setSendingRecommendation((prev) => ({ ...prev, [key]: false }));
 		}
 	};
 
@@ -768,6 +866,67 @@ const Dashboard: React.FC = () => {
 														</button>
 													</div>
 												</div>
+												{!viewingOtherUser && isAuthenticated && (
+													<div className="card-info">
+														<div className="card-info-label">Recommend to friend</div>
+														<div className="auto-item-recommend-container">
+															<div className="auto-item-recommend-search-row">
+																<input
+																	type="text"
+																	placeholder="Search friends..."
+																	value={recommendSearch[mi.id] || ''}
+																	onChange={(e) =>
+																		setRecommendSearch((prev) => ({
+																			...prev,
+																			[mi.id]: e.target.value,
+																		}))
+																	}
+																	onKeyDown={(e) => {
+																		if (e.key === 'Enter') {
+																			e.preventDefault();
+																			handleRecommendSearch(mi.id);
+																		}
+																	}}
+																	className="recommend-search-input"
+																/>
+																<button
+																	type="button"
+																	className="auto-item-recommend-search-btn"
+																	onClick={() => handleRecommendSearch(mi.id)}
+																	aria-label="Search friends"
+																>
+																	<img src={IconSearch} alt="Search" />
+																</button>
+															</div>
+															<div className="auto-item-recommend-results">
+																{(recommendMatches[mi.id] || []).map((friend) => {
+																	const friendId = friend.id || friend.userId;
+																	if (!friendId) return null;
+																	const sendingKey = `${mi.id}:${friendId}`;
+																	const isSending = !!sendingRecommendation[sendingKey];
+
+																	return (
+																		<button
+																			key={friendId}
+																			type="button"
+																			className="recommend-friend-btn"
+																			disabled={isSending}
+																			onClick={() => handleSendRecommendation(mi, friend)}
+																		>
+																			{isSending
+																				? `Sending to ${friend.username}...`
+																				: friend.username}
+																		</button>
+																	);
+																})}
+																{(recommendSearch[mi.id] || '').trim() &&
+																	(recommendMatches[mi.id] || []).length === 0 && (
+																		<div className="recommend-no-results">No matching friends</div>
+																	)}
+															</div>
+														</div>
+													</div>
+												)}
 												<div className="card-info">
 													<button
 														className="auto-item-remove"

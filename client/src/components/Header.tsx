@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useContext } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../AuthContext';
-import { getFriendRequests } from '../api';
+import { getFriendRequests, getIncomingRecommendations } from '../api';
 import NavigationContext from '../NavigationContext';
 
 type HeaderProps = {
@@ -53,9 +53,15 @@ const Header: React.FC<HeaderProps> = ({ title, children }) => {
 				return;
 			}
 			try {
-				const reqs: any = await getFriendRequests();
+				const [reqs, recommendations] = await Promise.all([
+					getFriendRequests(),
+					getIncomingRecommendations(),
+				]);
 				if (cancelled) return;
-				setHasPending(Array.isArray(reqs) && reqs.some((r: any) => r.status === 'pending'));
+				const hasFriendRequests =
+					Array.isArray(reqs) && reqs.some((r: any) => r.status === 'pending');
+				const hasRecommendations = Array.isArray(recommendations) && recommendations.length > 0;
+				setHasPending(hasFriendRequests || hasRecommendations);
 			} catch (err) {
 				console.error('Error fetching friend requests in Header:', err);
 				setHasPending(false);

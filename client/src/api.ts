@@ -14,7 +14,7 @@ export async function getCurrentUser(token: string) {
   return await res.json();
 }
 import axios from 'axios';
-import { User, List, MediaItem, Collaboration, SearchResult } from './types';
+import { User, List, MediaItem, Collaboration, SearchResult, Recommendation } from './types';
 
 const API_BASE_URL = '/api';
 
@@ -243,9 +243,38 @@ export const sendFriendRequest = async (toUserId: number): Promise<void> => {
   await api.post('/friends/request', { toUserId });
 };
 
+export const sendRecommendation = async (
+  toUserId: number,
+  payload: {
+    mediaType: 'movie' | 'book' | 'album';
+    externalId: string;
+    title: string;
+    year?: string;
+    posterUrl?: string;
+    additionalData?: unknown;
+  }
+): Promise<void> => {
+  await api.post('/friends/recommend', {
+    toUserId,
+    ...payload
+  });
+};
+
 export const getFriendRequests = async (): Promise<any[]> => {
   const response = await api.get('/friends/requests/incoming');
   return response.data;
+};
+
+export const getIncomingRecommendations = async (): Promise<Recommendation[]> => {
+  const response = await api.get('/friends/recommendations/incoming');
+  return response.data;
+};
+
+export const respondToRecommendation = async (
+  recommendationId: number,
+  status: 'approved' | 'rejected'
+): Promise<void> => {
+  await api.post(`/friends/recommendations/${recommendationId}/respond`, { status });
 };
 
 export const getOutgoingFriendRequests = async (): Promise<any[]> => {

@@ -7,11 +7,13 @@ import {
 	getFriends,
 	getFriendRequests,
 	respondToFriendRequest,
+	getIncomingRecommendations,
+	respondToRecommendation,
 } from '../api';
 // ...existing code...
 import IconSearch from '../assets/icon-search.svg';
 import IconClose from '../assets/icon-close.svg';
-import { User } from '../types';
+import { User, Recommendation } from '../types';
 import Header from './Header';
 
 const Friends: React.FC = () => {
@@ -21,6 +23,7 @@ const Friends: React.FC = () => {
 	const [friends, setFriends] = useState<User[]>([]);
 	const [loading, setLoading] = useState(false);
 	const [requests, setRequests] = useState<any[]>([]);
+	const [recommendations, setRecommendations] = useState<Recommendation[]>([]);
 	const [showResults, setShowResults] = useState(false);
 	const debounceTimer = useRef<number | null>(null);
 	const inputRef = useRef<HTMLInputElement | null>(null);
@@ -32,6 +35,7 @@ const Friends: React.FC = () => {
 	useEffect(() => {
 		loadFriends();
 		loadRequests();
+		loadRecommendations();
 	}, []);
 
 	// (menu handled by shared Header)
@@ -76,6 +80,15 @@ const Friends: React.FC = () => {
 			setRequests((Array.isArray(reqs) ? reqs : []).filter((req) => req.status === 'pending'));
 		} catch (error) {
 			console.error('Error loading friend requests:', error);
+		}
+	};
+
+	const loadRecommendations = async () => {
+		try {
+			const incoming = await getIncomingRecommendations();
+			setRecommendations(Array.isArray(incoming) ? incoming : []);
+		} catch (error) {
+			console.error('Error loading recommendations:', error);
 		}
 	};
 
@@ -159,6 +172,21 @@ const Friends: React.FC = () => {
 		}
 	};
 
+	const handleRecommendationRespond = async (
+		recommendationId: number,
+		status: 'approved' | 'rejected'
+	) => {
+		try {
+			await respondToRecommendation(recommendationId, status);
+			setRecommendations((prev) => prev.filter((rec) => rec.id !== recommendationId));
+			document.dispatchEvent(new CustomEvent('friend-requests-updated'));
+		} catch (error: any) {
+			console.error('Error responding to recommendation:', error);
+			alert(error.response?.data?.error || 'Failed to update recommendation');
+			await loadRecommendations();
+		}
+	};
+
 	return (
 		<div className="page-container">
 			<Header title="Friends" />
@@ -233,47 +261,114 @@ const Friends: React.FC = () => {
 					: null}
 
 				<div className="friends-list">
-					{requests.length > 0 && (
+					{(requests.length > 0 || recommendations.length > 0) && (
 						<div className="friend-requests">
-							<h2>Friend Requests</h2>
-							<div className="friend-requests-list">
-								{requests.map((req) => (
-									<div key={req.id} className="friend-request-item">
-										<div className="request-name">{req.username}</div>
-										<div className="request-actions">
-											<button className="approve" onClick={() => handleRespond(req.id, 'approved')}>
-												<svg
-													className="icon-checkmark"
-													width="20"
-													height="20"
-													viewBox="0 0 20 20"
-													fill="none"
-													xmlns="http://www.w3.org/2000/svg"
-												>
-													<path
-														d="M16.2187 4.12666C16.5637 3.6954 17.1937 3.6254 17.6249 3.97041C18.0562 4.31542 18.1262 4.9454 17.7812 5.37666L9.08293 16.2487L3.29289 10.4587C2.90237 10.0682 2.90237 9.43515 3.29289 9.04463C3.68342 8.65411 4.31643 8.65411 4.70696 9.04463L8.91594 13.2536L16.2187 4.12666Z"
-														fill="white"
-													/>
-												</svg>
-											</button>
-											<button className="deny" onClick={() => handleRespond(req.id, 'rejected')}>
-												<svg
-													width="20"
-													height="20"
-													viewBox="0 0 20 20"
-													fill="none"
-													xmlns="http://www.w3.org/2000/svg"
-												>
-													<path
-														d="M4.222 4.222a1 1 0 0 1 1.414 0L10 8.586l4.364-4.364a1 1 0 1 1 1.414 1.414L11.414 10l4.364 4.364a1 1 0 0 1-1.414 1.414L10 11.414l-4.364 4.364a1 1 0 0 1-1.414-1.414L8.586 10 4.222 5.636a1 1 0 0 1 0-1.414z"
-														fill="#fff"
-													/>
-												</svg>
-											</button>
-										</div>
+							<h2>Alerts</h2>
+							{requests.length > 0 && (
+								<div className="requests-section">
+									<h3>Friend Requests</h3>
+									<div className="friend-requests-list">
+										{requests.map((req) => (
+											<div key={req.id} className="friend-request-item">
+												<div className="request-name">{req.username}</div>
+												<div className="request-actions">
+													<button
+														className="approve"
+														onClick={() => handleRespond(req.id, 'approved')}
+													>
+														<svg
+															className="icon-checkmark"
+															width="20"
+															height="20"
+															viewBox="0 0 20 20"
+															fill="none"
+															xmlns="http://www.w3.org/2000/svg"
+														>
+															<path
+																d="M16.2187 4.12666C16.5637 3.6954 17.1937 3.6254 17.6249 3.97041C18.0562 4.31542 18.1262 4.9454 17.7812 5.37666L9.08293 16.2487L3.29289 10.4587C2.90237 10.0682 2.90237 9.43515 3.29289 9.04463C3.68342 8.65411 4.31643 8.65411 4.70696 9.04463L8.91594 13.2536L16.2187 4.12666Z"
+																fill="white"
+															/>
+														</svg>
+													</button>
+													<button
+														className="deny"
+														onClick={() => handleRespond(req.id, 'rejected')}
+													>
+														<svg
+															width="20"
+															height="20"
+															viewBox="0 0 20 20"
+															fill="none"
+															xmlns="http://www.w3.org/2000/svg"
+														>
+															<path
+																d="M4.222 4.222a1 1 0 0 1 1.414 0L10 8.586l4.364-4.364a1 1 0 1 1 1.414 1.414L11.414 10l4.364 4.364a1 1 0 0 1-1.414 1.414L10 11.414l-4.364 4.364a1 1 0 0 1-1.414-1.414L8.586 10 4.222 5.636a1 1 0 0 1 0-1.414z"
+																fill="#fff"
+															/>
+														</svg>
+													</button>
+												</div>
+											</div>
+										))}
 									</div>
-								))}
-							</div>
+								</div>
+							)}
+
+							{recommendations.length > 0 && (
+								<div className="requests-section">
+									<h3>Recommendations</h3>
+									<div className="friend-requests-list">
+										{recommendations.map((rec) => (
+											<div key={rec.id} className="friend-request-item recommendation-item">
+												<div className="request-name">
+													<div>
+														{rec.title}
+														{rec.year ? ` (${rec.year})` : ''}
+													</div>
+													<div className="request-meta">From {rec.from_username}</div>
+												</div>
+												<div className="request-actions">
+													<button
+														className="approve"
+														onClick={() => handleRecommendationRespond(rec.id, 'approved')}
+													>
+														<svg
+															className="icon-checkmark"
+															width="20"
+															height="20"
+															viewBox="0 0 20 20"
+															fill="none"
+															xmlns="http://www.w3.org/2000/svg"
+														>
+															<path
+																d="M16.2187 4.12666C16.5637 3.6954 17.1937 3.6254 17.6249 3.97041C18.0562 4.31542 18.1262 4.9454 17.7812 5.37666L9.08293 16.2487L3.29289 10.4587C2.90237 10.0682 2.90237 9.43515 3.29289 9.04463C3.68342 8.65411 4.31643 8.65411 4.70696 9.04463L8.91594 13.2536L16.2187 4.12666Z"
+																fill="white"
+															/>
+														</svg>
+													</button>
+													<button
+														className="deny"
+														onClick={() => handleRecommendationRespond(rec.id, 'rejected')}
+													>
+														<svg
+															width="20"
+															height="20"
+															viewBox="0 0 20 20"
+															fill="none"
+															xmlns="http://www.w3.org/2000/svg"
+														>
+															<path
+																d="M4.222 4.222a1 1 0 0 1 1.414 0L10 8.586l4.364-4.364a1 1 0 1 1 1.414 1.414L11.414 10l4.364 4.364a1 1 0 0 1-1.414 1.414L10 11.414l-4.364 4.364a1 1 0 0 1-1.414-1.414L8.586 10 4.222 5.636a1 1 0 0 1 0-1.414z"
+																fill="#fff"
+															/>
+														</svg>
+													</button>
+												</div>
+											</div>
+										))}
+									</div>
+								</div>
+							)}
 						</div>
 					)}
 					<h2>Your Friends ({friends.length})</h2>

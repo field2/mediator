@@ -63,3 +63,18 @@ export interface SearchResult {
   cover?: string;
   Poster?: string;
 }
+
+export interface Recommendation {
+  id: number;
+  from_user_id: number;
+  to_user_id: number;
+  from_username: string;
+  media_type: 'movie' | 'book' | 'album';
+  external_id: string;
+  title: string;
+  year: string | null;
+  poster_url: string | null;
+  status: 'pending' | 'approved' | 'rejected';
+  recommended_at: string;
+  responded_at: string | null;
+}

@@ -51,6 +51,21 @@ export interface Collaboration {
   responded_at: string | null;
 }
 
+export interface MediaRecommendation {
+  id: number;
+  from_user_id: number;
+  to_user_id: number;
+  media_type: 'movie' | 'book' | 'album';
+  external_id: string;
+  title: string;
+  year: string | null;
+  poster_url: string | null;
+  additional_data: string | null;
+  status: 'pending' | 'approved' | 'rejected';
+  recommended_at: string;
+  responded_at: string | null;
+}
+
 // User operations
 export const UserModel = {
   create: (username: string, email: string, passwordHash: string) => {
@@ -312,6 +327,113 @@ export const FriendModel = {
     const id2 = Math.max(userId1, userId2);
     const stmt = db.prepare('DELETE FROM friends WHERE user_id_1 = ? AND user_id_2 = ?');
     return stmt.run(id1, id2);
+  }
+};
+
+export const RecommendationModel = {
+  create: (
+    fromUserId: number,
+    toUserId: number,
+    mediaType: 'movie' | 'book' | 'album',
+    externalId: string,
+    title: string,
+    year?: string,
+    posterUrl?: string,
+    additionalData?: unknown
+  ): number => {
+    const stmt = db.prepare(`
+      INSERT INTO media_recommendations (
+        from_user_id,
+        to_user_id,
+        media_type,
+        external_id,
+        title,
+        year,
+        poster_url,
+        additional_data,
+        status
+      )
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `);
+    const result = stmt.run(
+      fromUserId,
+      toUserId,
+      mediaType,
+      externalId,
+      title,
+      year || null,
+      posterUrl || null,
+      additionalData ? JSON.stringify(additionalData) : null,
+      'pending'
+    );
+    return result.lastInsertRowid as number;
+  },
+
+  hasPendingRecommendation: (fromUserId: number, toUserId: number, externalId: string): boolean => {
+    const stmt = db.prepare(`
+      SELECT COUNT(*) as count
+      FROM media_recommendations
+      WHERE from_user_id = ?
+        AND to_user_id = ?
+        AND external_id = ?
+        AND status = ?
+    `);
+    const result = stmt.get(fromUserId, toUserId, externalId, 'pending') as { count: number };
+    return result.count > 0;
+  },
+
+  getIncomingRecommendations: (userId: number): any[] => {
+    const stmt = db.prepare(`
+      SELECT
+        mr.id,
+        mr.from_user_id,
+        mr.to_user_id,
+        mr.media_type,
+        mr.external_id,
+        mr.title,
+        mr.year,
+        mr.poster_url,
+        mr.additional_data,
+        mr.status,
+        mr.recommended_at,
+        mr.responded_at,
+        u.username as from_username
+      FROM media_recommendations mr
+      JOIN users u ON mr.from_user_id = u.id
+      WHERE mr.to_user_id = ?
+        AND mr.status = 'pending'
+      ORDER BY mr.recommended_at DESC
+    `);
+    return stmt.all(userId) as any[];
+  },
+
+  respondToRecommendation: (
+    recommendationId: number,
+    toUserId: number,
+    status: 'approved' | 'rejected'
+  ): MediaRecommendation | undefined => {
+    const getStmt = db.prepare(`
+      SELECT *
+      FROM media_recommendations
+      WHERE id = ?
+        AND to_user_id = ?
+        AND status = 'pending'
+    `);
+    const recommendation = getStmt.get(recommendationId, toUserId) as MediaRecommendation | undefined;
+
+    if (!recommendation) {
+      return undefined;
+    }
+
+    const updateStmt = db.prepare(`
+      UPDATE media_recommendations
+      SET status = ?, responded_at = CURRENT_TIMESTAMP
+      WHERE id = ?
+        AND to_user_id = ?
+    `);
+    updateStmt.run(status, recommendationId, toUserId);
+
+    return recommendation;
   }
 };
 // Watched with operations
