@@ -11,13 +11,17 @@ button {
   gap: 0.5rem;
   background-color: #fff;
   padding: 0.5rem 1rem;
-  font-size: 1rem;
+  font-size: 14px;
   opacity: 1;
   border-radius: 1rem;
   transition: opacity 0.25s ease;
 }
 .intro-actions button:hover {
   opacity: 0.65;
+}
+.intro-actions button img {
+  width: 20px;
+  height: 20px;
 }
 .intro-actions button {
   color: #000;
@@ -132,9 +136,12 @@ a {
 .auto-items .auto-item-card .auto-item-card-back .auto-item-date {
   opacity: 0.8;
 }
+.auto-items .auto-item-card .auto-item-card-back .auto-item-notes-container {
+  background: rgba(255, 255, 255, 0.1);
+}
 .auto-items .auto-item-card .auto-item-card-back .auto-item-notes {
   flex: 1;
-  background: rgba(255, 255, 255, 0.1);
+  background: none;
   color: #fff;
   font-family: inherit;
   font-size: 14px;
@@ -214,13 +221,17 @@ a {
   gap: 0.5rem;
   background-color: #fff;
   padding: 0.5rem 1rem;
-  font-size: 1rem;
+  font-size: 14px;
   opacity: 1;
   border-radius: 1rem;
   transition: opacity 0.25s ease;
 }
 .auto-items .auto-item-card .auto-item-card-back .remove-watched-with-btn:hover {
   opacity: 0.65;
+}
+.auto-items .auto-item-card .auto-item-card-back .remove-watched-with-btn img {
+  width: 20px;
+  height: 20px;
 }
 .auto-items .auto-item-card .auto-item-card-back .remove-watched-with-btn {
   background: transparent;
@@ -251,7 +262,14 @@ a {
 }
 .auto-items .auto-item-card .auto-item-card-back .recommend-search-input {
   flex: 1;
-  background: right center url(../assets/icon-search-white.svg) no-repeat;
+  position: relative;
+}
+.auto-items .auto-item-card .auto-item-card-back .recommend-search-input:after {
+  content: "";
+  position: absolute;
+}
+.auto-items .auto-item-card .auto-item-card-back .recommend-search-input {
+  background: right 4px center url(../assets/icon-search-white.svg) no-repeat;
   background-color: rgba(255, 255, 255, 0.1);
   color: #fff;
   font-family: inherit;
@@ -265,6 +283,7 @@ a {
 }
 .auto-items .auto-item-card .auto-item-card-back .recommend-search-input::placeholder {
   color: rgba(255, 255, 255, 0.5);
+  font-size: 14px;
 }
 .auto-items .auto-item-card .auto-item-card-back .auto-item-recommend-search-btn {
   display: flex;
@@ -296,13 +315,17 @@ a {
   gap: 0.5rem;
   background-color: #fff;
   padding: 0.5rem 1rem;
-  font-size: 1rem;
+  font-size: 14px;
   opacity: 1;
   border-radius: 1rem;
   transition: opacity 0.25s ease;
 }
 .auto-items .auto-item-card .auto-item-card-back .recommend-friend-btn:hover {
   opacity: 0.65;
+}
+.auto-items .auto-item-card .auto-item-card-back .recommend-friend-btn img {
+  width: 20px;
+  height: 20px;
 }
 .auto-items .auto-item-card .auto-item-card-back .recommend-friend-btn {
   background-color: rgb(141, 228, 123);
@@ -327,7 +350,6 @@ a {
   outline: none;
   border-color: #fff;
   background: rgba(255, 255, 255, 0.2);
-  box-shadow: 0 0 0.2rem rgba(255, 255, 255, 0.3);
 }
 .auto-items .auto-item-card .auto-item-card-back .watched-with-search-input::placeholder {
   color: rgba(255, 255, 255, 0.5);
@@ -355,15 +377,20 @@ a {
   justify-content: center;
   gap: 0.5rem;
   background-color: #fff;
-  padding: 0.5rem 1rem;
-  font-size: 1rem;
+  padding: 0.25rem 0.5rem;
+  font-size: 14px;
   opacity: 1;
-  border-radius: 24px;
+  border-radius: 1rem;
   transition: opacity 0.25s ease;
 }
 .auto-items .auto-item-card .auto-item-card-back .auto-item-watched-with-btn:hover,
 .auto-items .auto-item-card .auto-item-card-back .auto-item-remove:hover {
   opacity: 0.65;
+}
+.auto-items .auto-item-card .auto-item-card-back .auto-item-watched-with-btn img,
+.auto-items .auto-item-card .auto-item-card-back .auto-item-remove img {
+  width: 20px;
+  height: 20px;
 }
 .auto-items .auto-item-card .auto-item-card-back .auto-item-watched-with-btn,
 .auto-items .auto-item-card .auto-item-card-back .auto-item-remove {
@@ -642,7 +669,7 @@ button.deny {
   gap: 0.5rem;
   background-color: #fff;
   padding: 0.5rem 1rem;
-  font-size: 1rem;
+  font-size: 14px;
   opacity: 1;
   border-radius: 1rem;
   transition: opacity 0.25s ease;
@@ -652,6 +679,13 @@ button.logout-button:hover,
 button.approve:hover,
 button.deny:hover {
   opacity: 0.65;
+}
+button.submit img,
+button.logout-button img,
+button.approve img,
+button.deny img {
+  width: 20px;
+  height: 20px;
 }
 button.submit,
 button.logout-button,
@@ -999,13 +1033,17 @@ input.search-input {
   gap: 0.5rem;
   background-color: #fff;
   padding: 0.5rem 1rem;
-  font-size: 1rem;
+  font-size: 14px;
   opacity: 1;
   border-radius: 2rem;
   transition: opacity 0.25s ease;
 }
 .friend-card .friend-links button:hover {
   opacity: 0.65;
+}
+.friend-card .friend-links button img {
+  width: 20px;
+  height: 20px;
 }
 .friend-card .friend-links button {
   background-color: rgb(141, 228, 123);
@@ -1200,13 +1238,17 @@ nav a.has-pending::before {
   gap: 0.5rem;
   background-color: #fff;
   padding: 0.5rem 1rem;
-  font-size: 1rem;
+  font-size: 14px;
   opacity: 1;
   border-radius: 1rem;
   transition: opacity 0.25s ease;
 }
 .modal .modal-content button:hover {
   opacity: 0.65;
+}
+.modal .modal-content button img {
+  width: 20px;
+  height: 20px;
 }
 .modal .modal-content button {
   text-transform: uppercase;
@@ -1345,13 +1387,17 @@ nav a.has-pending::before {
   gap: 0.5rem;
   background-color: #fff;
   padding: 0.5rem 1rem;
-  font-size: 1rem;
+  font-size: 14px;
   opacity: 1;
   border-radius: 12px;
   transition: opacity 0.25s ease;
 }
 .login-button:hover {
   opacity: 0.65;
+}
+.login-button img {
+  width: 20px;
+  height: 20px;
 }
 .login-button {
   text-transform: uppercase;

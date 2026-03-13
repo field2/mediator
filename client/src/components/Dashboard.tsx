@@ -22,6 +22,7 @@ import { MediaItem, User } from '../types';
 import StarRating from './StarRating';
 import IconSearch from '../assets/icon-search.svg';
 import IconFriend from '../assets/icon-friend-white.svg';
+import IconWatchedWithBlack from '../assets/icon-friend-watched-with-black.svg';
 
 type RecommendationBadgeMetadata = {
 	id: number;
@@ -899,22 +900,11 @@ const Dashboard: React.FC = () => {
 																	/>
 																</svg>
 															) : (
-																<svg
-																	width="24"
-																	height="24"
-																	viewBox="0 0 24 24"
-																	fill="none"
-																	xmlns="http://www.w3.org/2000/svg"
-																>
-																	<path
-																		d="M5 2.75C5.82843 2.75 6.5 3.42157 6.5 4.25C6.5 5.78416 7.20888 6.85781 8.53516 7.81738C9.60853 8.5939 10.9826 9.21736 12.542 9.85156C12.1994 9.31798 12 8.68318 12 8.00195C12.0002 6.10905 13.5348 4.57422 15.4277 4.57422C17.3207 4.57422 18.8553 6.10905 18.8555 8.00195C18.8555 9.62193 17.7312 10.978 16.2207 11.3359C17.6475 11.9478 19.0666 12.6509 20.248 13.543C22.1171 14.9543 23.5 16.9171 23.5 19.75C23.5 20.5784 22.8284 21.25 22 21.25C21.1716 21.25 20.5 20.5784 20.5 19.75C20.5 18.083 19.7578 16.9329 18.4395 15.9375C18.0217 15.6221 17.5578 15.3312 17.0547 15.0557C16.3469 16.9036 16 19.0436 16 21.1543H8.5C8.5 19.0048 9.10677 14.7707 10.75 12.3574C9.34239 11.7637 7.94249 11.0909 6.77734 10.248C4.91635 8.90174 3.5 7.01409 3.5 4.25C3.5 3.42157 4.17157 2.75 5 2.75Z"
-																		fill="black"
-																	/>
-																	<path
-																		d="M5.5 13.25H8.5V15.25H5.5V18.25H3.5V15.25H0.5V13.25H3.5V10.25H5.5V13.25Z"
-																		fill="black"
-																	/>
-																</svg>
+																<img
+																	src={IconWatchedWithBlack}
+																	alt="Friend recommendation"
+																	className="button-icon"
+																/>
 															)}
 														</button>
 													</div>

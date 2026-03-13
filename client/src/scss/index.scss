@@ -31,7 +31,7 @@ button {
 	letter-spacing: 0.1em;
 }
 
-@mixin button($border-radius: 1rem, $bg: #fff) {
+@mixin button($border-radius: 1rem, $bg: #fff, $padding: 0.5rem 1rem) {
 	font-family: 'Roboto Flex', sans-serif;
 
 	display: flex;
@@ -39,13 +39,17 @@ button {
 	justify-content: center;
 	gap: 0.5rem;
 	background-color: $bg;
-	padding: 0.5rem 1rem;
-	font-size: 1rem;
+	padding: $padding;
+	font-size: 14px;
 	opacity: 1;
 	border-radius: $border-radius;
 	transition: opacity 0.25s ease;
 	&:hover {
 		opacity: 0.65;
+	}
+	img {
+		width: 20px;
+		height: 20px;
 	}
 }
 
@@ -160,9 +164,12 @@ a {
 			.auto-item-date {
 				opacity: 0.8;
 			}
+			.auto-item-notes-container {
+				background: rgba(255, 255, 255, 0.1);
+			}
 			.auto-item-notes {
 				flex: 1;
-				background: rgba(255, 255, 255, 0.1);
+				background: none;
 				color: #fff;
 				// border-radius: 0.1rem;
 				font-family: inherit;
@@ -266,7 +273,12 @@ a {
 			}
 			.recommend-search-input {
 				flex: 1;
-				background: right center url(../assets/icon-search-white.svg) no-repeat;
+				position: relative;
+				&:after {
+					content: '';
+					position: absolute;
+				}
+				background: right 4px center url(../assets/icon-search-white.svg) no-repeat;
 				background-color: rgba(255, 255, 255, 0.1);
 				color: #fff;
 				font-family: inherit;
@@ -280,6 +292,7 @@ a {
 			}
 			.recommend-search-input::placeholder {
 				color: rgba(255, 255, 255, 0.5);
+				font-size: 14px;
 			}
 			.auto-item-recommend-search-btn {
 				display: flex;
@@ -326,7 +339,6 @@ a {
 					outline: none;
 					border-color: #fff;
 					background: rgba(255, 255, 255, 0.2);
-					box-shadow: 0 0 0.2rem rgba(255, 255, 255, 0.3);
 				}
 			}
 			.watched-with-search-input::placeholder {
@@ -349,7 +361,7 @@ a {
 			}
 			.auto-item-watched-with-btn,
 			.auto-item-remove {
-				@include button(24px);
+				@include button($padding: 0.25rem 0.5rem);
 				background: #fff;
 				color: #000;
 				cursor: pointer;
