@@ -1,8 +1,70 @@
 import express, { Router } from 'express';
 import { authenticate, AuthRequest } from '../middleware/auth';
-import { ListModel, MediaItemModel, RatingModel, CollaborationModel, WatchedWithModel } from '../db/models';
+import { ListModel, MediaItemModel, RatingModel, CollaborationModel, WatchedWithModel, ApprovedRecommendationMetadata, RecommendationModel } from '../db/models';
 
 const router: Router = express.Router();
+
+const mergeRecommendationMetadata = (
+  additionalData: string | null,
+  recommendationMetadata?: ApprovedRecommendationMetadata
+) => {
+  if (!recommendationMetadata) {
+    return additionalData;
+  }
+
+  let parsedAdditionalData: unknown = undefined;
+
+  if (additionalData) {
+    try {
+      parsedAdditionalData = JSON.parse(additionalData);
+      if (
+        parsedAdditionalData &&
+        typeof parsedAdditionalData === 'object' &&
+        '_mediatorRecommendation' in parsedAdditionalData
+      ) {
+        return additionalData;
+      }
+    } catch {
+      parsedAdditionalData = additionalData;
+    }
+  }
+
+  if (
+    parsedAdditionalData &&
+    typeof parsedAdditionalData === 'object' &&
+    !Array.isArray(parsedAdditionalData)
+  ) {
+    return JSON.stringify({
+      ...parsedAdditionalData,
+      _mediatorRecommendation: recommendationMetadata,
+    });
+  }
+
+  return JSON.stringify({
+    _mediatorRecommendation: recommendationMetadata,
+    _sourceData: parsedAdditionalData ?? null,
+  });
+};
+
+const withRecommendationBadgeData = (
+  ownerUserId: number,
+  item: {
+    media_type: 'movie' | 'book' | 'album';
+    external_id: string;
+    additional_data: string | null;
+  }
+) => {
+  const recommendationMetadata = RecommendationModel.getLatestApprovedRecommendationMetadata(
+    ownerUserId,
+    item.media_type,
+    item.external_id
+  );
+
+  return {
+    ...item,
+    additional_data: mergeRecommendationMetadata(item.additional_data, recommendationMetadata),
+  };
+};
 
 // Get all lists for authenticated user
 router.get('/', authenticate, (req: AuthRequest, res) => {
@@ -75,10 +137,11 @@ router.get('/user/:userId/auto/:mediaType', authenticate, (req: AuthRequest, res
 
     const mediaItems = MediaItemModel.findByListId(autoList.id);
     const itemsWithRatings = mediaItems.map(item => {
+      const itemWithRecommendation = withRecommendationBadgeData(autoList.user_id, item);
       const avgRating = RatingModel.getAverageRating(item.id);
       const userRating = RatingModel.findByUserAndMediaItem(item.id, req.userId!);
       return {
-        ...item,
+        ...itemWithRecommendation,
         averageRating: avgRating,
         userRating: userRating?.rating
       };
@@ -138,12 +201,13 @@ router.get('/:id', authenticate, (req: AuthRequest, res) => {
 
     // Get ratings for each media item
     const itemsWithRatings = mediaItems.map(item => {
+      const itemWithRecommendation = withRecommendationBadgeData(list.user_id, item);
       const ratings = RatingModel.findByMediaItemId(item.id);
       const avgRating = RatingModel.getAverageRating(item.id);
       const userRating = RatingModel.findByUserAndMediaItem(item.id, req.userId!);
 
       return {
-        ...item,
+        ...itemWithRecommendation,
         ratings,
         averageRating: avgRating,
         userRating: userRating?.rating

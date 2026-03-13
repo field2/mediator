@@ -21,6 +21,15 @@ import {
 import { MediaItem, User } from '../types';
 import StarRating from './StarRating';
 import IconSearch from '../assets/icon-search.svg';
+import IconFriend from '../assets/icon-friend-white.svg';
+
+type RecommendationBadgeMetadata = {
+	id: number;
+	fromUserId: number;
+	fromUsername: string;
+	mediaType: 'movie' | 'book' | 'album';
+	title: string;
+};
 
 const Dashboard: React.FC = () => {
 	// Add missing helper functions
@@ -287,6 +296,23 @@ const Dashboard: React.FC = () => {
 		const month = String(date.getMonth() + 1).padStart(2, '0');
 		const year = String(date.getFullYear()).slice(-2);
 		return `${month}/${day}/${year}`;
+	};
+
+	const getRecommendationBadgeMetadata = (
+		mediaItem: MediaItem
+	): RecommendationBadgeMetadata | null => {
+		if (!mediaItem.additional_data) {
+			return null;
+		}
+
+		try {
+			const parsed = JSON.parse(mediaItem.additional_data) as {
+				_mediatorRecommendation?: RecommendationBadgeMetadata;
+			};
+			return parsed?._mediatorRecommendation || null;
+		} catch {
+			return null;
+		}
 	};
 
 	const handleNotesChange = (mediaId: number, notes: string) => {
@@ -623,6 +649,21 @@ const Dashboard: React.FC = () => {
 													alt={mi.title}
 													className="auto-item-img"
 												/>
+												{(() => {
+													const recommendationBadge = getRecommendationBadgeMetadata(mi);
+													if (!recommendationBadge) {
+														return null;
+													}
+
+													return (
+														<div
+															className="auto-item-recommendation-badge"
+															title={`Recommended by ${recommendationBadge.fromUsername}`}
+														>
+															<img src={IconFriend} alt="Friend recommendation" />
+														</div>
+													);
+												})()}
 											</div>
 											<div className="auto-item-card-back">
 												<div

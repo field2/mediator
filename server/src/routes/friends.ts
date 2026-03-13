@@ -1,9 +1,54 @@
 import express from 'express';
-import { FriendModel, RecommendationModel, ListModel, MediaItemModel } from '../db/models';
+import { FriendModel, RecommendationModel, ListModel, MediaItemModel, UserModel } from '../db/models';
 import { authenticate, AuthRequest } from '../middleware/auth';
 import db from '../db/database';
 
 const router = express.Router();
+
+const buildRecommendationAdditionalData = (
+  rawAdditionalData: string | null,
+  recommendation: {
+    id: number;
+    from_user_id: number;
+    media_type: 'movie' | 'book' | 'album';
+    title: string;
+  },
+  fromUsername: string
+) => {
+  let parsedAdditionalData: unknown = undefined;
+
+  if (rawAdditionalData) {
+    try {
+      parsedAdditionalData = JSON.parse(rawAdditionalData);
+    } catch {
+      parsedAdditionalData = rawAdditionalData;
+    }
+  }
+
+  const recommendationMetadata = {
+    id: recommendation.id,
+    fromUserId: recommendation.from_user_id,
+    fromUsername,
+    mediaType: recommendation.media_type,
+    title: recommendation.title,
+  };
+
+  if (
+    parsedAdditionalData &&
+    typeof parsedAdditionalData === 'object' &&
+    !Array.isArray(parsedAdditionalData)
+  ) {
+    return {
+      ...parsedAdditionalData,
+      _mediatorRecommendation: recommendationMetadata,
+    };
+  }
+
+  return {
+    _mediatorRecommendation: recommendationMetadata,
+    _sourceData: parsedAdditionalData ?? null,
+  };
+};
 
 // Get all users (directory)
 router.get('/directory', authenticate, async (req: AuthRequest, res) => {
@@ -177,6 +222,8 @@ router.post('/recommendations/:id/respond', authenticate, async (req: AuthReques
       return res.status(404).json({ error: 'Recommendation not found' });
     }
 
+		const fromUsername = UserModel.findById(recommendation.from_user_id)?.username || 'Friend';
+
     if (status === 'approved') {
       const listName = `My ${recommendation.media_type.charAt(0).toUpperCase() + recommendation.media_type.slice(1)}s`;
 
@@ -198,14 +245,11 @@ router.post('/recommendations/:id/respond', authenticate, async (req: AuthReques
         );
 
         if (!existingItem) {
-          let parsedAdditionalData: unknown = undefined;
-          if (recommendation.additional_data) {
-            try {
-              parsedAdditionalData = JSON.parse(recommendation.additional_data);
-            } catch {
-              parsedAdditionalData = undefined;
-            }
-          }
+          const additionalDataWithRecommendation = buildRecommendationAdditionalData(
+				recommendation.additional_data,
+				recommendation,
+				fromUsername
+			);
 
           MediaItemModel.create(
             autoList.id,
@@ -215,7 +259,7 @@ router.post('/recommendations/:id/respond', authenticate, async (req: AuthReques
             toUserId,
             recommendation.year || undefined,
             recommendation.poster_url || undefined,
-            parsedAdditionalData
+            additionalDataWithRecommendation
           );
         }
       }

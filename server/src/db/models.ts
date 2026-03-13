@@ -66,6 +66,14 @@ export interface MediaRecommendation {
   responded_at: string | null;
 }
 
+export interface ApprovedRecommendationMetadata {
+  id: number;
+  fromUserId: number;
+  fromUsername: string;
+  mediaType: 'movie' | 'book' | 'album';
+  title: string;
+}
+
 // User operations
 export const UserModel = {
   create: (username: string, email: string, passwordHash: string) => {
@@ -405,6 +413,31 @@ export const RecommendationModel = {
       ORDER BY mr.recommended_at DESC
     `);
     return stmt.all(userId) as any[];
+  },
+
+  getLatestApprovedRecommendationMetadata: (
+    toUserId: number,
+    mediaType: 'movie' | 'book' | 'album',
+    externalId: string
+  ): ApprovedRecommendationMetadata | undefined => {
+    const stmt = db.prepare(`
+      SELECT
+        mr.id,
+        mr.from_user_id as fromUserId,
+        u.username as fromUsername,
+        mr.media_type as mediaType,
+        mr.title
+      FROM media_recommendations mr
+      JOIN users u ON mr.from_user_id = u.id
+      WHERE mr.to_user_id = ?
+        AND mr.media_type = ?
+        AND mr.external_id = ?
+        AND mr.status = 'approved'
+      ORDER BY COALESCE(mr.responded_at, mr.recommended_at) DESC
+      LIMIT 1
+    `);
+
+    return stmt.get(toUserId, mediaType, externalId) as ApprovedRecommendationMetadata | undefined;
   },
 
   respondToRecommendation: (

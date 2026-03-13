@@ -320,6 +320,13 @@ const Friends: React.FC = () => {
 									<div className="friend-requests-list">
 										{recommendations.map((rec) => (
 											<div key={rec.id} className="friend-request-item recommendation-item">
+												<div className="recommendation-poster-wrap">
+													<img
+														src={rec.poster_url || '/placeholder.png'}
+														alt={rec.title}
+														className="recommendation-poster"
+													/>
+												</div>
 												<div className="request-name">
 													<div>
 														{rec.title}
