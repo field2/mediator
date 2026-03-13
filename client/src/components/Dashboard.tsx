@@ -940,14 +940,6 @@ const Dashboard: React.FC = () => {
 																	}}
 																	className="recommend-search-input"
 																/>
-																<button
-																	type="button"
-																	className="auto-item-recommend-search-btn"
-																	onClick={() => handleRecommendSearch(mi.id)}
-																	aria-label="Search friends"
-																>
-																	<img src={IconSearch} alt="Search" />
-																</button>
 															</div>
 															<div className="auto-item-recommend-results">
 																{(recommendMatches[mi.id] || []).map((friend) => {
