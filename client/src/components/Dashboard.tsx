@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, Link } from 'react-router-dom';
 import Header from './Header';
 import { useAuth } from '../AuthContext';
 import SearchBar from './SearchBar';
@@ -20,9 +20,7 @@ import {
 } from '../api';
 import { MediaItem, User } from '../types';
 import StarRating from './StarRating';
-import IconSearch from '../assets/icon-search.svg';
 import IconFriend from '../assets/icon-friend-white.svg';
-import IconWatchedWithBlack from '../assets/icon-friend-watched-with-black.svg';
 
 type RecommendationBadgeMetadata = {
 	id: number;
@@ -117,14 +115,16 @@ const Dashboard: React.FC = () => {
 	const [editingNotes, setEditingNotes] = useState<{ [key: number]: boolean }>({});
 	const textareaRefs = React.useRef<{ [key: number]: HTMLTextAreaElement | null }>({});
 	const [watchedWith, setWatchedWith] = useState<{ [key: number]: User[] }>({});
-	const [editingWatchedWith, setEditingWatchedWith] = useState<{ [key: number]: boolean }>({});
 	const [friendsList, setFriendsList] = useState<User[]>([]);
-	const [watchedWithSearch, setWatchedWithSearch] = useState<{ [key: number]: string }>({});
+	const viewedUsername = viewingOtherUser
+		? friendsList.find((f) => (f.id || f.userId) === parseInt(userId!))?.username
+		: undefined;
 	const [recommendSearch, setRecommendSearch] = useState<{ [key: number]: string }>({});
 	const [recommendMatches, setRecommendMatches] = useState<{ [key: number]: User[] }>({});
 	const [sendingRecommendation, setSendingRecommendation] = useState<{ [key: string]: boolean }>(
 		{}
 	);
+	const [sentRecommendation, setSentRecommendation] = useState<{ [key: string]: boolean }>({});
 
 	// Reset flipped card when media type changes
 	useEffect(() => {
@@ -258,11 +258,14 @@ const Dashboard: React.FC = () => {
 		}
 	};
 
-	const handleFlipCard = (mediaId: number, event: React.MouseEvent) => {
+	const handleFlipCard = (mediaId: number, listId: number, event: React.MouseEvent) => {
 		event.stopPropagation();
 		if (flippedCardId === mediaId) {
 			setFlippedCardId(null);
 			return;
+		}
+		if (!watchedWith[mediaId]) {
+			handleLoadWatchedWith(mediaId, listId);
 		}
 
 		// Calculate transform to center the card
@@ -363,7 +366,6 @@ const Dashboard: React.FC = () => {
 				...prev,
 				[mediaId]: Array.isArray(updatedFriends) ? updatedFriends : [],
 			}));
-			setWatchedWithSearch((prev) => ({ ...prev, [mediaId]: '' }));
 		} catch (err) {
 			console.error('Error adding watched with friend:', err);
 		}
@@ -466,6 +468,7 @@ const Dashboard: React.FC = () => {
 		}
 
 		const key = `${mediaItem.id}:${friendId}`;
+		if (sendingRecommendation[key] || sentRecommendation[key]) return;
 		setSendingRecommendation((prev) => ({ ...prev, [key]: true }));
 
 		try {
@@ -478,9 +481,7 @@ const Dashboard: React.FC = () => {
 				additionalData: additionalDataPayload,
 			});
 
-			alert(`Recommendation sent to ${friend.username}`);
-			setRecommendSearch((prev) => ({ ...prev, [mediaItem.id]: '' }));
-			setRecommendMatches((prev) => ({ ...prev, [mediaItem.id]: [] }));
+			setSentRecommendation((prev) => ({ ...prev, [key]: true }));
 		} catch (err: any) {
 			console.error('Error sending recommendation:', err);
 			alert(err.response?.data?.error || 'Failed to send recommendation');
@@ -543,7 +544,11 @@ const Dashboard: React.FC = () => {
 					<div className="auto-items">
 						<h3 className="auto-items-title">
 							{(isAuthenticated ? autoItems : guestItems[selectedMediaType]).length ? (
-								`Your ${selectedMediaType === 'movie' ? 'Movies' : selectedMediaType === 'book' ? 'Books' : 'Albums'}`
+								viewingOtherUser ? (
+									`${viewedUsername ? `${viewedUsername}'s` : 'Their'} ${selectedMediaType === 'movie' ? 'Movies' : selectedMediaType === 'book' ? 'Books' : 'Albums'}`
+								) : (
+									`Your ${selectedMediaType === 'movie' ? 'Movies' : selectedMediaType === 'book' ? 'Books' : 'Albums'}`
+								)
 							) : !isAuthenticated ? (
 								<>
 									<div className="logo-splash" aria-label="Home">
@@ -621,7 +626,7 @@ const Dashboard: React.FC = () => {
 											<div className="auto-item-card-front">
 												<div
 													className="auto-item-card-menu"
-													onClick={(e) => handleFlipCard(mi.id, e)}
+													onClick={(e) => handleFlipCard(mi.id, mi.list_id, e)}
 												>
 													<svg
 														width="31"
@@ -685,10 +690,19 @@ const Dashboard: React.FC = () => {
 														/>
 													</svg>
 												</div>
-												<div className="card-info">
+												<div className="card-info row">
 													<div className="auto-item-title">
 														{mi.title} ({mi.year})
 													</div>
+													{!viewingOtherUser && (
+														<Link
+															className="auto-item-remove"
+															onClick={() => handleRemove(mi.id)}
+															aria-label="Remove item"
+														>
+															Remove
+														</Link>
+													)}
 												</div>
 												<div className="card-info">
 													<div className="card-info-label">Date added</div>
@@ -706,8 +720,12 @@ const Dashboard: React.FC = () => {
 												</div>
 												<div className="card-info">
 													<div className="auto-item-notes-container">
-														{editingNotes[mi.id] ||
-														!(cardNotes[mi.id] !== undefined ? cardNotes[mi.id] : mi.notes) ? (
+														{viewingOtherUser ? (
+															mi.notes ? (
+																<div className="auto-item-notes-display">{mi.notes}</div>
+															) : null
+														) : editingNotes[mi.id] ||
+														  !(cardNotes[mi.id] !== undefined ? cardNotes[mi.id] : mi.notes) ? (
 															<textarea
 																ref={(el) => {
 																	if (el) textareaRefs.current[mi.id] = el;
@@ -729,70 +747,74 @@ const Dashboard: React.FC = () => {
 																{cardNotes[mi.id] !== undefined ? cardNotes[mi.id] : mi.notes}
 															</div>
 														)}
-														<button
-															className="auto-item-notes-btn"
-															onClick={() => {
-																const hasNotes =
-																	cardNotes[mi.id] !== undefined ? cardNotes[mi.id] : mi.notes;
-																if (editingNotes[mi.id]) {
-																	handleSaveNotes(mi.id, mi.list_id);
-																} else if (!hasNotes) {
-																	handleEditNotes(mi.id);
-																} else {
-																	handleEditNotes(mi.id);
-																}
-															}}
-															aria-label={editingNotes[mi.id] ? 'Save notes' : 'Edit notes'}
-														>
-															{editingNotes[mi.id] ? (
-																<svg
-																	className="icon-checkmark"
-																	width="20"
-																	height="20"
-																	viewBox="0 0 20 20"
-																	fill="none"
-																	xmlns="http://www.w3.org/2000/svg"
-																>
-																	<path
-																		d="M16.2187 4.12666C16.5637 3.6954 17.1937 3.6254 17.6249 3.97041C18.0562 4.31542 18.1262 4.9454 17.7812 5.37666L9.08293 16.2487L3.29289 10.4587C2.90237 10.0682 2.90237 9.43515 3.29289 9.04463C3.68342 8.65411 4.31643 8.65411 4.70696 9.04463L8.91594 13.2536L16.2187 4.12666Z"
-																		fill="white"
-																	/>
-																</svg>
-															) : (cardNotes[mi.id] !== undefined ? cardNotes[mi.id] : mi.notes) ? (
-																<svg
-																	className="icon-pencil"
-																	width="20"
-																	height="20"
-																	viewBox="0 0 20 20"
-																	fill="none"
-																	xmlns="http://www.w3.org/2000/svg"
-																>
-																	<path
-																		d="M13.0052 4.16637C13.3958 3.77585 14.0289 3.77585 14.4194 4.16637L15.8337 5.58059C16.2242 5.97111 16.2242 6.60427 15.8337 6.9948L14.4194 8.40901L11.591 5.58059L13.0052 4.16637ZM5.93417 11.2374L10.8839 6.28769L13.7123 9.11612L8.76259 14.0659L4.87351 15.1265L5.93417 11.2374Z"
-																		fill="white"
-																	/>
-																</svg>
-															) : (
-																<svg
-																	className="icon-plus"
-																	width="20"
-																	height="20"
-																	viewBox="0 0 20 20"
-																	fill="none"
-																	xmlns="http://www.w3.org/2000/svg"
-																>
-																	<path
-																		d="M10 4C10.5523 4 11 4.44772 11 5V9H15C15.5523 9 16 9.44772 16 10C16 10.5523 15.5523 11 15 11H11V15C11 15.5523 10.5523 16 10 16C9.44772 16 9 15.5523 9 15V11H5C4.44772 11 4 10.5523 4 10C4 9.44772 4.44772 9 5 9H9V5C9 4.44772 9.44772 4 10 4Z"
-																		fill="white"
-																	/>
-																</svg>
-															)}
-														</button>
+														{!viewingOtherUser && (
+															<button
+																className="auto-item-notes-btn"
+																onClick={() => {
+																	const hasNotes =
+																		cardNotes[mi.id] !== undefined ? cardNotes[mi.id] : mi.notes;
+																	if (editingNotes[mi.id]) {
+																		handleSaveNotes(mi.id, mi.list_id);
+																	} else if (!hasNotes) {
+																		handleEditNotes(mi.id);
+																	} else {
+																		handleEditNotes(mi.id);
+																	}
+																}}
+																aria-label={editingNotes[mi.id] ? 'Save notes' : 'Edit notes'}
+															>
+																{editingNotes[mi.id] ? (
+																	<svg
+																		className="icon-checkmark"
+																		width="20"
+																		height="20"
+																		viewBox="0 0 20 20"
+																		fill="none"
+																		xmlns="http://www.w3.org/2000/svg"
+																	>
+																		<path
+																			d="M16.2187 4.12666C16.5637 3.6954 17.1937 3.6254 17.6249 3.97041C18.0562 4.31542 18.1262 4.9454 17.7812 5.37666L9.08293 16.2487L3.29289 10.4587C2.90237 10.0682 2.90237 9.43515 3.29289 9.04463C3.68342 8.65411 4.31643 8.65411 4.70696 9.04463L8.91594 13.2536L16.2187 4.12666Z"
+																			fill="white"
+																		/>
+																	</svg>
+																) : (
+																		cardNotes[mi.id] !== undefined ? cardNotes[mi.id] : mi.notes
+																  ) ? (
+																	<svg
+																		className="icon-pencil"
+																		width="20"
+																		height="20"
+																		viewBox="0 0 20 20"
+																		fill="none"
+																		xmlns="http://www.w3.org/2000/svg"
+																	>
+																		<path
+																			d="M13.0052 4.16637C13.3958 3.77585 14.0289 3.77585 14.4194 4.16637L15.8337 5.58059C16.2242 5.97111 16.2242 6.60427 15.8337 6.9948L14.4194 8.40901L11.591 5.58059L13.0052 4.16637ZM5.93417 11.2374L10.8839 6.28769L13.7123 9.11612L8.76259 14.0659L4.87351 15.1265L5.93417 11.2374Z"
+																			fill="white"
+																		/>
+																	</svg>
+																) : (
+																	<svg
+																		className="icon-plus"
+																		width="20"
+																		height="20"
+																		viewBox="0 0 20 20"
+																		fill="none"
+																		xmlns="http://www.w3.org/2000/svg"
+																	>
+																		<path
+																			d="M10 4C10.5523 4 11 4.44772 11 5V9H15C15.5523 9 16 9.44772 16 10C16 10.5523 15.5523 11 15 11H11V15C11 15.5523 10.5523 16 10 16C9.44772 16 9 15.5523 9 15V11H5C4.44772 11 4 10.5523 4 10C4 9.44772 4.44772 9 5 9H9V5C9 4.44772 9.44772 4 10 4Z"
+																			fill="white"
+																		/>
+																	</svg>
+																)}
+															</button>
+														)}
 													</div>
 												</div>
-												<div className="card-info">
-													<div className="auto-item-watched-with-container">
-														{/* Watched with friends list */}
+												{isAuthenticated && !viewingOtherUser && (
+													<div className="card-info">
+														<div className="card-info-label">Watched With</div>
 														{watchedWith[mi.id] && watchedWith[mi.id].length > 0 && (
 															<div className="auto-item-watched-with-list">
 																{watchedWith[mi.id].map((friend) => (
@@ -800,7 +822,9 @@ const Dashboard: React.FC = () => {
 																		key={friend.id || friend.userId}
 																		className="watched-with-friend"
 																	>
-																		<span>{friend.username}</span>
+																		<Link to={`/user/${friend.id || friend.userId}`}>
+																			{friend.username}
+																		</Link>
 																		<button
 																			className="remove-watched-with-btn"
 																			onClick={() =>
@@ -819,165 +843,72 @@ const Dashboard: React.FC = () => {
 															</div>
 														)}
 
-														{/* Search/Add friends */}
-														{editingWatchedWith[mi.id] && (
-															<div className="auto-item-watched-with-search">
-																<input
-																	type="text"
-																	placeholder="Search friends..."
-																	value={watchedWithSearch[mi.id] || ''}
-																	onChange={(e) =>
-																		setWatchedWithSearch((prev) => ({
-																			...prev,
-																			[mi.id]: e.target.value,
-																		}))
-																	}
-																	className="watched-with-search-input"
-																/>
-																<div className="watched-with-search-results">
-																	{(watchedWithSearch[mi.id] || '').trim() &&
-																		friendsList
-																			.filter(
-																				(friend) =>
-																					friend.username
-																						.toLowerCase()
-																						.includes(
-																							(watchedWithSearch[mi.id] || '').toLowerCase()
-																						) &&
-																					!watchedWith[mi.id]?.some(
-																						(w) =>
-																							(w.id || w.userId) === (friend.id || friend.userId)
-																					)
-																			)
-																			.map((friend) => (
-																				<button
-																					key={friend.id || friend.userId}
-																					className="search-result-item"
-																					onClick={() =>
-																						handleAddWatchedWithFriend(
-																							mi.id,
-																							mi.list_id,
-																							friend.id || friend.userId
-																						)
-																					}
-																				>
-																					{friend.username}
-																				</button>
-																			))}
-																</div>
-															</div>
-														)}
-
-														<button
-															className="auto-item-watched-with-btn"
-															onClick={() => {
-																if (!editingWatchedWith[mi.id]) {
-																	// Load watched with data when first opening
-																	if (!watchedWith[mi.id]) {
-																		handleLoadWatchedWith(mi.id, mi.list_id);
-																	}
-																}
-																setEditingWatchedWith((prev) => ({
-																	...prev,
-																	[mi.id]: !prev[mi.id],
-																}));
+														<input
+															type="text"
+															placeholder="Tag or recommend friends"
+															value={recommendSearch[mi.id] || ''}
+															onChange={(e) => handleRecommendInputChange(mi.id, e.target.value)}
+															onFocus={() => {
+																handleRecommendSearch(mi.id);
 															}}
-															aria-label={editingWatchedWith[mi.id] ? 'Done' : 'Edit watched with'}
-														>
-															<span>Watched with</span>
-															{editingWatchedWith[mi.id] ? (
-																<svg
-																	className="icon-checkmark"
-																	width="20"
-																	height="20"
-																	viewBox="0 0 20 20"
-																	fill="none"
-																	xmlns="http://www.w3.org/2000/svg"
-																>
-																	<path
-																		d="M16.2187 4.12666C16.5637 3.6954 17.1937 3.6254 17.6249 3.97041C18.0562 4.31542 18.1262 4.9454 17.7812 5.37666L9.08293 16.2487L3.29289 10.4587C2.90237 10.0682 2.90237 9.43515 3.29289 9.04463C3.68342 8.65411 4.31643 8.65411 4.70696 9.04463L8.91594 13.2536L16.2187 4.12666Z"
-																		fill="black"
-																	/>
-																</svg>
-															) : (
-																<img
-																	src={IconWatchedWithBlack}
-																	alt="Friend recommendation"
-																	className="button-icon"
-																/>
-															)}
-														</button>
-													</div>
-												</div>
-												{!viewingOtherUser && isAuthenticated && (
-													<div className="card-info">
-														<div className="card-info-label">Recommend to friend</div>
-														<div className="auto-item-recommend-container">
-															<div className="auto-item-recommend-search-row">
-																<input
-																	type="text"
-																	placeholder="Search friends..."
-																	value={recommendSearch[mi.id] || ''}
-																	onChange={(e) =>
-																		handleRecommendInputChange(mi.id, e.target.value)
-																	}
-																	onFocus={() => handleRecommendSearch(mi.id)}
-																	onKeyDown={(e) => {
-																		if (e.key === 'Enter') {
-																			e.preventDefault();
-																			handleRecommendSearch(mi.id);
-																		}
-																	}}
-																	className="recommend-search-input"
-																/>
-															</div>
-															<div className="auto-item-recommend-results">
-																{(recommendMatches[mi.id] || []).map((friend) => {
-																	const friendId = friend.id || friend.userId;
-																	if (!friendId) return null;
-																	const sendingKey = `${mi.id}:${friendId}`;
-																	const isSending = !!sendingRecommendation[sendingKey];
-
-																	return (
+															onKeyDown={(e) => {
+																if (e.key === 'Enter') {
+																	e.preventDefault();
+																	handleRecommendSearch(mi.id);
+																}
+															}}
+															className="recommend-search-input"
+														/>
+														<div className="auto-item-recommend-results">
+															{(recommendMatches[mi.id] || []).map((friend) => {
+																const friendId = friend.id || friend.userId;
+																if (!friendId) return null;
+																const sendingKey = `${mi.id}:${friendId}`;
+																const isSending = !!sendingRecommendation[sendingKey];
+																const alreadySent = !!sentRecommendation[sendingKey];
+																const alreadyWatchedWith = watchedWith[mi.id]?.some(
+																	(w) => (w.id || w.userId) === friendId
+																);
+																return (
+																	<div key={friendId} className="recommend-friend-row">
+																		<Link
+																			to={`/user/${friendId}`}
+																			className="recommend-friend-name"
+																		>
+																			{friend.username}
+																		</Link>
 																		<button
-																			key={friendId}
 																			type="button"
 																			className="recommend-friend-btn"
-																			disabled={isSending}
+																			disabled={alreadyWatchedWith}
+																			onClick={() =>
+																				handleAddWatchedWithFriend(mi.id, mi.list_id, friendId)
+																			}
+																		>
+																			{alreadyWatchedWith ? '✓' : 'Watched with'}
+																		</button>
+																		<button
+																			type="button"
+																			className="recommend-friend-btn"
+																			disabled={isSending || alreadySent}
 																			onClick={() => handleSendRecommendation(mi, friend)}
 																		>
 																			{isSending
-																				? `Sending to ${friend.username}...`
-																				: friend.username}
+																				? 'Sending...'
+																				: alreadySent
+																					? 'Recommended'
+																					: 'Recommend'}
 																		</button>
-																	);
-																})}
-																{(recommendSearch[mi.id] || '').trim() &&
-																	(recommendMatches[mi.id] || []).length === 0 && (
-																		<div className="recommend-no-results">No matching friends</div>
-																	)}
-															</div>
+																	</div>
+																);
+															})}
+															{(recommendSearch[mi.id] || '').trim() &&
+																(recommendMatches[mi.id] || []).length === 0 && (
+																	<div className="recommend-no-results">No matching friends</div>
+																)}
 														</div>
 													</div>
 												)}
-												<div className="card-info">
-													<button
-														className="auto-item-remove"
-														onClick={() => handleRemove(mi.id)}
-														aria-label="Remove item"
-													>
-														<span>Remove from list</span>
-														<svg
-															width="20"
-															height="20"
-															viewBox="0 0 20 20"
-															fill="none"
-															xmlns="http://www.w3.org/2000/svg"
-														>
-															<rect x="4" y="9" width="12" height="2" rx="1" fill="#000" />
-														</svg>
-													</button>
-												</div>
 											</div>
 										</div>{' '}
 										{flippedCardId === mi.id && <div className="backdrop-overlay" />}{' '}
