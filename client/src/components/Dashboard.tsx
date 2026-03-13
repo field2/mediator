@@ -695,13 +695,13 @@ const Dashboard: React.FC = () => {
 														{mi.title} ({mi.year})
 													</div>
 													{!viewingOtherUser && (
-														<Link
+														<a
 															className="auto-item-remove"
 															onClick={() => handleRemove(mi.id)}
 															aria-label="Remove item"
 														>
 															Remove
-														</Link>
+														</a>
 													)}
 												</div>
 												<div className="card-info">
