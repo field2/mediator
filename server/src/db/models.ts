@@ -390,6 +390,19 @@ export const RecommendationModel = {
     return result.count > 0;
   },
 
+  hasApprovedRecommendation: (fromUserId: number, toUserId: number, externalId: string): boolean => {
+    const stmt = db.prepare(`
+      SELECT COUNT(*) as count
+      FROM media_recommendations
+      WHERE from_user_id = ?
+        AND to_user_id = ?
+        AND external_id = ?
+        AND status = 'approved'
+    `);
+    const result = stmt.get(fromUserId, toUserId, externalId) as { count: number };
+    return result.count > 0;
+  },
+
   getIncomingRecommendations: (userId: number): any[] => {
     const stmt = db.prepare(`
       SELECT

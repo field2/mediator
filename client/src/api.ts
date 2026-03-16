@@ -275,6 +275,11 @@ export const getIncomingRecommendations = async (): Promise<Recommendation[]> =>
   return response.data;
 };
 
+export const getOutgoingRecommendations = async (): Promise<{ toUserId: number; externalId: string }[]> => {
+  const response = await api.get('/friends/recommendations/sent');
+  return response.data;
+};
+
 export const respondToRecommendation = async (
   recommendationId: number,
   status: 'approved' | 'rejected'

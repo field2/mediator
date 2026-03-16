@@ -70,6 +70,29 @@ a {
 .auto-items {
   padding: 0 0.5rem;
 }
+.auto-items .auto-items-tabs {
+  display: flex;
+  gap: 0.25rem;
+  margin-bottom: 0.75rem;
+}
+.auto-items .auto-items-tab {
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 0.85rem;
+  padding: 0.3rem 0.75rem;
+  border-radius: 50px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: color 0.15s, background 0.15s;
+}
+.auto-items .auto-items-tab.active {
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+}
+.auto-items .auto-items-tab:hover:not(.active) {
+  color: rgba(255, 255, 255, 0.7);
+}
 .auto-items .auto-items-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -126,7 +149,7 @@ a {
   display: flex;
   flex-direction: column;
   gap: 1rem;
-  font-size: 14px;
+  font-size: 12px;
 }
 .auto-items .auto-item-card .auto-item-card-back header {
   display: flex;
@@ -134,6 +157,16 @@ a {
 }
 .auto-items .auto-item-card .auto-item-card-back .auto-item-title {
   font-weight: bold;
+  font-size: 16px;
+}
+.auto-items .auto-item-card .auto-item-card-back .auto-item-title span {
+  font-size: 12px;
+}
+.auto-items .auto-item-card .auto-item-card-back .auto-item-title a {
+  float: right;
+  font-size: 12px;
+  font-weight: normal;
+  line-height: 19px;
 }
 .auto-items .auto-item-card .auto-item-card-back .auto-item-date {
   opacity: 0.8;
@@ -147,7 +180,6 @@ a {
   resize: none;
   field-sizing: content;
   border: none;
-  padding: 0.5rem 0;
   border-radius: 0.25rem;
   display: block;
 }
@@ -162,6 +194,7 @@ a {
 }
 .auto-items .auto-item-card .auto-item-card-back .auto-item-notes::placeholder {
   color: rgba(255, 255, 255, 0.5);
+  font-size: 12px;
 }
 .auto-items .auto-item-card .auto-item-card-back .auto-item-notes-display {
   flex: 1;
@@ -262,6 +295,7 @@ a {
   gap: 0.4rem;
 }
 .auto-items .auto-item-card .auto-item-card-back .recommend-search-input {
+  font-size: 12px;
   flex: 1;
   position: relative;
 }
@@ -271,10 +305,9 @@ a {
 }
 .auto-items .auto-item-card .auto-item-card-back .recommend-search-input {
   background: right 4px center url(../assets/icon-search-white.svg) no-repeat;
-  background-color: rgba(255, 255, 255, 0.1);
   color: #fff;
   font-family: inherit;
-  padding: 0.35rem 0.5rem;
+  padding: 0.35rem 0;
 }
 .auto-items .auto-item-card .auto-item-card-back .recommend-search-input:focus {
   outline: none;
@@ -282,7 +315,7 @@ a {
 }
 .auto-items .auto-item-card .auto-item-card-back .recommend-search-input::placeholder {
   color: rgba(255, 255, 255, 0.5);
-  font-size: 14px;
+  font-size: 12px;
 }
 .auto-items .auto-item-card .auto-item-card-back .auto-item-recommend-search-btn {
   display: flex;
@@ -343,7 +376,7 @@ a {
 }
 .auto-items .auto-item-card .auto-item-card-back .recommend-friend-btn {
   background-color: rgb(141, 228, 123);
-  font-size: 0.7rem;
+  font-size: 0.5rem;
   padding: 0.2rem 0.45rem;
   flex-shrink: 0;
 }

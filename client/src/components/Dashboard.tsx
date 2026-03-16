@@ -17,6 +17,7 @@ import {
 	removeWatchedWithFriend,
 	getFriends,
 	sendRecommendation,
+	getOutgoingRecommendations,
 } from '../api';
 import { MediaItem, User } from '../types';
 import StarRating from './StarRating';
@@ -125,8 +126,13 @@ const Dashboard: React.FC = () => {
 		{}
 	);
 	const [sentRecommendation, setSentRecommendation] = useState<{ [key: string]: boolean }>({});
+	const [sentByExternalId, setSentByExternalId] = useState<{ [key: string]: boolean }>({});
+	const [subTab, setSubTab] = useState<'yours' | 'recommended'>('yours');
 
-	// Reset flipped card when media type changes
+	// Reset sub-tab when switching media type
+	useEffect(() => {
+		setSubTab('yours');
+	}, [selectedMediaType]);
 	useEffect(() => {
 		setFlippedCardId(null);
 	}, [selectedMediaType]);
@@ -176,6 +182,16 @@ const Dashboard: React.FC = () => {
 			try {
 				const friends = await getFriends();
 				setFriendsList(Array.isArray(friends) ? friends : []);
+				// Pre-populate sentRecommendation from server so buttons stay disabled across page loads
+				try {
+					const sent = await getOutgoingRecommendations();
+					// We'll store by externalId:toUserId temporarily; resolved to itemId:toUserId in render
+					setSentByExternalId(
+						Object.fromEntries(sent.map((r) => [`${r.externalId}:${r.toUserId}`, true]))
+					);
+				} catch {
+					// non-critical
+				}
 			} catch (err) {
 				console.error('Error loading friends:', err);
 				setFriendsList([]);
@@ -468,7 +484,9 @@ const Dashboard: React.FC = () => {
 		}
 
 		const key = `${mediaItem.id}:${friendId}`;
-		if (sendingRecommendation[key] || sentRecommendation[key]) return;
+		const externalKey = `${mediaItem.external_id}:${friendId}`;
+		if (sendingRecommendation[key] || sentRecommendation[key] || sentByExternalId[externalKey])
+			return;
 		setSendingRecommendation((prev) => ({ ...prev, [key]: true }));
 
 		try {
@@ -482,9 +500,20 @@ const Dashboard: React.FC = () => {
 			});
 
 			setSentRecommendation((prev) => ({ ...prev, [key]: true }));
+			setSentByExternalId((prev) => ({ ...prev, [`${mediaItem.external_id}:${friendId}`]: true }));
 		} catch (err: any) {
-			console.error('Error sending recommendation:', err);
-			alert(err.response?.data?.error || 'Failed to send recommendation');
+			const serverMsg: string = err.response?.data?.error || '';
+			if (serverMsg.toLowerCase().includes('already')) {
+				// Already sent — silently mark as sent so button disables
+				setSentRecommendation((prev) => ({ ...prev, [key]: true }));
+				setSentByExternalId((prev) => ({
+					...prev,
+					[`${mediaItem.external_id}:${friendId}`]: true,
+				}));
+			} else {
+				console.error('Error sending recommendation:', err);
+				alert(serverMsg || 'Failed to send recommendation');
+			}
 		} finally {
 			setSendingRecommendation((prev) => ({ ...prev, [key]: false }));
 		}
@@ -542,6 +571,31 @@ const Dashboard: React.FC = () => {
 					)}
 					{loading && <div className="loading-text">Adding to your list...</div>}
 					<div className="auto-items">
+						{isAuthenticated &&
+							!viewingOtherUser &&
+							selectedMediaType === 'movie' &&
+							(() => {
+								const recItems = autoItems.filter(
+									(mi) => getRecommendationBadgeMetadata(mi) !== null
+								);
+								if (recItems.length === 0) return null;
+								return (
+									<div className="auto-items-tabs">
+										<button
+											className={`auto-items-tab${subTab === 'yours' ? ' active' : ''}`}
+											onClick={() => setSubTab('yours')}
+										>
+											Your Movies
+										</button>
+										<button
+											className={`auto-items-tab${subTab === 'recommended' ? ' active' : ''}`}
+											onClick={() => setSubTab('recommended')}
+										>
+											Friend Recommendations
+										</button>
+									</div>
+								);
+							})()}
 						<h3 className="auto-items-title">
 							{(isAuthenticated ? autoItems : guestItems[selectedMediaType]).length ? (
 								viewingOtherUser ? (
@@ -603,319 +657,342 @@ const Dashboard: React.FC = () => {
 						</h3>
 						{loadingItems ? (
 							<div>Loading your items...</div>
-						) : (isAuthenticated ? autoItems : guestItems[selectedMediaType]).length > 0 ? (
-							<div className="auto-items-grid">
-								{(isAuthenticated ? autoItems : guestItems[selectedMediaType]).map((mi) => (
-									<React.Fragment key={mi.id}>
-										<div
-											className={`auto-item-card${flippedCardId === mi.id ? ' flipped' : ''}`}
-											style={
-												flippedCardId === mi.id
-													? ({
-															'--card-translate-x': `${cardTransform.x}px`,
-															'--card-translate-y': `${cardTransform.y}px`,
-														} as React.CSSProperties)
-													: {}
-											}
-											onClick={(e) => {
-												if (flippedCardId === mi.id) {
-													e.stopPropagation();
-												}
-											}}
-										>
-											<div className="auto-item-card-front">
+						) : (
+							(() => {
+								const allItems = isAuthenticated ? autoItems : guestItems[selectedMediaType];
+								const displayItems =
+									isAuthenticated && !viewingOtherUser && selectedMediaType === 'movie'
+										? subTab === 'recommended'
+											? allItems.filter((mi) => getRecommendationBadgeMetadata(mi) !== null)
+											: allItems.filter((mi) => getRecommendationBadgeMetadata(mi) === null)
+										: allItems;
+								return displayItems.length > 0 ? (
+									<div className="auto-items-grid">
+										{displayItems.map((mi) => (
+											<React.Fragment key={mi.id}>
 												<div
-													className="auto-item-card-menu"
-													onClick={(e) => handleFlipCard(mi.id, mi.list_id, e)}
-												>
-													<svg
-														width="31"
-														height="21"
-														viewBox="0 0 31 21"
-														fill="none"
-														xmlns="http://www.w3.org/2000/svg"
-													>
-														<rect
-															opacity="0.5"
-															x="5"
-															y="6"
-															width="21"
-															height="9"
-															rx="4.5"
-															fill="white"
-														/>
-														<rect x="6" y="7" width="19" height="7" rx="3.5" fill="black" />
-														<circle cx="10.5" cy="10.5" r="1.5" fill="white" />
-														<circle cx="15.5" cy="10.5" r="1.5" fill="white" />
-														<circle cx="20.5" cy="10.5" r="1.5" fill="white" />
-													</svg>
-												</div>
-												<img
-													src={mi.poster_url || '/placeholder.png'}
-													alt={mi.title}
-													className="auto-item-img"
-												/>
-												{(() => {
-													const recommendationBadge = getRecommendationBadgeMetadata(mi);
-													if (!recommendationBadge) {
-														return null;
+													className={`auto-item-card${flippedCardId === mi.id ? ' flipped' : ''}`}
+													style={
+														flippedCardId === mi.id
+															? ({
+																	'--card-translate-x': `${cardTransform.x}px`,
+																	'--card-translate-y': `${cardTransform.y}px`,
+																} as React.CSSProperties)
+															: {}
 													}
-
-													return (
-														<div
-															className="auto-item-recommendation-badge"
-															title={`Recommended by ${recommendationBadge.fromUsername}`}
-														>
-															<img src={IconFriend} alt="Friend recommendation" />
-														</div>
-													);
-												})()}
-											</div>
-											<div className="auto-item-card-back">
-												<div
-													className="auto-item-card-back-close"
-													onClick={() => setFlippedCardId(null)}
-													style={{ cursor: 'pointer' }}
+													onClick={(e) => {
+														if (flippedCardId === mi.id) {
+															e.stopPropagation();
+														}
+													}}
 												>
-													<svg
-														width="20"
-														height="20"
-														viewBox="0 0 20 20"
-														fill="none"
-														xmlns="http://www.w3.org/2000/svg"
-													>
-														<path
-															d="M14.2427 5.75736C14.6332 6.14788 14.6332 6.78104 14.2427 7.17157L11.4142 10L14.2427 12.8284C14.6332 13.2189 14.6332 13.8521 14.2427 14.2426C13.8521 14.6332 13.219 14.6332 12.8284 14.2426L10 11.4142L7.17158 14.2426C6.78106 14.6332 6.1479 14.6332 5.75737 14.2426C5.36685 13.8521 5.36685 13.2189 5.75737 12.8284L8.5858 10L5.75737 7.17157C5.36685 6.78104 5.36685 6.14788 5.75737 5.75736C6.1479 5.36683 6.78106 5.36683 7.17158 5.75736L10 8.58578L12.8284 5.75736C13.219 5.36683 13.8521 5.36683 14.2427 5.75736Z"
-															fill="white"
-														/>
-													</svg>
-												</div>
-												<div className="card-info row">
-													<div className="auto-item-title">
-														{mi.title} ({mi.year})
-													</div>
-													{!viewingOtherUser && (
-														<a
-															className="auto-item-remove"
-															onClick={() => handleRemove(mi.id)}
-															aria-label="Remove item"
+													<div className="auto-item-card-front">
+														<div
+															className="auto-item-card-menu"
+															onClick={(e) => handleFlipCard(mi.id, mi.list_id, e)}
 														>
-															Remove
-														</a>
-													)}
-												</div>
-												<div className="card-info">
-													<div className="card-info-label">Date added</div>
-													<div className="auto-item-date">{formatDate(mi.added_at)}</div>
-												</div>
-												<div className="card-info">
-													<div className="card-info-label">Rating</div>
-													<div className="auto-item-rating">
-														<StarRating
-															rating={mi.userRating || 0}
-															onRate={(r) => handleRate(mi.id, r)}
-															readonly={!user || !isAuthenticated}
-														/>
-													</div>
-												</div>
-												<div className="card-info">
-													<div className="auto-item-notes-container">
-														{viewingOtherUser ? (
-															mi.notes ? (
-																<div className="auto-item-notes-display">{mi.notes}</div>
-															) : null
-														) : editingNotes[mi.id] ||
-														  !(cardNotes[mi.id] !== undefined ? cardNotes[mi.id] : mi.notes) ? (
-															<textarea
-																ref={(el) => {
-																	if (el) textareaRefs.current[mi.id] = el;
-																}}
-																className="auto-item-notes"
-																placeholder="Add notes..."
-																value={
-																	cardNotes[mi.id] !== undefined ? cardNotes[mi.id] : mi.notes || ''
-																}
-																onChange={(e) => handleNotesChange(mi.id, e.target.value)}
-																onFocus={() => {
-																	if (!editingNotes[mi.id]) {
-																		handleEditNotes(mi.id);
-																	}
-																}}
-															/>
-														) : (
-															<div className="auto-item-notes-display">
-																{cardNotes[mi.id] !== undefined ? cardNotes[mi.id] : mi.notes}
-															</div>
-														)}
-														{!viewingOtherUser && (
-															<button
-																className="auto-item-notes-btn"
-																onClick={() => {
-																	const hasNotes =
-																		cardNotes[mi.id] !== undefined ? cardNotes[mi.id] : mi.notes;
-																	if (editingNotes[mi.id]) {
-																		handleSaveNotes(mi.id, mi.list_id);
-																	} else if (!hasNotes) {
-																		handleEditNotes(mi.id);
-																	} else {
-																		handleEditNotes(mi.id);
-																	}
-																}}
-																aria-label={editingNotes[mi.id] ? 'Save notes' : 'Edit notes'}
+															<svg
+																width="31"
+																height="21"
+																viewBox="0 0 31 21"
+																fill="none"
+																xmlns="http://www.w3.org/2000/svg"
 															>
-																{editingNotes[mi.id] ? (
-																	<svg
-																		className="icon-checkmark"
-																		width="20"
-																		height="20"
-																		viewBox="0 0 20 20"
-																		fill="none"
-																		xmlns="http://www.w3.org/2000/svg"
-																	>
-																		<path
-																			d="M16.2187 4.12666C16.5637 3.6954 17.1937 3.6254 17.6249 3.97041C18.0562 4.31542 18.1262 4.9454 17.7812 5.37666L9.08293 16.2487L3.29289 10.4587C2.90237 10.0682 2.90237 9.43515 3.29289 9.04463C3.68342 8.65411 4.31643 8.65411 4.70696 9.04463L8.91594 13.2536L16.2187 4.12666Z"
-																			fill="white"
-																		/>
-																	</svg>
-																) : (
-																		cardNotes[mi.id] !== undefined ? cardNotes[mi.id] : mi.notes
-																  ) ? (
-																	<svg
-																		className="icon-pencil"
-																		width="20"
-																		height="20"
-																		viewBox="0 0 20 20"
-																		fill="none"
-																		xmlns="http://www.w3.org/2000/svg"
-																	>
-																		<path
-																			d="M13.0052 4.16637C13.3958 3.77585 14.0289 3.77585 14.4194 4.16637L15.8337 5.58059C16.2242 5.97111 16.2242 6.60427 15.8337 6.9948L14.4194 8.40901L11.591 5.58059L13.0052 4.16637ZM5.93417 11.2374L10.8839 6.28769L13.7123 9.11612L8.76259 14.0659L4.87351 15.1265L5.93417 11.2374Z"
-																			fill="white"
-																		/>
-																	</svg>
-																) : (
-																	<svg
-																		className="icon-plus"
-																		width="20"
-																		height="20"
-																		viewBox="0 0 20 20"
-																		fill="none"
-																		xmlns="http://www.w3.org/2000/svg"
-																	>
-																		<path
-																			d="M10 4C10.5523 4 11 4.44772 11 5V9H15C15.5523 9 16 9.44772 16 10C16 10.5523 15.5523 11 15 11H11V15C11 15.5523 10.5523 16 10 16C9.44772 16 9 15.5523 9 15V11H5C4.44772 11 4 10.5523 4 10C4 9.44772 4.44772 9 5 9H9V5C9 4.44772 9.44772 4 10 4Z"
-																			fill="white"
-																		/>
-																	</svg>
-																)}
-															</button>
-														)}
+																<rect
+																	opacity="0.5"
+																	x="5"
+																	y="6"
+																	width="21"
+																	height="9"
+																	rx="4.5"
+																	fill="white"
+																/>
+																<rect x="6" y="7" width="19" height="7" rx="3.5" fill="black" />
+																<circle cx="10.5" cy="10.5" r="1.5" fill="white" />
+																<circle cx="15.5" cy="10.5" r="1.5" fill="white" />
+																<circle cx="20.5" cy="10.5" r="1.5" fill="white" />
+															</svg>
+														</div>
+														<img
+															src={mi.poster_url || '/placeholder.png'}
+															alt={mi.title}
+															className="auto-item-img"
+														/>
+														{(() => {
+															const recommendationBadge = getRecommendationBadgeMetadata(mi);
+															if (!recommendationBadge) {
+																return null;
+															}
+
+															return (
+																<div
+																	className="auto-item-recommendation-badge"
+																	title={`Recommended by ${recommendationBadge.fromUsername}`}
+																>
+																	<img src={IconFriend} alt="Friend recommendation" />
+																</div>
+															);
+														})()}
 													</div>
-												</div>
-												{isAuthenticated && !viewingOtherUser && (
-													<div className="card-info">
-														<div className="card-info-label">Watched With</div>
-														{watchedWith[mi.id] && watchedWith[mi.id].length > 0 && (
-															<div className="auto-item-watched-with-list">
-																{watchedWith[mi.id].map((friend) => (
-																	<div
-																		key={friend.id || friend.userId}
-																		className="watched-with-friend"
+													<div className="auto-item-card-back">
+														<div
+															className="auto-item-card-back-close"
+															onClick={() => setFlippedCardId(null)}
+															style={{ cursor: 'pointer' }}
+														>
+															<svg
+																width="20"
+																height="20"
+																viewBox="0 0 20 20"
+																fill="none"
+																xmlns="http://www.w3.org/2000/svg"
+															>
+																<path
+																	d="M14.2427 5.75736C14.6332 6.14788 14.6332 6.78104 14.2427 7.17157L11.4142 10L14.2427 12.8284C14.6332 13.2189 14.6332 13.8521 14.2427 14.2426C13.8521 14.6332 13.219 14.6332 12.8284 14.2426L10 11.4142L7.17158 14.2426C6.78106 14.6332 6.1479 14.6332 5.75737 14.2426C5.36685 13.8521 5.36685 13.2189 5.75737 12.8284L8.5858 10L5.75737 7.17157C5.36685 6.78104 5.36685 6.14788 5.75737 5.75736C6.1479 5.36683 6.78106 5.36683 7.17158 5.75736L10 8.58578L12.8284 5.75736C13.219 5.36683 13.8521 5.36683 14.2427 5.75736Z"
+																	fill="white"
+																/>
+															</svg>
+														</div>
+														<div className="card-info row">
+															<div className="auto-item-title">
+																{mi.title} <span>({mi.year})</span>
+																{!viewingOtherUser && (
+																	<a
+																		className="auto-item-remove"
+																		onClick={() => handleRemove(mi.id)}
+																		aria-label="Remove item"
 																	>
-																		<Link to={`/user/${friend.id || friend.userId}`}>
-																			{friend.username}
-																		</Link>
-																		<button
-																			className="remove-watched-with-btn"
-																			onClick={() =>
-																				handleRemoveWatchedWithFriend(
-																					mi.id,
-																					mi.list_id,
-																					friend.id || friend.userId
-																				)
+																		Remove
+																	</a>
+																)}
+															</div>
+														</div>
+														<div className="card-info">
+															<div className="card-info-label">Date added</div>
+															<div className="auto-item-date">{formatDate(mi.added_at)}</div>
+														</div>
+														<div className="card-info">
+															<div className="card-info-label">Rating</div>
+															<div className="auto-item-rating">
+																<StarRating
+																	rating={mi.userRating || 0}
+																	onRate={(r) => handleRate(mi.id, r)}
+																	readonly={!user || !isAuthenticated}
+																/>
+															</div>
+														</div>
+														<div className="card-info">
+															<div className="auto-item-notes-container">
+																{viewingOtherUser ? (
+																	mi.notes ? (
+																		<div className="auto-item-notes-display">{mi.notes}</div>
+																	) : null
+																) : editingNotes[mi.id] ||
+																  !(cardNotes[mi.id] !== undefined
+																		? cardNotes[mi.id]
+																		: mi.notes) ? (
+																	<textarea
+																		ref={(el) => {
+																			if (el) textareaRefs.current[mi.id] = el;
+																		}}
+																		className="auto-item-notes"
+																		placeholder="Add notes..."
+																		value={
+																			cardNotes[mi.id] !== undefined
+																				? cardNotes[mi.id]
+																				: mi.notes || ''
+																		}
+																		onChange={(e) => handleNotesChange(mi.id, e.target.value)}
+																		onFocus={() => {
+																			if (!editingNotes[mi.id]) {
+																				handleEditNotes(mi.id);
 																			}
-																			aria-label={`Remove ${friend.username}`}
-																		>
-																			×
-																		</button>
+																		}}
+																	/>
+																) : (
+																	<div className="auto-item-notes-display">
+																		{cardNotes[mi.id] !== undefined ? cardNotes[mi.id] : mi.notes}
 																	</div>
-																))}
+																)}
+																{!viewingOtherUser && (
+																	<button
+																		className="auto-item-notes-btn"
+																		onClick={() => {
+																			const hasNotes =
+																				cardNotes[mi.id] !== undefined
+																					? cardNotes[mi.id]
+																					: mi.notes;
+																			if (editingNotes[mi.id]) {
+																				handleSaveNotes(mi.id, mi.list_id);
+																			} else if (!hasNotes) {
+																				handleEditNotes(mi.id);
+																			} else {
+																				handleEditNotes(mi.id);
+																			}
+																		}}
+																		aria-label={editingNotes[mi.id] ? 'Save notes' : 'Edit notes'}
+																	>
+																		{editingNotes[mi.id] ? (
+																			<svg
+																				className="icon-checkmark"
+																				width="20"
+																				height="20"
+																				viewBox="0 0 20 20"
+																				fill="none"
+																				xmlns="http://www.w3.org/2000/svg"
+																			>
+																				<path
+																					d="M16.2187 4.12666C16.5637 3.6954 17.1937 3.6254 17.6249 3.97041C18.0562 4.31542 18.1262 4.9454 17.7812 5.37666L9.08293 16.2487L3.29289 10.4587C2.90237 10.0682 2.90237 9.43515 3.29289 9.04463C3.68342 8.65411 4.31643 8.65411 4.70696 9.04463L8.91594 13.2536L16.2187 4.12666Z"
+																					fill="white"
+																				/>
+																			</svg>
+																		) : (
+																				cardNotes[mi.id] !== undefined ? cardNotes[mi.id] : mi.notes
+																		  ) ? (
+																			<svg
+																				className="icon-pencil"
+																				width="20"
+																				height="20"
+																				viewBox="0 0 20 20"
+																				fill="none"
+																				xmlns="http://www.w3.org/2000/svg"
+																			>
+																				<path
+																					d="M13.0052 4.16637C13.3958 3.77585 14.0289 3.77585 14.4194 4.16637L15.8337 5.58059C16.2242 5.97111 16.2242 6.60427 15.8337 6.9948L14.4194 8.40901L11.591 5.58059L13.0052 4.16637ZM5.93417 11.2374L10.8839 6.28769L13.7123 9.11612L8.76259 14.0659L4.87351 15.1265L5.93417 11.2374Z"
+																					fill="white"
+																				/>
+																			</svg>
+																		) : (
+																			<svg
+																				className="icon-plus"
+																				width="20"
+																				height="20"
+																				viewBox="0 0 20 20"
+																				fill="none"
+																				xmlns="http://www.w3.org/2000/svg"
+																			>
+																				<path
+																					d="M10 4C10.5523 4 11 4.44772 11 5V9H15C15.5523 9 16 9.44772 16 10C16 10.5523 15.5523 11 15 11H11V15C11 15.5523 10.5523 16 10 16C9.44772 16 9 15.5523 9 15V11H5C4.44772 11 4 10.5523 4 10C4 9.44772 4.44772 9 5 9H9V5C9 4.44772 9.44772 4 10 4Z"
+																					fill="white"
+																				/>
+																			</svg>
+																		)}
+																	</button>
+																)}
+															</div>
+														</div>
+														{isAuthenticated && !viewingOtherUser && (
+															<div className="card-info">
+																<div className="card-info-label">Friends</div>
+																{watchedWith[mi.id] && watchedWith[mi.id].length > 0 && (
+																	<div className="auto-item-watched-with-list">
+																		{watchedWith[mi.id].map((friend) => (
+																			<div
+																				key={friend.id || friend.userId}
+																				className="watched-with-friend"
+																			>
+																				<Link to={`/user/${friend.id || friend.userId}`}>
+																					{friend.username}
+																				</Link>
+																				<button
+																					className="remove-watched-with-btn"
+																					onClick={() =>
+																						handleRemoveWatchedWithFriend(
+																							mi.id,
+																							mi.list_id,
+																							friend.id || friend.userId
+																						)
+																					}
+																					aria-label={`Remove ${friend.username}`}
+																				>
+																					×
+																				</button>
+																			</div>
+																		))}
+																	</div>
+																)}
+
+																<input
+																	type="text"
+																	placeholder="Tag or recommend friends"
+																	value={recommendSearch[mi.id] || ''}
+																	onChange={(e) =>
+																		handleRecommendInputChange(mi.id, e.target.value)
+																	}
+																	onFocus={() => {
+																		handleRecommendSearch(mi.id);
+																	}}
+																	onKeyDown={(e) => {
+																		if (e.key === 'Enter') {
+																			e.preventDefault();
+																			handleRecommendSearch(mi.id);
+																		}
+																	}}
+																	className="recommend-search-input"
+																/>
+																<div className="auto-item-recommend-results">
+																	{(recommendMatches[mi.id] || []).map((friend) => {
+																		const friendId = friend.id || friend.userId;
+																		if (!friendId) return null;
+																		const sendingKey = `${mi.id}:${friendId}`;
+																		const isSending = !!sendingRecommendation[sendingKey];
+																		const alreadySent =
+																			!!sentRecommendation[sendingKey] ||
+																			!!sentByExternalId[`${mi.external_id}:${friendId}`];
+																		const alreadyWatchedWith = watchedWith[mi.id]?.some(
+																			(w) => (w.id || w.userId) === friendId
+																		);
+																		return (
+																			<div key={friendId} className="recommend-friend-row">
+																				<Link
+																					to={`/user/${friendId}`}
+																					className="recommend-friend-name"
+																				>
+																					{friend.username}
+																				</Link>
+																				<button
+																					type="button"
+																					className="recommend-friend-btn"
+																					disabled={alreadyWatchedWith}
+																					onClick={() =>
+																						handleAddWatchedWithFriend(mi.id, mi.list_id, friendId)
+																					}
+																				>
+																					{alreadyWatchedWith ? '✓' : 'Watched with'}
+																				</button>
+																				<button
+																					type="button"
+																					className="recommend-friend-btn"
+																					disabled={isSending || alreadySent}
+																					onClick={() => handleSendRecommendation(mi, friend)}
+																				>
+																					{isSending
+																						? 'Sending...'
+																						: alreadySent
+																							? 'Recommended'
+																							: 'Recommend'}
+																				</button>
+																			</div>
+																		);
+																	})}
+																	{(recommendSearch[mi.id] || '').trim() &&
+																		(recommendMatches[mi.id] || []).length === 0 && (
+																			<div className="recommend-no-results">
+																				No matching friends
+																			</div>
+																		)}
+																</div>
 															</div>
 														)}
-
-														<input
-															type="text"
-															placeholder="Tag or recommend friends"
-															value={recommendSearch[mi.id] || ''}
-															onChange={(e) => handleRecommendInputChange(mi.id, e.target.value)}
-															onFocus={() => {
-																handleRecommendSearch(mi.id);
-															}}
-															onKeyDown={(e) => {
-																if (e.key === 'Enter') {
-																	e.preventDefault();
-																	handleRecommendSearch(mi.id);
-																}
-															}}
-															className="recommend-search-input"
-														/>
-														<div className="auto-item-recommend-results">
-															{(recommendMatches[mi.id] || []).map((friend) => {
-																const friendId = friend.id || friend.userId;
-																if (!friendId) return null;
-																const sendingKey = `${mi.id}:${friendId}`;
-																const isSending = !!sendingRecommendation[sendingKey];
-																const alreadySent = !!sentRecommendation[sendingKey];
-																const alreadyWatchedWith = watchedWith[mi.id]?.some(
-																	(w) => (w.id || w.userId) === friendId
-																);
-																return (
-																	<div key={friendId} className="recommend-friend-row">
-																		<Link
-																			to={`/user/${friendId}`}
-																			className="recommend-friend-name"
-																		>
-																			{friend.username}
-																		</Link>
-																		<button
-																			type="button"
-																			className="recommend-friend-btn"
-																			disabled={alreadyWatchedWith}
-																			onClick={() =>
-																				handleAddWatchedWithFriend(mi.id, mi.list_id, friendId)
-																			}
-																		>
-																			{alreadyWatchedWith ? '✓' : 'Watched with'}
-																		</button>
-																		<button
-																			type="button"
-																			className="recommend-friend-btn"
-																			disabled={isSending || alreadySent}
-																			onClick={() => handleSendRecommendation(mi, friend)}
-																		>
-																			{isSending
-																				? 'Sending...'
-																				: alreadySent
-																					? 'Recommended'
-																					: 'Recommend'}
-																		</button>
-																	</div>
-																);
-															})}
-															{(recommendSearch[mi.id] || '').trim() &&
-																(recommendMatches[mi.id] || []).length === 0 && (
-																	<div className="recommend-no-results">No matching friends</div>
-																)}
-														</div>
 													</div>
-												)}
-											</div>
-										</div>{' '}
-										{flippedCardId === mi.id && <div className="backdrop-overlay" />}{' '}
-									</React.Fragment>
-								))}
-							</div>
-						) : null}
+												</div>{' '}
+												{flippedCardId === mi.id && <div className="backdrop-overlay" />}{' '}
+											</React.Fragment>
+										))}
+									</div>
+								) : null;
+							})()
+						)}
 					</div>
 				</div>
 			</div>

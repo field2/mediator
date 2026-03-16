@@ -188,6 +188,10 @@ router.post('/recommend', authenticate, async (req: AuthRequest, res) => {
       return res.status(400).json({ error: 'Recommendation already pending for this friend' });
     }
 
+    if (RecommendationModel.hasApprovedRecommendation(fromUserId, toUserId, externalId)) {
+      return res.status(400).json({ error: 'Recommendation already sent to this friend' });
+    }
+
     const recommendationId = RecommendationModel.create(
       fromUserId,
       toUserId,
@@ -203,6 +207,23 @@ router.post('/recommend', authenticate, async (req: AuthRequest, res) => {
   } catch (error) {
     console.error('Send recommendation error:', error);
     res.status(500).json({ error: 'Failed to send recommendation' });
+  }
+});
+
+// Get outgoing media recommendations sent by current user
+router.get('/recommendations/sent', authenticate, async (req: AuthRequest, res) => {
+  try {
+    const userId = req.userId as number;
+    const stmt = db.prepare(`
+      SELECT to_user_id as toUserId, external_id as externalId
+      FROM media_recommendations
+      WHERE from_user_id = ? AND status IN ('pending', 'approved')
+    `);
+    const rows = stmt.all(userId);
+    res.json(rows);
+  } catch (error) {
+    console.error('Get sent recommendations error:', error);
+    res.status(500).json({ error: 'Failed to get sent recommendations' });
   }
 });
 
