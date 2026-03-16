@@ -46,6 +46,10 @@ textarea,
   cursor: pointer;
 }
 
+.friend-links button {
+  color: #000;
+}
+
 body {
   width: 100vw;
 }
@@ -557,6 +561,7 @@ input,
 textarea,
 select {
   font-family: inherit;
+  font-size: 16px; /* Prevents iOS auto-zoom on focus */
 }
 
 /* Star rating styles */
