@@ -707,6 +707,12 @@ button.deny {
   color: #000;
 }
 
+.account-signup-date {
+  opacity: 0.6;
+  font-size: 0.85rem;
+  margin-bottom: 1.5rem;
+}
+
 a {
   cursor: pointer;
   text-decoration: underline;

@@ -224,6 +224,11 @@ export const getCollaborators = async (listId: number): Promise<Collaboration[]>
 };
 
 // Friends
+export const getUserStats = async (): Promise<{ movies: number; books: number; albums: number; friends: number }> => {
+  const response = await api.get('/auth/me/stats');
+  return response.data;
+};
+
 export const getAllUsers = async (): Promise<any[]> => {
   const response = await api.get('/friends/directory');
   return response.data;

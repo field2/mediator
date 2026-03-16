@@ -3,6 +3,8 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
 import { UserModel } from '../db/models';
+import { authenticate, AuthRequest } from '../middleware/auth';
+import db from '../db/database';
 import { isValidEmail, normalizeEmail } from '../utils/emailValidation';
 
 const router: Router = express.Router();
@@ -114,6 +116,38 @@ router.get('/me', async (req, res) => {
   } catch (error) {
     console.error('Get /me error:', error);
     res.status(500).json({ error: 'Failed to fetch user profile' });
+  }
+});
+
+// Get current user stats
+router.get('/me/stats', authenticate, (req: AuthRequest, res) => {
+  try {
+    const userId = req.userId as number;
+    const mediaStmt = db.prepare(`
+      SELECT mi.media_type, COUNT(*) as count
+      FROM media_items mi
+      JOIN lists l ON mi.list_id = l.id
+      WHERE l.user_id = ?
+      GROUP BY mi.media_type
+    `);
+    const mediaCounts = mediaStmt.all(userId) as { media_type: string; count: number }[];
+    const counts: Record<string, number> = { movie: 0, book: 0, album: 0 };
+    for (const row of mediaCounts) counts[row.media_type] = row.count;
+
+    const friendsStmt = db.prepare(
+      'SELECT COUNT(*) as count FROM friends WHERE user_id_1 = ? OR user_id_2 = ?'
+    );
+    const { count: friendsCount } = friendsStmt.get(userId, userId) as { count: number };
+
+    res.json({
+      movies: counts.movie,
+      books: counts.book,
+      albums: counts.album,
+      friends: friendsCount,
+    });
+  } catch (error) {
+    console.error('Get stats error:', error);
+    res.status(500).json({ error: 'Failed to fetch stats' });
   }
 });
 
