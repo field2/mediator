@@ -225,17 +225,18 @@ a {
   display: flex;
   align-items: center;
   gap: 1rem;
-  background: rgba(255, 255, 255, 0.1);
+  background: rgb(141, 228, 123);
   border-radius: 999px;
   padding: 0.25rem 0.5rem;
 }
 .auto-items .auto-item-card .auto-item-card-back .watched-with-friend a {
   text-decoration: none;
   font-size: 14px;
+  color: #000;
 }
 .auto-items .auto-item-card .auto-item-card-back .remove-watched-with-btn {
   background: transparent;
-  color: #fff;
+  color: #000;
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -956,11 +957,42 @@ input.search-input {
   padding: 0.5rem;
 }
 
+.directory-controls {
+  display: flex;
+  justify-content: flex-start;
+  align-self: flex-end;
+  margin-top: 1rem;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0 0.5rem;
+}
+
+.directory-sort-select {
+  appearance: none;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 50px;
+  color: #fff;
+  cursor: pointer;
+  font-size: 0.85rem;
+  padding: 0.4rem 2rem 0.4rem 0.9rem;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23ffffff99'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.7rem center;
+}
+.directory-sort-select:focus {
+  outline: none;
+  border-color: rgba(255, 255, 255, 0.5);
+}
+.directory-sort-select option {
+  background: #333;
+  color: #fff;
+}
+
 .directory-list {
   width: 100%;
   padding: 0 0.5rem;
   align-self: center;
-  margin-top: 1rem;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   justify-items: stretch;
@@ -972,6 +1004,13 @@ input.search-input {
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  transition: opacity 0.15s ease, transform 0.15s ease;
+  opacity: 1;
+  transform: scale(1);
+}
+.sort-changing .directory-item {
+  opacity: 0;
+  transform: scale(0.94);
 }
 
 .directory-user-info {
@@ -1037,34 +1076,42 @@ input.search-input {
   align-items: center;
   gap: 1rem;
 }
-.friend-card .friend-links button {
+.friend-card .friend-links {
+  display: flex;
   font-family: "Roboto Flex", sans-serif;
   font-size: 14px;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  background-color: #fff;
-  padding: 0.5rem 1rem;
+  background-color: rgb(141, 228, 123);
+  padding: 0;
   font-size: 14px;
   opacity: 1;
-  border-radius: 2rem;
+  border-radius: 999px;
   transition: opacity 0.25s ease;
 }
-.friend-card .friend-links button:hover {
+.friend-card .friend-links:hover {
   opacity: 0.65;
 }
-.friend-card .friend-links button img {
+.friend-card .friend-links img {
   width: 20px;
   height: 20px;
 }
-.friend-card .friend-links button {
-  background-color: rgb(141, 228, 123);
+.friend-card .friend-links {
+  gap: 0;
 }
-
-.friend-links {
+.friend-card .friend-links button {
+  background: none;
+  padding: 0.5rem 1rem;
+  font-size: 1rem;
+  line-height: 1;
+}
+.friend-card .friend-links button.remove-friend-btn {
   display: flex;
-  gap: 0.5rem;
+  justify-content: center;
+  align-items: center;
+  opacity: 1;
 }
 
 .main-menu.has-pending circle:first-of-type {
@@ -1254,7 +1301,7 @@ nav a.has-pending::before {
   padding: 0.5rem 1rem;
   font-size: 14px;
   opacity: 1;
-  border-radius: 1rem;
+  border-radius: 999px;
   transition: opacity 0.25s ease;
 }
 .modal .modal-content button:hover {
@@ -1272,6 +1319,13 @@ nav a.has-pending::before {
   background-color: #fff;
   color: #000;
 }
+.directory-view .modal .modal-content {
+  display: flex;
+  align-items: center;
+}
+.directory-view .modal .modal-content p {
+  display: none;
+}
 .modal .modal-content .modal-close {
   width: 38px;
   height: 38px;
@@ -1284,6 +1338,34 @@ nav a.has-pending::before {
 
 .pad1 {
   padding: 0.5rem;
+}
+
+.colorkeys {
+  align-self: flex-start;
+  padding-left: 0.5rem;
+  display: flex;
+  gap: 1rem;
+}
+.colorkeys .colorkey {
+  display: flex;
+  gap: 0.25rem;
+}
+.colorkeys .colorkey .colorswatch {
+  width: 20px;
+  height: 20px;
+  border-radius: 999px;
+}
+
+.white {
+  background-color: #fff;
+}
+
+.green {
+  background-color: rgb(141, 228, 123);
+}
+
+.orange {
+  background-color: rgb(228, 205, 123);
 }
 
 .friend-requests {

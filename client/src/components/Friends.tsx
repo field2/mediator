@@ -9,10 +9,12 @@ import {
 	respondToFriendRequest,
 	getIncomingRecommendations,
 	respondToRecommendation,
+	removeFriend,
 } from '../api';
 // ...existing code...
 import IconSearch from '../assets/icon-search.svg';
-import IconClose from '../assets/icon-close.svg';
+import IconClose from '../assets/icon-close-black.svg';
+import IconCloseSmall from '../assets/icon-close-black-small.svg';
 import { User, Recommendation } from '../types';
 import Header from './Header';
 
@@ -169,6 +171,18 @@ const Friends: React.FC = () => {
 			alert(error.response?.data?.error || 'Failed to update request');
 			// Reload on error
 			await loadRequests();
+		}
+	};
+
+	const handleRemoveFriend = async (friendId: number) => {
+		if (!window.confirm('Remove this friend?')) return;
+		try {
+			await removeFriend(friendId);
+			setFriends((prev) => prev.filter((f) => (f.id ?? f.userId) !== friendId));
+			document.dispatchEvent(new CustomEvent('friend-requests-updated'));
+		} catch (error: any) {
+			console.error('Error removing friend:', error);
+			alert(error.response?.data?.error || 'Failed to remove friend');
 		}
 	};
 
@@ -386,7 +400,14 @@ const Friends: React.FC = () => {
 									<div className="friend-links">
 										<button onClick={() => navigate(`/user/${friend.id ?? friend.userId}`)}>
 											{friend.username}
-										</button>
+										</button>{' '}
+										<button
+											className="remove-friend-btn"
+											aria-label={`Remove ${friend.username}`}
+											onClick={() => handleRemoveFriend(friend.id ?? friend.userId!)}
+										>
+											<img src={IconCloseSmall} alt="Clear" />
+										</button>{' '}
 									</div>
 								</div>
 							))}

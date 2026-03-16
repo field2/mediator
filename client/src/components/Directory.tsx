@@ -1,20 +1,28 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { getAllUsers, sendFriendRequest, cancelFriendRequest, removeFriend } from '../api';
 import { useAuth } from '../AuthContext';
 
 import Header from './Header';
+
+type SortKey = 'active' | 'popular' | 'newest';
 
 interface DirectoryUser {
 	id: number;
 	username: string;
 	isFriend: boolean;
 	hasPendingRequest: boolean;
+	mediaCount: number;
+	friendsCount: number;
+	createdAt: string;
 }
 
 const Directory: React.FC = () => {
 	const [users, setUsers] = useState<DirectoryUser[]>([]);
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
+	const [sortKey, setSortKey] = useState<SortKey>('active');
+	const [animating, setAnimating] = useState(false);
+	const pendingSortRef = useRef<SortKey | null>(null);
 	const { isAuthenticated } = useAuth();
 
 	useEffect(() => {
@@ -96,6 +104,24 @@ const Directory: React.FC = () => {
 	const handlePendingFriend = (userId: number) => openConfirm('cancel', userId);
 	const handleRemoveFriend = (userId: number) => openConfirm('remove', userId);
 
+	const handleSortChange = (newSort: SortKey) => {
+		if (newSort === sortKey) return;
+		pendingSortRef.current = newSort;
+		setAnimating(true);
+		setTimeout(() => {
+			setSortKey(pendingSortRef.current ?? newSort);
+			setAnimating(false);
+		}, 200);
+	};
+
+	const sortedUsers = useMemo(() => {
+		const sorted = [...users];
+		if (sortKey === 'active') sorted.sort((a, b) => b.mediaCount - a.mediaCount);
+		else if (sortKey === 'popular') sorted.sort((a, b) => b.friendsCount - a.friendsCount);
+		else sorted.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+		return sorted;
+	}, [users, sortKey]);
+
 	if (!isAuthenticated) {
 		return (
 			<div className="view-body">
@@ -120,8 +146,36 @@ const Directory: React.FC = () => {
 		<div className="page-container">
 			<Header title="Directory" />
 			<div className="view-body">
-				<div className="directory-list">
-					{users.map((user) => (
+				<div className="colorkeys">
+					<div className="colorkey">
+						<div className="colorswatch white"></div>
+						<span>Not friend yet</span>
+					</div>
+					<div className="colorkey">
+						<div className="colorswatch orange"></div>
+						<span>Request Pending</span>
+					</div>
+					<div className="colorkey">
+						<div className="colorswatch green"></div>
+						<span>Friend</span>
+					</div>
+				</div>
+				<div className="directory-controls">
+					<label htmlFor="directory-sort-select">Sort by:</label>
+					<select
+						id="directory-sort-select"
+						className="directory-sort-select"
+						value={sortKey}
+						onChange={(e) => handleSortChange(e.target.value as SortKey)}
+						aria-label="Sort by"
+					>
+						<option value="active">Most Active</option>
+						<option value="popular">Most Popular</option>
+						<option value="newest">Newest</option>
+					</select>
+				</div>
+				<div className={`directory-list${animating ? ' sort-changing' : ''}`}>
+					{sortedUsers.map((user) => (
 						<div key={user.id} className="directory-item">
 							{user.isFriend ? (
 								<>

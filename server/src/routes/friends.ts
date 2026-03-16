@@ -54,12 +54,29 @@ const buildRecommendationAdditionalData = (
 router.get('/directory', authenticate, async (req: AuthRequest, res) => {
   try {
     const userId = req.userId as number;
-    const users = FriendModel.getAllUsers(userId);
-    const enriched = users.map(user => ({
+    const stmt = db.prepare(`
+      SELECT
+        u.id,
+        u.username,
+        u.created_at,
+        COUNT(DISTINCT mi.id) as media_count,
+        COUNT(DISTINCT f.id) as friends_count
+      FROM users u
+      LEFT JOIN media_items mi ON mi.added_by = u.id
+      LEFT JOIN friends f ON (f.user_id_1 = u.id OR f.user_id_2 = u.id)
+      WHERE u.id != ?
+      GROUP BY u.id
+      ORDER BY u.username
+    `);
+    const rows = stmt.all(userId) as any[];
+    const enriched = rows.map(user => ({
       id: user.id,
       username: user.username,
+      createdAt: user.created_at,
+      mediaCount: user.media_count as number,
+      friendsCount: user.friends_count as number,
       isFriend: FriendModel.areFriends(userId, user.id),
-      hasPendingRequest: FriendModel.hasPendingRequest(userId, user.id)
+      hasPendingRequest: FriendModel.hasPendingRequest(userId, user.id),
     }));
     res.json(enriched);
   } catch (error) {

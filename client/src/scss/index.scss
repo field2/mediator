@@ -3,6 +3,7 @@
 
 $green: rgb(141, 228, 123);
 $red: rgb(255, 94, 123);
+$orange: rgb(228, 205, 123);
 
 button {
 	border: none;
@@ -256,17 +257,19 @@ a {
 				display: flex;
 				align-items: center;
 				gap: 1rem;
-				background: rgba(255, 255, 255, 0.1);
+
+				background: $green;
 				border-radius: 999px;
 				padding: 0.25rem 0.5rem;
 				a {
 					text-decoration: none;
 					font-size: 14px;
+					color: #000;
 				}
 			}
 			.remove-watched-with-btn {
 				background: transparent;
-				color: #fff;
+				color: #000;
 				cursor: pointer;
 				display: flex;
 				align-items: center;
@@ -931,11 +934,42 @@ input.search-input {
 }
 
 // Directory styles
+.directory-controls {
+	display: flex;
+	justify-content: flex-start;
+	align-self: flex-end;
+	margin-top: 1rem;
+	align-items: center;
+	gap: 0.5rem;
+	padding: 0 0.5rem;
+}
+
+.directory-sort-select {
+	appearance: none;
+	background: rgba(255, 255, 255, 0.1);
+	border: 1px solid rgba(255, 255, 255, 0.25);
+	border-radius: 50px;
+	color: #fff;
+	cursor: pointer;
+	font-size: 0.85rem;
+	padding: 0.4rem 2rem 0.4rem 0.9rem;
+	background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23ffffff99'/%3E%3C/svg%3E");
+	background-repeat: no-repeat;
+	background-position: right 0.7rem center;
+	&:focus {
+		outline: none;
+		border-color: rgba(255, 255, 255, 0.5);
+	}
+	option {
+		background: #333;
+		color: #fff;
+	}
+}
+
 .directory-list {
 	width: 100%;
 	padding: 0 0.5rem;
 	align-self: center;
-	margin-top: 1rem;
 	display: grid;
 	grid-template-columns: repeat(3, 1fr);
 	justify-items: stretch;
@@ -948,6 +982,15 @@ input.search-input {
 	// justify-content: stretch;
 	align-items: center;
 	gap: 0.5rem;
+	transition:
+		opacity 0.15s ease,
+		transform 0.15s ease;
+	opacity: 1;
+	transform: scale(1);
+	.sort-changing & {
+		opacity: 0;
+		transform: scale(0.94);
+	}
 }
 
 .directory-user-info {
@@ -1014,14 +1057,23 @@ input.search-input {
 	justify-content: center;
 	align-items: center;
 	gap: 1rem;
-	.friend-links button {
-		@include button(2rem);
-		background-color: $green;
+	.friend-links {
+		display: flex;
+		@include button(999px, $green, 0);
+		gap: 0;
+		button {
+			background: none;
+			padding: 0.5rem 1rem;
+			font-size: 1rem;
+			line-height: 1;
+		}
+		button.remove-friend-btn {
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			opacity: 1;
+		}
 	}
-}
-.friend-links {
-	display: flex;
-	gap: 0.5rem;
 }
 
 // Or if you want different colors based on state:
@@ -1207,10 +1259,17 @@ nav a.has-pending::before {
 		margin: 1rem;
 		gap: 1rem;
 		button {
-			@include button;
+			@include button(999px);
 			@include all-caps();
 			background-color: #fff;
 			color: #000;
+		}
+		.directory-view & {
+			display: flex;
+			align-items: center;
+			p {
+				display: none;
+			}
 		}
 		.modal-close {
 			width: 38px;
@@ -1227,6 +1286,32 @@ nav a.has-pending::before {
 	padding: 0.5rem;
 }
 
+.colorkeys {
+	align-self: flex-start;
+	padding-left: 0.5rem;
+	display: flex;
+	gap: 1rem;
+	.colorkey {
+		display: flex;
+
+		gap: 0.25rem;
+		.colorswatch {
+			width: 20px;
+			height: 20px;
+			border-radius: 999px;
+		}
+	}
+}
+
+.white {
+	background-color: #fff;
+}
+.green {
+	background-color: $green;
+}
+.orange {
+	background-color: $orange;
+}
 // Friend requests styling
 .friend-requests {
 	margin-bottom: 2rem;

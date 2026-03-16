@@ -279,7 +279,7 @@ const Dashboard: React.FC = () => {
 
 				// Calculate how much to translate to center the scaled card
 				const centerX = rootRect.width / 2;
-				const centerY = rootRect.height * 0.35;
+				const centerY = rootRect.height * 0.45;
 				const cardCenterX = rect.left - rootRect.left + rect.width / 2;
 				const cardCenterY = rect.top - rootRect.top + rect.height / 2;
 
