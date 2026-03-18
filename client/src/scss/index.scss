@@ -104,13 +104,14 @@ a {
 	.auto-items-tabs {
 		display: flex;
 		gap: 0.25rem;
-		margin-bottom: 0.75rem;
+		margin: 1rem 0rem;
 	}
 	.auto-items-tab {
 		background: none;
+		font-size: 1.2rem;
 		border: none;
 		color: rgba(255, 255, 255, 0.4);
-		font-size: 0.85rem;
+
 		padding: 0.3rem 0.75rem;
 		border-radius: 50px;
 		cursor: pointer;
@@ -250,9 +251,7 @@ a {
 				flex-direction: column;
 				gap: 0.25rem;
 				&.row {
-					flex-direction: row;
-					align-items: flex-end;
-					gap: 1rem;
+					display: block;
 					a {
 						font-size: 13px;
 					}
@@ -495,7 +494,10 @@ a {
 		}
 	}
 }
-
+.auto-item-remove {
+	display: block;
+	float: right;
+}
 .backdrop-overlay {
 	position: fixed;
 	top: 0;
@@ -657,6 +659,7 @@ select {
 	flex-direction: column;
 	// align-items: flex-start;
 	align-items: center;
+	font-size: 1rem;
 	gap: 0.5rem;
 	&.padded-content {
 		padding: 0.5rem;
@@ -1037,6 +1040,22 @@ input.search-input {
 		transform: scale(0.94);
 	}
 }
+.tap-icon {
+	cursor: pointer;
+	background-color: #fff;
+	width: 2rem;
+	height: 2rem;
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
+	border-radius: 999px;
+	opacity: 0.4;
+	transition: opacity 0.2s ease;
+	&:hover {
+		opacity: 1;
+	}
+}
 
 .directory-user-info {
 	display: flex;
@@ -1283,8 +1302,8 @@ a.logo {
 	animation: fadeInOut 1s ease-in-out infinite alternate;
 }
 nav a.has-pending::before {
-	left: -6px;
-	top: 0;
+	left: 3px;
+	top: 13px;
 }
 
 .modal {
@@ -1359,11 +1378,6 @@ nav a.has-pending::before {
 }
 // Friend requests styling
 .friend-requests {
-	margin-bottom: 2rem;
-	padding: 1rem;
-	border-radius: 0.25rem;
-	background: rgba(0, 0, 0, 0.3);
-
 	// h2 {
 	// 	font-size: 0.8rem;
 	// 	font-weight: 600;
@@ -1379,11 +1393,11 @@ nav a.has-pending::before {
 		}
 
 		h3 {
-			font-size: 0.6rem;
-			color: rgba(255, 255, 255, 0.7);
-			text-transform: uppercase;
-			letter-spacing: 0.05rem;
-			margin-bottom: 0.7rem;
+			// font-size: 0.6rem;
+			// color: rgba(255, 255, 255, 0.7);
+			// text-transform: uppercase;
+			// letter-spacing: 0.05rem;
+			// margin-bottom: 0.7rem;
 		}
 	}
 
@@ -1438,36 +1452,6 @@ nav a.has-pending::before {
 			display: flex;
 			gap: 0.4rem;
 			align-items: center;
-
-			button,
-			.pending-badge {
-				font-size: 0.35rem;
-				padding: 0.3rem 0.6rem;
-				border: none;
-				border-radius: 0.1rem;
-				cursor: pointer;
-				transition: all 0.2s ease;
-			}
-
-			.approve {
-				background: rgba(76, 175, 80, 0.8);
-				color: #fff;
-
-				&:hover {
-					background: rgba(76, 175, 80, 1);
-					transform: scale(1.05);
-				}
-			}
-
-			.deny {
-				background: rgba(244, 67, 54, 0.8);
-				color: #fff;
-
-				&:hover {
-					background: rgba(244, 67, 54, 1);
-					transform: scale(1.05);
-				}
-			}
 
 			.cancel-btn {
 				background: rgba(158, 158, 158, 0.8);

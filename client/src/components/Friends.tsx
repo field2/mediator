@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import {
 	searchUsers,
@@ -15,6 +14,8 @@ import {
 import IconSearch from '../assets/icon-search.svg';
 import IconClose from '../assets/icon-close-black.svg';
 import IconCloseSmall from '../assets/icon-close-black-small.svg';
+import IconCheckmark from '../assets/icon-checkmark.svg';
+import IconFriendAdd from '../assets/icon-friend-add-black.svg';
 import { User, Recommendation } from '../types';
 import Header from './Header';
 
@@ -30,7 +31,6 @@ const Friends: React.FC = () => {
 	const debounceTimer = useRef<number | null>(null);
 	const inputRef = useRef<HTMLInputElement | null>(null);
 	const searchBarRef = useRef<HTMLDivElement | null>(null);
-	const [container, setContainer] = useState<HTMLElement | null>(null);
 	// ...existing code...
 
 	// Load friends and requests on mount
@@ -41,31 +41,6 @@ const Friends: React.FC = () => {
 	}, []);
 
 	// (menu handled by shared Header)
-
-	// find container (closest .page-container) to portal the dropdown like SearchBar
-	useEffect(() => {
-		let portalRoot: HTMLElement | null = null;
-		if (searchBarRef.current) {
-			let el = searchBarRef.current.parentElement;
-			while (el && !el.classList.contains('page-container')) {
-				el = el.parentElement;
-			}
-			const page = el || document.body;
-			const viewBody = page.querySelector('.view-body');
-			portalRoot = document.createElement('div');
-			portalRoot.className = 'search-portal';
-			if (viewBody && viewBody.parentElement === page) {
-				page.insertBefore(portalRoot, viewBody);
-			} else {
-				page.appendChild(portalRoot);
-			}
-			setContainer(portalRoot);
-		}
-
-		return () => {
-			if (portalRoot && portalRoot.parentElement) portalRoot.parentElement.removeChild(portalRoot);
-		};
-	}, []);
 
 	const loadFriends = async () => {
 		try {
@@ -96,7 +71,7 @@ const Friends: React.FC = () => {
 
 	// Search users
 	useEffect(() => {
-		if (query.trim().length < 1) {
+		if (query.trim().length < 2) {
 			setSearchResults([]);
 			setShowResults(false);
 			return;
@@ -242,84 +217,57 @@ const Friends: React.FC = () => {
 					</button>
 				</div>
 
-				{container && (loading || showResults)
-					? createPortal(
-							<div className="search-dropdown">
-								{loading && <div className="loading">Searching...</div>}
+				{(loading || showResults) && (
+					<div className="search-dropdown">
+						{loading && <div className="loading">Searching...</div>}
 
-								{!loading && searchResults.length > 0 && (
-									<div className="search-list">
-										{searchResults.map((user) => (
-											<div key={user.id} className="search-user-item">
-												<span className="username">{user.username}</span>
-												{user.isFriend ? (
-													<span className="badge friends">Friends</span>
-												) : user.hasPendingRequest ? (
-													<span className="badge pending">Pending</span>
-												) : (
-													<button className="add-button " onClick={() => handleAddFriend(user.id)}>
-														Add
-													</button>
-												)}
-											</div>
-										))}
+						{!loading && searchResults.length > 0 && (
+							<div className="search-list">
+								{searchResults.map((user) => (
+									<div key={user.id} className="search-user-item">
+										<span className="username">{user.username}</span>
+										{user.isFriend ? (
+											<span className="badge friends">Friends</span>
+										) : user.hasPendingRequest ? (
+											<span className="badge pending">Pending</span>
+										) : (
+											<button className="tap-icon" onClick={() => handleAddFriend(user.id)}>
+												<img src={IconFriendAdd} alt="Add friend" />
+											</button>
+										)}
 									</div>
-								)}
+								))}
+							</div>
+						)}
 
-								{!loading && searchResults.length === 0 && query.trim().length >= 2 && (
-									<div className="no-results">No users found</div>
-								)}
-							</div>,
-							container
-						)
-					: null}
+						{!loading && searchResults.length === 0 && query.trim().length >= 2 && (
+							<div className="no-results">No users found</div>
+						)}
+					</div>
+				)}
 
 				<div className="friends-list">
 					{(requests.length > 0 || recommendations.length > 0) && (
 						<div className="friend-requests">
-							<h2>Alerts</h2>
 							{requests.length > 0 && (
 								<div className="requests-section">
-									<h3>Friend Requests</h3>
+									<h2>Friend Requests</h2>
 									<div className="friend-requests-list">
 										{requests.map((req) => (
 											<div key={req.id} className="friend-request-item">
 												<div className="request-name">{req.username}</div>
 												<div className="request-actions">
 													<button
-														className="approve"
+														className="tap-icon"
 														onClick={() => handleRespond(req.id, 'approved')}
 													>
-														<svg
-															className="icon-checkmark"
-															width="20"
-															height="20"
-															viewBox="0 0 20 20"
-															fill="none"
-															xmlns="http://www.w3.org/2000/svg"
-														>
-															<path
-																d="M16.2187 4.12666C16.5637 3.6954 17.1937 3.6254 17.6249 3.97041C18.0562 4.31542 18.1262 4.9454 17.7812 5.37666L9.08293 16.2487L3.29289 10.4587C2.90237 10.0682 2.90237 9.43515 3.29289 9.04463C3.68342 8.65411 4.31643 8.65411 4.70696 9.04463L8.91594 13.2536L16.2187 4.12666Z"
-																fill="white"
-															/>
-														</svg>
+														<img src={IconCheckmark} alt="" />
 													</button>
 													<button
-														className="deny"
+														className="tap-icon"
 														onClick={() => handleRespond(req.id, 'rejected')}
 													>
-														<svg
-															width="20"
-															height="20"
-															viewBox="0 0 20 20"
-															fill="none"
-															xmlns="http://www.w3.org/2000/svg"
-														>
-															<path
-																d="M4.222 4.222a1 1 0 0 1 1.414 0L10 8.586l4.364-4.364a1 1 0 1 1 1.414 1.414L11.414 10l4.364 4.364a1 1 0 0 1-1.414 1.414L10 11.414l-4.364 4.364a1 1 0 0 1-1.414-1.414L8.586 10 4.222 5.636a1 1 0 0 1 0-1.414z"
-																fill="#fff"
-															/>
-														</svg>
+														<img src={IconClose} alt="" />
 													</button>
 												</div>
 											</div>
@@ -330,7 +278,7 @@ const Friends: React.FC = () => {
 
 							{recommendations.length > 0 && (
 								<div className="requests-section">
-									<h3>Recommendations</h3>
+									<h2>Recommendations</h2>
 									<div className="friend-requests-list">
 										{recommendations.map((rec) => (
 											<div key={rec.id} className="friend-request-item recommendation-item">
@@ -350,39 +298,16 @@ const Friends: React.FC = () => {
 												</div>
 												<div className="request-actions">
 													<button
-														className="approve"
+														className="tap-icon"
 														onClick={() => handleRecommendationRespond(rec.id, 'approved')}
 													>
-														<svg
-															className="icon-checkmark"
-															width="20"
-															height="20"
-															viewBox="0 0 20 20"
-															fill="none"
-															xmlns="http://www.w3.org/2000/svg"
-														>
-															<path
-																d="M16.2187 4.12666C16.5637 3.6954 17.1937 3.6254 17.6249 3.97041C18.0562 4.31542 18.1262 4.9454 17.7812 5.37666L9.08293 16.2487L3.29289 10.4587C2.90237 10.0682 2.90237 9.43515 3.29289 9.04463C3.68342 8.65411 4.31643 8.65411 4.70696 9.04463L8.91594 13.2536L16.2187 4.12666Z"
-																fill="white"
-															/>
-														</svg>
+														<img src={IconCheckmark} alt="Clear" />
 													</button>
 													<button
-														className="deny"
+														className="tap-icon"
 														onClick={() => handleRecommendationRespond(rec.id, 'rejected')}
 													>
-														<svg
-															width="20"
-															height="20"
-															viewBox="0 0 20 20"
-															fill="none"
-															xmlns="http://www.w3.org/2000/svg"
-														>
-															<path
-																d="M4.222 4.222a1 1 0 0 1 1.414 0L10 8.586l4.364-4.364a1 1 0 1 1 1.414 1.414L11.414 10l4.364 4.364a1 1 0 0 1-1.414 1.414L10 11.414l-4.364 4.364a1 1 0 0 1-1.414-1.414L8.586 10 4.222 5.636a1 1 0 0 1 0-1.414z"
-																fill="#fff"
-															/>
-														</svg>
+														<img src={IconClose} alt="Clear" />
 													</button>
 												</div>
 											</div>
