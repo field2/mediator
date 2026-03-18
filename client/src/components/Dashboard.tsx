@@ -117,9 +117,6 @@ const Dashboard: React.FC = () => {
 	const textareaRefs = React.useRef<{ [key: number]: HTMLTextAreaElement | null }>({});
 	const [watchedWith, setWatchedWith] = useState<{ [key: number]: User[] }>({});
 	const [friendsList, setFriendsList] = useState<User[]>([]);
-	const viewedUsername = viewingOtherUser
-		? friendsList.find((f) => (f.id || f.userId) === parseInt(userId!))?.username
-		: undefined;
 	const [recommendSearch, setRecommendSearch] = useState<{ [key: number]: string }>({});
 	const [recommendMatches, setRecommendMatches] = useState<{ [key: number]: User[] }>({});
 	const [sendingRecommendation, setSendingRecommendation] = useState<{ [key: string]: boolean }>(
