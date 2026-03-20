@@ -57,11 +57,9 @@ const Auth: React.FC = () => {
 				await login(userData, rememberMe ? 'local' : 'session');
 				navigate(fromPath, { replace: true });
 			} else if (view === 'forgot') {
-				const email = normalizeEmail(identifier);
-				if (!isValidEmail(email)) {
-					setError('Please enter a valid email address');
-					return;
-				}
+				const email = isValidEmail(normalizeEmail(identifier))
+					? normalizeEmail(identifier)
+					: identifier.trim();
 				await forgotPassword(email);
 				setSuccess('If that email exists, a password reset link has been sent');
 				setIdentifier('');
@@ -115,13 +113,13 @@ const Auth: React.FC = () => {
 					)}
 					{view !== 'reset' && !(view === 'forgot' && resetLinkSent) && (
 						<div>
-							<label>{view === 'login' ? 'Email or Username' : 'Email'}</label>
+							<label>{view === 'register' ? 'Email' : 'Email or Username'}</label>
 							<input
-								type={view === 'register' || view === 'forgot' ? 'email' : 'text'}
+								type={view === 'register' ? 'email' : 'text'}
 								value={identifier}
 								onChange={(e) => setIdentifier(e.target.value)}
 								required
-								autoComplete={view === 'register' || view === 'forgot' ? 'email' : 'username'}
+								autoComplete={view === 'register' ? 'email' : 'username'}
 							/>
 						</div>
 					)}
