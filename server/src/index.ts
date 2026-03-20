@@ -12,6 +12,7 @@ import searchRoutes from './routes/search';
 import listsRoutes from './routes/lists';
 import collaborationsRoutes from './routes/collaborations';
 import friendsRoutes from './routes/friends';
+import adminRoutes from './routes/admin';
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -27,6 +28,7 @@ app.use('/api/search', searchRoutes);
 app.use('/api/lists', listsRoutes);
 app.use('/api/collaborations', collaborationsRoutes);
 app.use('/api/friends', friendsRoutes);
+app.use('/api/admin', adminRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {

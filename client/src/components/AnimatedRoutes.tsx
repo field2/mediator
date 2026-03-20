@@ -7,6 +7,7 @@ import Collaborations from './Collaborations';
 import Account from './Account';
 import Friends from './Friends';
 import Directory from './Directory';
+import Admin from './Admin';
 import About from './About';
 import { useAuth } from '../AuthContext';
 import NavigationContext from '../NavigationContext';
@@ -26,6 +27,16 @@ const PrivateRoute: React.FC<{ children: React.ReactElement }> = ({ children }) 
 const PublicRoute: React.FC<{ children: React.ReactElement }> = ({ children }) => {
 	const { isAuthenticated } = useAuth();
 	return !isAuthenticated ? children : <div />;
+};
+
+const AdminRoute: React.FC<{ children: React.ReactElement }> = ({ children }) => {
+	const { user, isAuthenticated, isLoading } = useAuth();
+	const location = useLocation();
+	if (isLoading) return <div>Loading...</div>;
+	if (!isAuthenticated || !user?.isAdmin) {
+		return <Navigate to="/" state={{ from: location }} replace />;
+	}
+	return children;
 };
 
 const ROUTE_ANIM_MS = 420;
@@ -182,6 +193,14 @@ const AnimatedRoutes: React.FC = () => {
 				}
 			/>
 			<Route path="/about" element={<About />} />
+			<Route
+				path="/admin"
+				element={
+					<AdminRoute>
+						<Admin />
+					</AdminRoute>
+				}
+			/>
 		</Routes>
 	);
 

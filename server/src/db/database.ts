@@ -163,6 +163,16 @@ export async function initializeDatabase() {
     // Column already exists
   }
 
+  // Add is_admin column if it doesn't exist
+  try {
+    db.exec('ALTER TABLE users ADD COLUMN is_admin INTEGER DEFAULT 0');
+  } catch (e) {
+    // Column already exists
+  }
+
+  // Ensure ben is admin
+  db.exec("UPDATE users SET is_admin = 1 WHERE username = 'ben'");
+
   db.exec(`
     CREATE TABLE IF NOT EXISTS watched_with (
       id INTEGER PRIMARY KEY AUTOINCREMENT,

@@ -34,6 +34,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 							username,
 							email,
 							signupDate: profile.signupDate,
+							isAdmin: profile.isAdmin,
 						});
 					} catch (error: any) {
 						// If token is invalid (401), clear all stored credentials
@@ -80,7 +81,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 			console.log('Fetching user profile with token:', userData.token);
 			const profile = await getCurrentUser(userData.token);
 			console.log('Profile fetched:', profile);
-			const mergedUser = { ...userData, signupDate: profile.signupDate };
+			const mergedUser = { ...userData, signupDate: profile.signupDate, isAdmin: profile.isAdmin };
 			console.log('Setting user:', mergedUser);
 			setUser(mergedUser);
 		} catch (err) {

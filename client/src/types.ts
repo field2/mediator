@@ -4,6 +4,7 @@ export interface User {
   email: string;
   token: string;
   signupDate?: string;
+  isAdmin?: boolean;
   // Some endpoints (friends) return `id`; keep optional for compatibility
   id?: number;
 }

@@ -12,7 +12,7 @@ type HeaderProps = {
 const Header: React.FC<HeaderProps> = ({ title, children }) => {
 	const navigate = useNavigate();
 	const location = useLocation();
-	const { isAuthenticated } = useAuth();
+	const { isAuthenticated, user } = useAuth();
 	const [hasPending, setHasPending] = useState(false);
 	const { hasPreviousView } = useContext(NavigationContext);
 	const [menuOpen, setMenuOpen] = useState(false);

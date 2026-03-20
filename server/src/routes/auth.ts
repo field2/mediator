@@ -100,7 +100,7 @@ router.post('/login', async (req, res) => {
     // Generate token
     const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET || 'fallback-secret', { expiresIn: '7d' });
 
-    res.json({ token, userId: user.id, username: user.username, email: user.email });
+    res.json({ token, userId: user.id, username: user.username, email: user.email, isAdmin: user.is_admin === 1 });
   } catch (error) {
     console.error('Login error:', error, 'Request body:', req.body);
     res.status(500).json({ error: 'Login failed' });
@@ -128,7 +128,8 @@ router.get('/me', async (req, res) => {
       userId: user.id,
       username: user.username,
       email: user.email,
-      signupDate: user.created_at
+      signupDate: user.created_at,
+      isAdmin: user.is_admin === 1
     });
   } catch (error) {
     console.error('Get /me error:', error);

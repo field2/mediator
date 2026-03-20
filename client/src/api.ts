@@ -308,3 +308,12 @@ export const cancelFriendRequest = async (toUserId: number): Promise<void> => {
 export const removeFriend = async (friendId: number): Promise<void> => {
   await api.delete(`/friends/${friendId}`);
 };
+
+export const getAdminUsers = async (): Promise<any[]> => {
+  const response = await api.get('/admin/users');
+  return response.data;
+};
+
+export const deleteUser = async (id: number): Promise<void> => {
+  await api.delete(`/admin/users/${id}`);
+};

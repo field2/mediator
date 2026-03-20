@@ -8,6 +8,7 @@ export interface User {
   reset_token: string | null;
   reset_token_expires: string | null;
   created_at: string;
+  is_admin: number;
 }
 
 export interface List {
@@ -96,6 +97,10 @@ export const UserModel = {
   findById: (id: number): User | undefined => {
     const stmt = db.prepare('SELECT * FROM users WHERE id = ?');
     return stmt.get(id) as User | undefined;
+  },
+
+  delete: (id: number) => {
+    db.prepare('DELETE FROM users WHERE id = ?').run(id);
   },
 
   setResetToken: (email: string, token: string, expires: string) => {
