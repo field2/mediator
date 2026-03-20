@@ -1,12 +1,13 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useLayoutEffect, useRef, useCallback } from 'react';
 import { createPortal } from 'react-dom';
-import { searchMovies, searchBooks, searchAlbums } from '../api';
+import { searchMovies, searchBooks, searchAlbums, getFriends, sendRecommendation } from '../api';
 import IconSearch from '../assets/icon-search.svg';
 import IconClose from '../assets/icon-close.svg';
 import IconMovies from '../assets/icon-movies.svg';
 import IconBooks from '../assets/icon-books.svg';
 import IconAlbums from '../assets/icon-albums.svg';
-import { SearchResult } from '../types';
+import { SearchResult, User } from '../types';
+import { useAuth } from '../AuthContext';
 
 interface SearchBarProps {
 	onSelect: (item: SearchResult, mediaType: 'movie' | 'book' | 'album') => void;
@@ -33,6 +34,17 @@ const SearchBar: React.FC<SearchBarProps> = ({
 	const debounceTimer = useRef<number | null>(null);
 	const sentinelRef = useRef<HTMLDivElement>(null);
 	const scrollContainerRef = useRef<HTMLDivElement>(null);
+	const [expandedItem, setExpandedItem] = useState<SearchResult | null>(null);
+	const [expandedClosing, setExpandedClosing] = useState(false);
+	const [itemOriginRect, setItemOriginRect] = useState<DOMRect | null>(null);
+	const expandedCardRef = useRef<HTMLDivElement>(null);
+	const flipAnimRef = useRef<{ scaleFrom: number; originX: number; originY: number } | null>(null);
+	const [recommendMode, setRecommendMode] = useState(false);
+	const [friendsList, setFriendsList] = useState<User[]>([]);
+	const [recommendQuery, setRecommendQuery] = useState('');
+	const [recommendMatches, setRecommendMatches] = useState<User[]>([]);
+	const [sentTo, setSentTo] = useState<Record<string, boolean>>({});
+	const { isAuthenticated } = useAuth();
 
 	useEffect(() => {
 		if (query.trim().length < 2) {
@@ -102,11 +114,14 @@ const SearchBar: React.FC<SearchBarProps> = ({
 		};
 	}, []);
 
-	const handleSelect = (item: SearchResult) => {
-		onSelect(item, mediaType);
-		if (onMediaSelected) onMediaSelected(item, mediaType);
-		setShowResults(false);
-		setQuery('');
+	const handleSelect = (item: SearchResult, e: React.MouseEvent) => {
+		const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+		setItemOriginRect(rect);
+		setExpandedItem(item);
+		setExpandedClosing(false);
+		setRecommendMode(false);
+		setRecommendQuery('');
+		setRecommendMatches([]);
 	};
 
 	const handleInputFocus = () => {
@@ -150,6 +165,117 @@ const SearchBar: React.FC<SearchBarProps> = ({
 		return () => observer.disconnect();
 	}, [loadMore]);
 
+	// Load friends for the recommend feature
+	useEffect(() => {
+		if (!isAuthenticated) {
+			setFriendsList([]);
+			return;
+		}
+		getFriends()
+			.then((f) => setFriendsList(Array.isArray(f) ? f : []))
+			.catch(() => {});
+	}, [isAuthenticated]);
+
+	const fuzzyScore = (q: string, name: string): number => {
+		const query = q.toLowerCase().trim();
+		const candidate = name.toLowerCase();
+		if (!query) return -1;
+		if (candidate.includes(query))
+			return 100 - candidate.indexOf(query) * 2 - (candidate.length - query.length);
+		let qi = 0,
+			score = 0;
+		for (let i = 0; i < candidate.length && qi < query.length; i++) {
+			if (candidate[i] === query[qi]) {
+				score += 3;
+				qi++;
+			} else {
+				score -= 1;
+			}
+		}
+		return qi === query.length ? score - (candidate.length - query.length) : -1;
+	};
+
+	const updateRecommendMatches = (q: string) => {
+		if (!q.trim()) {
+			setRecommendMatches([]);
+			return;
+		}
+		const matches = friendsList
+			.map((f) => ({ f, score: fuzzyScore(q, f.username) }))
+			.filter(({ score }) => score >= 0)
+			.sort((a, b) => b.score - a.score)
+			.slice(0, 6)
+			.map(({ f }) => f);
+		setRecommendMatches(matches);
+	};
+
+	const handleAddToList = () => {
+		if (!expandedItem) return;
+		onSelect(expandedItem, mediaType);
+		if (onMediaSelected) onMediaSelected(expandedItem, mediaType);
+		setExpandedItem(null);
+		setRecommendMode(false);
+	};
+
+	// FLIP animation: when the expanded card mounts, immediately set it
+	// to the item's size/position, then release to let CSS transition carry it to center.
+	useLayoutEffect(() => {
+		if (!expandedItem || expandedClosing || !expandedCardRef.current || !itemOriginRect) return;
+		const card = expandedCardRef.current;
+		const cardRect = card.getBoundingClientRect();
+		const itemCenterX = itemOriginRect.left + itemOriginRect.width / 2;
+		const itemCenterY = itemOriginRect.top + itemOriginRect.height / 2;
+		const originX = itemCenterX - cardRect.left;
+		const originY = itemCenterY - cardRect.top;
+		const scaleFrom = itemOriginRect.width / cardRect.width;
+		flipAnimRef.current = { scaleFrom, originX, originY };
+		card.style.transformOrigin = `${originX}px ${originY}px`;
+		card.style.transition = 'none';
+		card.style.transform = `scale(${scaleFrom})`;
+		void card.offsetHeight; // force reflow so initial state is painted
+		card.style.transition = 'transform 0.28s cubic-bezier(0.34, 1.2, 0.64, 1)';
+		card.style.transform = 'scale(1)';
+	}, [expandedItem, itemOriginRect]); // eslint-disable-line react-hooks/exhaustive-deps
+
+	const handleCloseExpanded = () => {
+		if (expandedClosing) return;
+		setExpandedClosing(true);
+		if (expandedCardRef.current && flipAnimRef.current) {
+			const card = expandedCardRef.current;
+			const { scaleFrom, originX, originY } = flipAnimRef.current;
+			card.style.transformOrigin = `${originX}px ${originY}px`;
+			card.style.transition = 'transform 0.22s ease-in';
+			card.style.transform = `scale(${scaleFrom})`;
+		}
+		setTimeout(() => {
+			setExpandedItem(null);
+			setExpandedClosing(false);
+			setRecommendMode(false);
+			setRecommendQuery('');
+			setRecommendMatches([]);
+		}, 220);
+	};
+
+	const handleSendRecommendation = async (friend: User) => {
+		if (!expandedItem) return;
+		const friendId = (friend as any).id || friend.userId;
+		if (!friendId) return;
+		const key = `${expandedItem.id}:${friendId}`;
+		if (sentTo[key]) return;
+		try {
+			await sendRecommendation(friendId, {
+				mediaType,
+				externalId: expandedItem.id,
+				title: expandedItem.title,
+				year: expandedItem.year,
+				posterUrl: expandedItem.Poster || expandedItem.cover,
+			});
+			setSentTo((prev) => ({ ...prev, [key]: true }));
+		} catch {
+			// ignore
+		}
+	};
+
 	// Render search results in a portal to the body, as a sibling of .view-body
 	// Find the closest .page-container to anchor the results
 	const searchResults = showResults ? (
@@ -157,6 +283,100 @@ const SearchBar: React.FC<SearchBarProps> = ({
 			ref={scrollContainerRef}
 			className={`search-results ${selectedMediaType === 'book' ? 'book-results' : selectedMediaType === 'album' ? 'album-results' : ''}`}
 		>
+			{expandedItem && (
+				<div
+					className={`search-item-expanded-overlay${expandedClosing ? ' closing' : ''}`}
+					onClick={handleCloseExpanded}
+				>
+					<div
+						className="search-item-expanded"
+						onClick={(e) => e.stopPropagation()}
+						ref={expandedCardRef}
+					>
+						<img
+							src={expandedItem.Poster || expandedItem.cover || '/placeholder.png'}
+							alt={expandedItem.title}
+							className="expanded-poster"
+						/>
+						<div className="expanded-info">
+							<div className="expanded-title">{expandedItem.title}</div>
+							{(expandedItem.year || expandedItem.author || expandedItem.artist) && (
+								<div className="expanded-sub">
+									{expandedItem.year || expandedItem.author || expandedItem.artist}
+								</div>
+							)}
+							{!recommendMode ? (
+								<div className="expanded-actions">
+									<button className="expanded-btn" onClick={handleAddToList}>
+										Watched
+									</button>
+									<button className="expanded-btn" onClick={handleAddToList}>
+										+ Watchlist
+									</button>
+									{isAuthenticated && (
+										<button className="expanded-btn" onClick={() => setRecommendMode(true)}>
+											Recommend
+										</button>
+									)}
+									<button
+										className="expanded-btn expanded-btn-close"
+										onClick={handleCloseExpanded}
+										aria-label="Close"
+									>
+										✕
+									</button>
+								</div>
+							) : (
+								<div className="expanded-recommend">
+									<input
+										type="text"
+										placeholder="Search friends..."
+										value={recommendQuery}
+										autoFocus
+										onChange={(e) => {
+											setRecommendQuery(e.target.value);
+											updateRecommendMatches(e.target.value);
+										}}
+										className="expanded-recommend-input"
+									/>
+									<div className="expanded-recommend-results">
+										{recommendMatches.map((f) => {
+											const friendId = (f as any).id || f.userId;
+											const key = `${expandedItem.id}:${friendId}`;
+											const sent = !!sentTo[key];
+											return (
+												<div key={friendId} className="expanded-recommend-row">
+													<span className="expanded-recommend-name">{f.username}</span>
+													<button
+														className="expanded-btn"
+														disabled={sent}
+														onClick={() => handleSendRecommendation(f)}
+													>
+														{sent ? 'Sent ✓' : 'Send'}
+													</button>
+												</div>
+											);
+										})}
+										{recommendQuery.trim() && recommendMatches.length === 0 && (
+											<div className="expanded-recommend-empty">No matching friends</div>
+										)}
+									</div>
+									<button
+										className="expanded-recommend-back"
+										onClick={() => {
+											setRecommendMode(false);
+											setRecommendQuery('');
+											setRecommendMatches([]);
+										}}
+									>
+										← Back
+									</button>
+								</div>
+							)}
+						</div>
+					</div>
+				</div>
+			)}
 			{loading && (
 				<div className="search-loading">
 					<div className="spinner"></div>
@@ -168,7 +388,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
 				results
 					.filter((r) => r.Poster || r.cover)
 					.map((r) => (
-						<div key={r.id} className="search-result-item" onClick={() => handleSelect(r)}>
+						<div key={r.id} className="search-result-item" onClick={(e) => handleSelect(r, e)}>
 							{r.Poster || r.cover ? (
 								<img src={r.Poster || r.cover} alt={r.title} className="result-thumb" />
 							) : (
