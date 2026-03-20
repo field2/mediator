@@ -2,10 +2,27 @@ import express, { Router } from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
+import nodemailer from 'nodemailer';
 import { UserModel } from '../db/models';
 import { authenticate, AuthRequest } from '../middleware/auth';
 import db from '../db/database';
 import { isValidEmail, normalizeEmail } from '../utils/emailValidation';
+
+const mailer = process.env.SMTP_HOST
+  ? nodemailer.createTransport({
+      host: process.env.SMTP_HOST,
+      port: parseInt(process.env.SMTP_PORT || '587'),
+      secure: process.env.SMTP_SECURE === 'true',
+      auth: {
+        user: process.env.SMTP_USER,
+        pass: process.env.SMTP_PASS,
+      },
+    })
+  : nodemailer.createTransport({
+      sendmail: true,
+      newline: 'unix',
+      path: '/usr/sbin/sendmail',
+    });
 
 const router: Router = express.Router();
 
@@ -155,33 +172,48 @@ router.get('/me/stats', authenticate, (req: AuthRequest, res) => {
 router.post('/forgot-password', async (req, res) => {
   try {
     const { email } = req.body;
-    const normalizedEmail = normalizeEmail(email);
+    const identifier = (email || '').trim();
 
-    if (!normalizedEmail) {
-      return res.status(400).json({ error: 'Email is required' });
+    if (!identifier) {
+      return res.status(400).json({ error: 'Email or username is required' });
     }
 
-    if (!isValidEmail(normalizedEmail)) {
-      return res.status(400).json({ error: 'Please enter a valid email address', field: 'email' });
-    }
-
-    const user = await UserModel.findByEmail(normalizedEmail);
+    // Look up by email or username
+    let user = isValidEmail(normalizeEmail(identifier))
+      ? await UserModel.findByEmail(normalizeEmail(identifier))
+      : null;
     if (!user) {
-      // Don't reveal if email exists or not for security
-      return res.json({ message: 'If that email exists, a password reset link has been sent' });
+      user = await UserModel.findByUsername(identifier);
+    }
+
+    if (!user) {
+      // Don't reveal whether the account exists
+      return res.json({ message: 'If that account exists, a password reset link has been sent' });
     }
 
     // Generate reset token
     const resetToken = crypto.randomBytes(32).toString('hex');
-    const expires = new Date(Date.now() + 3600000).toISOString(); // 1 hour from now
+    const expires = new Date(Date.now() + 3600000).toISOString(); // 1 hour
 
-    UserModel.setResetToken(normalizedEmail, resetToken, expires);
+    UserModel.setResetToken(user.email, resetToken, expires);
 
-    // For now, just log the token (in production, send via email)
-    console.log(`Password reset token for ${email}: ${resetToken}`);
-    console.log(`Reset link: http://localhost:3000/reset-password?token=${resetToken}`);
+    const siteUrl = process.env.SITE_URL || 'https://mediator.field2.com';
+    const resetLink = `${siteUrl}/auth?mode=reset&token=${resetToken}`;
 
-    res.json({ message: 'If that email exists, a password reset link has been sent', token: resetToken });
+    try {
+      await mailer.sendMail({
+        from: process.env.SMTP_FROM || process.env.SMTP_USER,
+        to: user.email,
+        subject: 'Mediator — password reset',
+        text: `Hi ${user.username},\n\nClick the link below to reset your password (expires in 1 hour):\n\n${resetLink}\n\nIf you didn't request this, you can ignore this email.`,
+        html: `<p>Hi ${user.username},</p><p>Click the link below to reset your password (expires in 1 hour):</p><p><a href="${resetLink}">${resetLink}</a></p><p>If you didn't request this, you can ignore this email.</p>`,
+      });
+    } catch (mailErr) {
+      console.error('Failed to send reset email:', mailErr);
+      return res.status(500).json({ error: 'Failed to send reset email' });
+    }
+
+    res.json({ message: 'If that account exists, a password reset link has been sent' });
   } catch (error) {
     console.error('Forgot password error:', error);
     res.status(500).json({ error: 'Failed to process request' });
