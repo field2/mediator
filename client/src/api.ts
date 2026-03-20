@@ -178,6 +178,11 @@ export const updateMediaNotes = async (listId: number, mediaId: number, notes: s
   return response.data;
 };
 
+export const updateMediaAdditionalData = async (listId: number, mediaId: number, additionalData: object | null): Promise<any> => {
+  const response = await api.put(`/lists/${listId}/media/${mediaId}/additional-data`, { additionalData });
+  return response.data;
+};
+
 export const getWatchedWithFriends = async (listId: number, mediaId: number): Promise<any[]> => {
   const response = await api.get(`/lists/${listId}/media/${mediaId}/watched-with`);
   return response.data;

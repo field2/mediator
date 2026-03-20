@@ -396,6 +396,38 @@ router.put('/:listId/media/:mediaId/notes', authenticate, (req: AuthRequest, res
   }
 });
 
+// Update additional_data for a media item
+router.put('/:listId/media/:mediaId/additional-data', authenticate, (req: AuthRequest, res) => {
+  try {
+    const mediaId = parseInt(req.params.mediaId);
+    const { additionalData } = req.body;
+
+    const mediaItem = MediaItemModel.findById(mediaId);
+    if (!mediaItem) {
+      return res.status(404).json({ error: 'Media item not found' });
+    }
+
+    const list = ListModel.findById(mediaItem.list_id);
+    if (!list) {
+      return res.status(404).json({ error: 'List not found' });
+    }
+
+    const isOwner = list.user_id === req.userId;
+    const isCollaborator = CollaborationModel.isCollaborator(list.id, req.userId!);
+    if (!isOwner && !isCollaborator) {
+      return res.status(403).json({ error: 'Access denied' });
+    }
+
+    MediaItemModel.updateAdditionalData(mediaId, additionalData ?? null);
+    const updatedItem = MediaItemModel.findById(mediaId);
+
+    res.json(updatedItem);
+  } catch (error) {
+    console.error('Error updating additional data:', error);
+    res.status(500).json({ error: 'Failed to update additional data' });
+  }
+});
+
 // Get watched with friends for a media item
 router.get('/:listId/media/:mediaId/watched-with', authenticate, (req: AuthRequest, res) => {
   try {

@@ -1,6 +1,14 @@
 import React, { useState, useEffect, useLayoutEffect, useRef, useCallback } from 'react';
 import { createPortal } from 'react-dom';
-import { searchMovies, searchBooks, searchAlbums, getFriends, sendRecommendation } from '../api';
+import {
+	searchMovies,
+	searchBooks,
+	searchAlbums,
+	getFriends,
+	sendRecommendation,
+	getOrCreateAutoList,
+	addMediaToList,
+} from '../api';
 import IconSearch from '../assets/icon-search.svg';
 import IconClose from '../assets/icon-close.svg';
 import IconMovies from '../assets/icon-movies.svg';
@@ -215,6 +223,29 @@ const SearchBar: React.FC<SearchBarProps> = ({
 		if (onMediaSelected) onMediaSelected(expandedItem, mediaType);
 		setExpandedItem(null);
 		setRecommendMode(false);
+		setShowResults(false);
+		setQuery('');
+	};
+
+	const handleAddToWatchlist = async () => {
+		if (!expandedItem || !isAuthenticated) return;
+		try {
+			const list = await getOrCreateAutoList(mediaType);
+			await addMediaToList(
+				list.id,
+				mediaType,
+				expandedItem.id,
+				expandedItem.title,
+				expandedItem.year,
+				expandedItem.Poster || expandedItem.cover,
+				{ _mediatorWatchlist: true }
+			);
+		} catch {
+			// ignore
+		}
+		setShowResults(false);
+		setQuery('');
+		handleCloseExpanded();
 	};
 
 	// FLIP animation: when the expanded card mounts, immediately set it
@@ -271,6 +302,9 @@ const SearchBar: React.FC<SearchBarProps> = ({
 				posterUrl: expandedItem.Poster || expandedItem.cover,
 			});
 			setSentTo((prev) => ({ ...prev, [key]: true }));
+			setShowResults(false);
+			setQuery('');
+			handleCloseExpanded();
 		} catch {
 			// ignore
 		}
@@ -310,7 +344,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
 									<button className="expanded-btn" onClick={handleAddToList}>
 										Watched
 									</button>
-									<button className="expanded-btn" onClick={handleAddToList}>
+									<button className="expanded-btn" onClick={handleAddToWatchlist}>
 										+ Watchlist
 									</button>
 									{isAuthenticated && (

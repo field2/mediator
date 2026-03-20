@@ -181,6 +181,11 @@ export const MediaItemModel = {
     return stmt.run(notes, id);
   },
 
+  updateAdditionalData: (id: number, additionalData: object | null) => {
+    const stmt = db.prepare('UPDATE media_items SET additional_data = ? WHERE id = ?');
+    return stmt.run(additionalData ? JSON.stringify(additionalData) : null, id);
+  },
+
   delete: (id: number) => {
     const stmt = db.prepare('DELETE FROM media_items WHERE id = ?');
     return stmt.run(id);
