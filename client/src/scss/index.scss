@@ -491,6 +491,9 @@ a {
 				background: rgba(0, 0, 0, 0.5);
 				backdrop-filter: blur(10px);
 			}
+			.auto-item-recommendation-badge {
+				display: none;
+			}
 		}
 	}
 }

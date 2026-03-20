@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { searchMovies, searchBooks, searchAlbums } from '../api';
 import IconSearch from '../assets/icon-search.svg';
@@ -31,6 +31,8 @@ const SearchBar: React.FC<SearchBarProps> = ({
 	const [loading, setLoading] = useState(false);
 	const [showResults, setShowResults] = useState(false);
 	const debounceTimer = useRef<number | null>(null);
+	const sentinelRef = useRef<HTMLDivElement>(null);
+	const scrollContainerRef = useRef<HTMLDivElement>(null);
 
 	useEffect(() => {
 		if (query.trim().length < 2) {
@@ -111,7 +113,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
 		setShowResults(true);
 	};
 
-	const loadMore = async () => {
+	const loadMore = useCallback(async () => {
 		if (loading) return;
 		if (currentPage >= totalPages) return;
 		const next = currentPage + 1;
@@ -131,12 +133,28 @@ const SearchBar: React.FC<SearchBarProps> = ({
 		} finally {
 			setLoading(false);
 		}
-	};
+	}, [loading, currentPage, totalPages, mediaType, query, totalResults]);
+
+	// Observe sentinel to trigger infinite scroll
+	useEffect(() => {
+		const sentinel = sentinelRef.current;
+		const container = scrollContainerRef.current;
+		if (!sentinel || !container) return;
+		const observer = new IntersectionObserver(
+			(entries) => {
+				if (entries[0].isIntersecting) loadMore();
+			},
+			{ root: container, threshold: 0 }
+		);
+		observer.observe(sentinel);
+		return () => observer.disconnect();
+	}, [loadMore]);
 
 	// Render search results in a portal to the body, as a sibling of .view-body
 	// Find the closest .page-container to anchor the results
 	const searchResults = showResults ? (
 		<div
+			ref={scrollContainerRef}
 			className={`search-results ${selectedMediaType === 'book' ? 'book-results' : selectedMediaType === 'album' ? 'album-results' : ''}`}
 		>
 			{loading && (
@@ -167,11 +185,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
 				<div className="search-no-results">No results found for "{query}"</div>
 			)}
 
-			{!loading && results.length > 0 && currentPage < totalPages && (
-				<div className="search-load-more">
-					<button onClick={loadMore}>Load more</button>
-				</div>
-			)}
+			{currentPage < totalPages && <div ref={sentinelRef} style={{ height: 1 }} />}
 		</div>
 	) : null;
 

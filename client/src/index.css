@@ -489,6 +489,9 @@ a {
   background: rgba(0, 0, 0, 0.5);
   backdrop-filter: blur(10px);
 }
+.auto-items .auto-item-card.flipped .auto-item-recommendation-badge {
+  display: none;
+}
 
 .auto-item-remove {
   display: block;
