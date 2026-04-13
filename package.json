@@ -4,6 +4,7 @@
   "description": "Media cataloging app with collaborative lists",
   "scripts": {
     "install-all": "npm install && cd client && npm install && cd ../server && npm install",
+    "predev": "bash scripts/pull-db.sh",
     "dev": "concurrently \"npm:server\" \"npm:client\" \"npm:dev:styles\" \"npm:browsersync\"",
     "server": "cd server && npm run dev",
     "client": "cd client && npm run dev",
