@@ -31,6 +31,7 @@ const Account: React.FC = () => {
 			<Header title="Account" />
 			<div className="view-body padded-content">
 				<h2>{user.username}</h2>
+				<div className="account-email">{user.email}</div>
 				<div className="account-signup-date">Signed up: {signupDate}</div>
 				{stats && (
 					<div className="account-signup-date">
