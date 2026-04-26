@@ -46,6 +46,25 @@ const mergeRecommendationMetadata = (
   });
 };
 
+const parseAdditionalDataObject = (additionalData: unknown) => {
+  if (!additionalData) {
+    return null;
+  }
+
+  if (typeof additionalData === 'string') {
+    try {
+      const parsed = JSON.parse(additionalData);
+      return parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? parsed : null;
+    } catch {
+      return null;
+    }
+  }
+
+  return additionalData && typeof additionalData === 'object' && !Array.isArray(additionalData)
+    ? additionalData
+    : null;
+};
+
 const withRecommendationBadgeData = (
   ownerUserId: number,
   item: {
@@ -300,7 +319,20 @@ router.post('/:id/media', authenticate, (req: AuthRequest, res) => {
     // Check if this item already exists in this list
     const existingItem = MediaItemModel.findByListIdAndExternalId(listId, externalId);
     if (existingItem) {
-      return res.json(existingItem); // Return existing item instead of creating duplicate
+    const existingAdditionalData = parseAdditionalDataObject(existingItem.additional_data);
+    const incomingAdditionalData = parseAdditionalDataObject(additionalData);
+
+    if (incomingAdditionalData) {
+      const mergedAdditionalData = {
+        ...(existingAdditionalData ?? {}),
+        ...incomingAdditionalData,
+      };
+      MediaItemModel.updateAdditionalData(existingItem.id, mergedAdditionalData);
+      const updatedItem = MediaItemModel.findById(existingItem.id);
+      return res.json(updatedItem ?? existingItem);
+    }
+
+    return res.json(existingItem); // Return existing item instead of creating duplicate
     }
 
     const mediaItemId = MediaItemModel.create(

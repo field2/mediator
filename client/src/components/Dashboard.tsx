@@ -32,6 +32,15 @@ type RecommendationBadgeMetadata = {
 	title: string;
 };
 
+const mediaTabLabels: Record<
+	'movie' | 'book' | 'album',
+	{ yours: string; recommended: string; completeRecommended: string }
+> = {
+	movie: { yours: 'Your Movies', recommended: 'Watchlist', completeRecommended: 'Watched' },
+	book: { yours: 'Your Books', recommended: 'Unread', completeRecommended: 'Read' },
+	album: { yours: 'Your Albums', recommended: 'I want these', completeRecommended: 'Owned' },
+};
+
 const Dashboard: React.FC = () => {
 	// Add missing helper functions
 	const addItemToAutoList = async (item: any, mediaType: 'movie' | 'book' | 'album') => {
@@ -126,6 +135,33 @@ const Dashboard: React.FC = () => {
 	const [sentRecommendation, setSentRecommendation] = useState<{ [key: string]: boolean }>({});
 	const [sentByExternalId, setSentByExternalId] = useState<{ [key: string]: boolean }>({});
 	const [subTab, setSubTab] = useState<'yours' | 'recommended'>('yours');
+	const mediaLabels = mediaTabLabels[selectedMediaType];
+
+	const refreshSelectedMediaItems = React.useCallback(async () => {
+		if (!isAuthenticated) {
+			loadGuestItems(selectedMediaType);
+			setAutoItems([]);
+			setAutoListId(null);
+			return;
+		}
+
+		try {
+			if (viewingOtherUser) {
+				const full = await getUserAutoList(parseInt(userId!), selectedMediaType);
+				setAutoListId(full.id);
+				setAutoItems(Array.isArray(full.mediaItems) ? full.mediaItems : []);
+			} else {
+				const list = await getOrCreateAutoList(selectedMediaType);
+				setAutoListId(list.id);
+				const full = await getList(list.id);
+				setAutoItems(Array.isArray(full.mediaItems) ? full.mediaItems : []);
+			}
+		} catch (err) {
+			console.error('Error loading auto list items:', err);
+			setAutoItems([]);
+			setAutoListId(null);
+		}
+	}, [selectedMediaType, isAuthenticated, viewingOtherUser, userId]);
 
 	// Reset sub-tab when switching media type
 	useEffect(() => {
@@ -203,33 +239,9 @@ const Dashboard: React.FC = () => {
 		let cancelled = false;
 		const load = async () => {
 			setLoadingItems(true);
-			if (!isAuthenticated) {
-				loadGuestItems(selectedMediaType);
-				setAutoItems([]);
-				setAutoListId(null);
-				setLoadingItems(false);
-				return;
-			}
 			try {
-				// If viewing another user's content
-				if (viewingOtherUser) {
-					const full = await getUserAutoList(parseInt(userId!), selectedMediaType);
-					if (cancelled) return;
-					setAutoListId(full.id);
-					setAutoItems(Array.isArray(full.mediaItems) ? full.mediaItems : []);
-				} else {
-					// Viewing own content
-					const list = await getOrCreateAutoList(selectedMediaType);
-					if (cancelled) return;
-					setAutoListId(list.id);
-					const full = await getList(list.id);
-					if (cancelled) return;
-					setAutoItems(Array.isArray(full.mediaItems) ? full.mediaItems : []);
-				}
-			} catch (err) {
-				console.error('Error loading auto list items:', err);
-				setAutoItems([]);
-				setAutoListId(null);
+				await refreshSelectedMediaItems();
+				if (cancelled) return;
 			} finally {
 				if (!cancelled) setLoadingItems(false);
 			}
@@ -238,7 +250,7 @@ const Dashboard: React.FC = () => {
 		return () => {
 			cancelled = true;
 		};
-	}, [selectedMediaType, isAuthenticated, viewingOtherUser, userId]);
+	}, [refreshSelectedMediaItems]);
 
 	// If a user signs in after picking items, sync guest items once
 	const hasSyncedRef = React.useRef(false);
@@ -571,6 +583,7 @@ const Dashboard: React.FC = () => {
 					setSelectedMediaType={setSelectedMediaType}
 					selectedMediaType={selectedMediaType}
 					onMediaSelected={handleMediaSelected}
+					onListChanged={refreshSelectedMediaItems}
 				/>
 			)}
 			<div className="media-section-body">
@@ -596,7 +609,6 @@ const Dashboard: React.FC = () => {
 						<div className="auto-items-tabs">
 							{isAuthenticated &&
 								!viewingOtherUser &&
-								selectedMediaType === 'movie' &&
 								(() => {
 									const recItems = autoItems.filter((mi) => isWatchlistItem(mi));
 									if (recItems.length === 0) return null;
@@ -606,13 +618,13 @@ const Dashboard: React.FC = () => {
 												className={`auto-items-tab${subTab === 'yours' ? ' active' : ''}`}
 												onClick={() => setSubTab('yours')}
 											>
-												Your Movies
+												{mediaLabels.yours}
 											</button>
 											<button
 												className={`auto-items-tab${subTab === 'recommended' ? ' active' : ''}`}
 												onClick={() => setSubTab('recommended')}
 											>
-												Watchlist
+												{mediaLabels.recommended}
 											</button>
 										</>
 									);
@@ -624,7 +636,7 @@ const Dashboard: React.FC = () => {
 							(() => {
 								const allItems = isAuthenticated ? autoItems : guestItems[selectedMediaType];
 								const displayItems =
-									isAuthenticated && !viewingOtherUser && selectedMediaType === 'movie'
+									isAuthenticated && !viewingOtherUser
 										? subTab === 'recommended'
 											? allItems.filter((mi) => isWatchlistItem(mi))
 											: allItems.filter((mi) => !isWatchlistItem(mi))
@@ -856,7 +868,7 @@ const Dashboard: React.FC = () => {
 																	className="auto-item-watched-with-btn"
 																	onClick={() => handleMarkWatched(mi)}
 																>
-																	Watched
+																	{mediaLabels.completeRecommended}
 																</button>
 															</div>
 														)}

@@ -23,7 +23,17 @@ interface SearchBarProps {
 	setSelectedMediaType: (type: 'movie' | 'book' | 'album') => void;
 	selectedMediaType: 'movie' | 'book' | 'album';
 	onMediaSelected?: (item: SearchResult, mediaType: 'movie' | 'book' | 'album') => void;
+	onListChanged?: () => Promise<void> | void;
 }
+
+const mediaActionLabels: Record<
+	'movie' | 'book' | 'album',
+	{ addToList: string; addToWatchlist: string }
+> = {
+	movie: { addToList: 'Watched', addToWatchlist: '+ Watchlist' },
+	book: { addToList: 'Read', addToWatchlist: '+ Unread' },
+	album: { addToList: 'Owned', addToWatchlist: '+ I want this' },
+};
 
 const SearchBar: React.FC<SearchBarProps> = ({
 	onSelect,
@@ -31,6 +41,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
 	setSelectedMediaType,
 	selectedMediaType,
 	onMediaSelected,
+	onListChanged,
 }) => {
 	const [query, setQuery] = useState('');
 	const [results, setResults] = useState<SearchResult[]>([]);
@@ -53,6 +64,9 @@ const SearchBar: React.FC<SearchBarProps> = ({
 	const [recommendMatches, setRecommendMatches] = useState<User[]>([]);
 	const [sentTo, setSentTo] = useState<Record<string, boolean>>({});
 	const { isAuthenticated } = useAuth();
+
+	const { addToList: addToListLabel, addToWatchlist: addToWatchlistLabel } =
+		mediaActionLabels[mediaType];
 
 	useEffect(() => {
 		if (query.trim().length < 2) {
@@ -240,6 +254,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
 				expandedItem.Poster || expandedItem.cover,
 				{ _mediatorWatchlist: true }
 			);
+			await onListChanged?.();
 		} catch {
 			// ignore
 		}
@@ -342,10 +357,10 @@ const SearchBar: React.FC<SearchBarProps> = ({
 							{!recommendMode ? (
 								<div className="expanded-actions">
 									<button className="expanded-btn" onClick={handleAddToList}>
-										Watched
+										{addToListLabel}
 									</button>
 									<button className="expanded-btn" onClick={handleAddToWatchlist}>
-										+ Watchlist
+										{addToWatchlistLabel}
 									</button>
 									{isAuthenticated && (
 										<button className="expanded-btn" onClick={() => setRecommendMode(true)}>
