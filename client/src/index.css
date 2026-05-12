@@ -59,12 +59,13 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   color: #fff;
-  background-color: #000;
+  background-color: #fff;
 }
 
 #root {
   min-height: 100vh;
-  width: 100vw;
+  position: relative;
+  background-color: #000;
 }
 
 a {
@@ -1679,6 +1680,11 @@ nav a.has-pending::before {
 }
 
 @media (min-width: 600px) {
+  #root,
+  .search-results {
+    max-width: 60vw;
+    margin: auto;
+  }
   .auto-items {
     height: 100%;
   }

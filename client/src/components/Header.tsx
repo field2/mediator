@@ -140,7 +140,6 @@ const Header: React.FC<HeaderProps> = ({ title, children }) => {
 							fill="white"
 						/>
 					</svg>
-					mediator
 				</Link>
 				<h1 className="view-title">{title}</h1>
 			</div>
