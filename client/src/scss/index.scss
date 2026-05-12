@@ -146,6 +146,7 @@ a {
 		transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
 		.auto-item-card-front {
 			position: relative;
+			cursor: pointer;
 			backface-visibility: hidden;
 			.auto-item-recommendation-badge {
 				position: absolute;
@@ -163,13 +164,6 @@ a {
 					display: block;
 					filter: brightness(0) invert(1);
 				}
-			}
-			.auto-item-card-menu {
-				position: absolute;
-				right: 4px;
-				top: 4px;
-				z-index: 100;
-				cursor: pointer;
 			}
 		}
 
@@ -478,11 +472,6 @@ a {
 				translateY(var(--card-translate-y, 710%)) rotateY(180deg);
 			--back-scale: 0.4;
 			z-index: 1000;
-			.auto-item-card-front {
-				.auto-item-card-menu {
-					display: none;
-				}
-			}
 			.auto-item-card-back {
 				left: 50%;
 				width: calc(90vw / (var(--card-scale) * var(--back-scale)));
@@ -508,9 +497,15 @@ a {
 	left: 0;
 	width: 100vw;
 	height: 100vh;
-	background: rgba(0, 0, 0, 0.7);
+	background: #000;
+	opacity: 0;
+	transition: opacity 250ms ease;
 	z-index: 999;
 	pointer-events: none;
+
+	&.is-visible {
+		opacity: 0.1;
+	}
 }
 
 .media-tabs {

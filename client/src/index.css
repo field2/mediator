@@ -116,6 +116,7 @@ a {
 }
 .auto-items .auto-item-card .auto-item-card-front {
   position: relative;
+  cursor: pointer;
   backface-visibility: hidden;
 }
 .auto-items .auto-item-card .auto-item-card-front .auto-item-recommendation-badge {
@@ -133,13 +134,6 @@ a {
   height: 1rem;
   display: block;
   filter: brightness(0) invert(1);
-}
-.auto-items .auto-item-card .auto-item-card-front .auto-item-card-menu {
-  position: absolute;
-  right: 4px;
-  top: 4px;
-  z-index: 100;
-  cursor: pointer;
 }
 .auto-items .auto-item-card .auto-item-card-back {
   position: absolute;
@@ -479,9 +473,6 @@ a {
   --back-scale: 0.4;
   z-index: 1000;
 }
-.auto-items .auto-item-card.flipped .auto-item-card-front .auto-item-card-menu {
-  display: none;
-}
 .auto-items .auto-item-card.flipped .auto-item-card-back {
   left: 50%;
   width: calc(90vw / (var(--card-scale) * var(--back-scale)));
@@ -505,9 +496,14 @@ a {
   left: 0;
   width: 100vw;
   height: 100vh;
-  background: rgba(0, 0, 0, 0.7);
+  background: #000;
+  opacity: 0;
+  transition: opacity 250ms ease;
   z-index: 999;
   pointer-events: none;
+}
+.backdrop-overlay.is-visible {
+  opacity: 0.1;
 }
 
 .media-tabs {

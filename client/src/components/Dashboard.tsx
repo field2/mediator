@@ -121,6 +121,8 @@ const Dashboard: React.FC = () => {
 	const [showSavePrompt, setShowSavePrompt] = useState(false);
 	const [, setHasPendingFriendRequests] = useState(false);
 	const [flippedCardId, setFlippedCardId] = useState<number | null>(null);
+	const [showBackdropOverlay, setShowBackdropOverlay] = useState(false);
+	const [isBackdropOverlayVisible, setIsBackdropOverlayVisible] = useState(false);
 	const [cardTransform, setCardTransform] = useState({ x: 0, y: 0 });
 	const [cardNotes, setCardNotes] = useState<{ [key: number]: string }>({});
 	const [editingNotes, setEditingNotes] = useState<{ [key: number]: boolean }>({});
@@ -136,6 +138,11 @@ const Dashboard: React.FC = () => {
 	const [sentByExternalId, setSentByExternalId] = useState<{ [key: string]: boolean }>({});
 	const [subTab, setSubTab] = useState<'yours' | 'recommended'>('yours');
 	const mediaLabels = mediaTabLabels[selectedMediaType];
+	const backdropFadeDurationMs = 250;
+
+	const closeFlippedCard = () => {
+		setFlippedCardId(null);
+	};
 
 	const refreshSelectedMediaItems = React.useCallback(async () => {
 		if (!isAuthenticated) {
@@ -168,14 +175,43 @@ const Dashboard: React.FC = () => {
 		setSubTab('yours');
 	}, [selectedMediaType]);
 	useEffect(() => {
-		setFlippedCardId(null);
+		closeFlippedCard();
 	}, [selectedMediaType]);
+
+	useEffect(() => {
+		if (flippedCardId !== null) {
+			setShowBackdropOverlay(true);
+			const frameId = window.requestAnimationFrame(() => {
+				setIsBackdropOverlayVisible(true);
+			});
+
+			return () => {
+				window.cancelAnimationFrame(frameId);
+			};
+		}
+
+		setIsBackdropOverlayVisible(false);
+	}, [flippedCardId]);
+
+	useEffect(() => {
+		if (flippedCardId !== null || !showBackdropOverlay) {
+			return;
+		}
+
+		const timeoutId = window.setTimeout(() => {
+			setShowBackdropOverlay(false);
+		}, backdropFadeDurationMs);
+
+		return () => {
+			window.clearTimeout(timeoutId);
+		};
+	}, [backdropFadeDurationMs, flippedCardId, showBackdropOverlay]);
 
 	// Close flipped card when clicking anywhere
 	useEffect(() => {
 		const handleClickOutside = () => {
 			if (flippedCardId !== null) {
-				setFlippedCardId(null);
+				closeFlippedCard();
 			}
 		};
 
@@ -287,7 +323,7 @@ const Dashboard: React.FC = () => {
 	const handleFlipCard = (mediaId: number, listId: number, event: React.MouseEvent) => {
 		event.stopPropagation();
 		if (flippedCardId === mediaId) {
-			setFlippedCardId(null);
+			closeFlippedCard();
 			return;
 		}
 		if (!watchedWith[mediaId]) {
@@ -333,7 +369,7 @@ const Dashboard: React.FC = () => {
 			await updateMediaAdditionalData(mediaItem.list_id, mediaItem.id, null);
 			const full = await getList(mediaItem.list_id);
 			setAutoItems(Array.isArray(full.mediaItems) ? full.mediaItems : []);
-			setFlippedCardId(null);
+			closeFlippedCard();
 		} catch (err) {
 			console.error('Error marking as watched:', err);
 		}
@@ -661,33 +697,10 @@ const Dashboard: React.FC = () => {
 														}
 													}}
 												>
-													<div className="auto-item-card-front">
-														<div
-															className="auto-item-card-menu"
-															onClick={(e) => handleFlipCard(mi.id, mi.list_id, e)}
-														>
-															<svg
-																width="31"
-																height="21"
-																viewBox="0 0 31 21"
-																fill="none"
-																xmlns="http://www.w3.org/2000/svg"
-															>
-																<rect
-																	opacity="0.5"
-																	x="5"
-																	y="6"
-																	width="21"
-																	height="9"
-																	rx="4.5"
-																	fill="white"
-																/>
-																<rect x="6" y="7" width="19" height="7" rx="3.5" fill="black" />
-																<circle cx="10.5" cy="10.5" r="1.5" fill="white" />
-																<circle cx="15.5" cy="10.5" r="1.5" fill="white" />
-																<circle cx="20.5" cy="10.5" r="1.5" fill="white" />
-															</svg>
-														</div>
+													<div
+														className="auto-item-card-front"
+														onClick={(e) => handleFlipCard(mi.id, mi.list_id, e)}
+													>
 														<img
 															src={mi.poster_url || '/placeholder.png'}
 															alt={mi.title}
@@ -712,7 +725,7 @@ const Dashboard: React.FC = () => {
 													<div className="auto-item-card-back">
 														<div
 															className="auto-item-card-back-close"
-															onClick={() => setFlippedCardId(null)}
+															onClick={closeFlippedCard}
 															style={{ cursor: 'pointer' }}
 														>
 															<svg
@@ -977,7 +990,11 @@ const Dashboard: React.FC = () => {
 														)}
 													</div>
 												</div>{' '}
-												{flippedCardId === mi.id && <div className="backdrop-overlay" />}{' '}
+												{showBackdropOverlay && (
+													<div
+														className={`backdrop-overlay${isBackdropOverlayVisible ? ' is-visible' : ''}`}
+													/>
+												)}{' '}
 											</React.Fragment>
 										))}
 									</div>
