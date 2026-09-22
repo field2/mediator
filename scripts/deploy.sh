@@ -22,6 +22,10 @@ LOCAL_DB="$SCRIPT_DIR/../server/mediator.db"
 
 echo "Deploying branch '$BRANCH' to ${SSH_USER}@${SSH_HOST}:${REMOTE_PATH}"
 
+# ── Step 0: push the local branch so the remote deploys this checkout ─────────
+echo "Pushing branch '$BRANCH' to origin..."
+git push origin "$BRANCH"
+
 # ── Step 1: pull remote DB to local ──────────────────────────────────────────
 echo "Pulling remote DB to local..."
 scp -P "$SSH_PORT" -o ConnectTimeout=10 -o BatchMode=yes \
