@@ -1675,11 +1675,7 @@ nav a.has-pending::before {
 	.view-header {
 		margin-bottom: 0.5rem;
 	}
-	#root,
-	.search-results {
-		max-width: 60vw;
-		margin: auto;
-	}
+
 	.auto-items {
 		height: 100%;
 		.auto-item-card.flipped {
