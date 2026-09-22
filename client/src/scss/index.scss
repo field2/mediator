@@ -4,20 +4,27 @@
 $green: rgb(141, 228, 123);
 $red: rgb(255, 94, 123);
 $orange: rgb(228, 205, 123);
+$dark: #000;
+$light: #fff;
 
 button {
 	border: none;
 }
 
-@mixin all-caps {
+@mixin all-caps(
+	$fs: 1.2rem,
+
+	$fvs: (
+		'wdth' 150,
+		'wght' 300,
+	)
+) {
 	text-transform: uppercase;
 	// font-variation-settings:
 	// 	'wght' 300,
 	// 	'wdth' 30;
-	font-variation-settings:
-		'wdth' 150,
-		'wght' 300;
-	font-size: 1.2rem;
+	font-variation-settings: $fvs;
+	font-size: $fs;
 	letter-spacing: 0.1em;
 }
 
@@ -44,9 +51,12 @@ button {
 	font-size: 14px;
 	opacity: 1;
 	border-radius: $border-radius;
-	transition: opacity 0.25s ease;
+	box-shadow: 0 5px rgba(255, 255, 255, 0.5);
+	transition: all 0.25s ease;
 	&:hover {
 		opacity: 0.65;
+		box-shadow: 0 3px rgba(255, 255, 255, 0.3);
+		transform: translateY(2px);
 	}
 	img {
 		width: 20px;
@@ -57,6 +67,13 @@ button {
 .intro-actions button {
 	@include button;
 	color: #000;
+	@include all-caps(
+		$fs: 14px,
+		$fvs: (
+			'wdth' 150,
+			'wght' 700,
+		)
+	);
 }
 * {
 	margin: 0;
@@ -79,16 +96,15 @@ textarea,
 .friend-links button {
 	color: #000;
 }
+
 body {
 	width: 100vw;
-}
-body {
 	font-family: 'Roboto Flex', sans-serif;
 
 	-webkit-font-smoothing: antialiased;
 	-moz-osx-font-smoothing: grayscale;
-	color: #fff;
-	background-color: #fff;
+	color: $light;
+	background-color: $dark;
 }
 
 #root {
@@ -515,7 +531,9 @@ a {
 		opacity: 0.5;
 		background: none;
 		border: none;
-		&.active {
+		transition: opacity 0.2s ease;
+		&.active,
+		&:hover {
 			opacity: 1;
 		}
 	}
@@ -712,6 +730,9 @@ div.intro {
 }
 .intro-blurb {
 	margin-top: 2rem;
+	p:first-child {
+		font-size: 2rem;
+	}
 }
 
 button.submit,
@@ -1648,6 +1669,12 @@ nav a.has-pending::before {
 }
 
 @media (min-width: 600px) {
+	.page-container {
+		padding-top: 1rem;
+	}
+	.view-header {
+		margin-bottom: 0.5rem;
+	}
 	#root,
 	.search-results {
 		max-width: 60vw;

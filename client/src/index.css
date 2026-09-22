@@ -15,10 +15,13 @@ button {
   font-size: 14px;
   opacity: 1;
   border-radius: 1rem;
-  transition: opacity 0.25s ease;
+  box-shadow: 0 5px rgba(255, 255, 255, 0.5);
+  transition: all 0.25s ease;
 }
 .intro-actions button:hover {
   opacity: 0.65;
+  box-shadow: 0 3px rgba(255, 255, 255, 0.3);
+  transform: translateY(2px);
 }
 .intro-actions button img {
   width: 20px;
@@ -26,6 +29,10 @@ button {
 }
 .intro-actions button {
   color: #000;
+  text-transform: uppercase;
+  font-variation-settings: "wdth" 150, "wght" 700;
+  font-size: 14px;
+  letter-spacing: 0.1em;
 }
 
 * {
@@ -52,14 +59,11 @@ textarea,
 
 body {
   width: 100vw;
-}
-
-body {
   font-family: "Roboto Flex", sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   color: #fff;
-  background-color: #fff;
+  background-color: #000;
 }
 
 #root {
@@ -362,10 +366,13 @@ a {
   font-size: 14px;
   opacity: 1;
   border-radius: 1rem;
-  transition: opacity 0.25s ease;
+  box-shadow: 0 5px rgba(255, 255, 255, 0.5);
+  transition: all 0.25s ease;
 }
 .auto-items .auto-item-card .auto-item-card-back .recommend-friend-btn:hover {
   opacity: 0.65;
+  box-shadow: 0 3px rgba(255, 255, 255, 0.3);
+  transform: translateY(2px);
 }
 .auto-items .auto-item-card .auto-item-card-back .recommend-friend-btn img {
   width: 20px;
@@ -430,10 +437,13 @@ a {
   font-size: 14px;
   opacity: 1;
   border-radius: 1rem;
-  transition: opacity 0.25s ease;
+  box-shadow: 0 5px rgba(255, 255, 255, 0.5);
+  transition: all 0.25s ease;
 }
 .auto-items .auto-item-card .auto-item-card-back .auto-item-watched-with-btn:hover {
   opacity: 0.65;
+  box-shadow: 0 3px rgba(255, 255, 255, 0.3);
+  transform: translateY(2px);
 }
 .auto-items .auto-item-card .auto-item-card-back .auto-item-watched-with-btn img {
   width: 20px;
@@ -514,8 +524,9 @@ a {
   opacity: 0.5;
   background: none;
   border: none;
+  transition: opacity 0.2s ease;
 }
-.media-tabs button.active {
+.media-tabs button.active, .media-tabs button:hover {
   opacity: 1;
 }
 
@@ -711,6 +722,9 @@ div.intro p a {
 .intro-blurb {
   margin-top: 2rem;
 }
+.intro-blurb p:first-child {
+  font-size: 2rem;
+}
 
 button.submit,
 button.logout-button,
@@ -727,13 +741,16 @@ button.deny {
   font-size: 14px;
   opacity: 1;
   border-radius: 1rem;
-  transition: opacity 0.25s ease;
+  box-shadow: 0 5px rgba(255, 255, 255, 0.5);
+  transition: all 0.25s ease;
 }
 button.submit:hover,
 button.logout-button:hover,
 button.approve:hover,
 button.deny:hover {
   opacity: 0.65;
+  box-shadow: 0 3px rgba(255, 255, 255, 0.3);
+  transform: translateY(2px);
 }
 button.submit img,
 button.logout-button img,
@@ -1293,10 +1310,13 @@ input.search-input {
   font-size: 14px;
   opacity: 1;
   border-radius: 999px;
-  transition: opacity 0.25s ease;
+  box-shadow: 0 5px rgba(255, 255, 255, 0.5);
+  transition: all 0.25s ease;
 }
 .friend-card .friend-links:hover {
   opacity: 0.65;
+  box-shadow: 0 3px rgba(255, 255, 255, 0.3);
+  transform: translateY(2px);
 }
 .friend-card .friend-links img {
   width: 20px;
@@ -1506,10 +1526,13 @@ nav a.has-pending::before {
   font-size: 14px;
   opacity: 1;
   border-radius: 999px;
-  transition: opacity 0.25s ease;
+  box-shadow: 0 5px rgba(255, 255, 255, 0.5);
+  transition: all 0.25s ease;
 }
 .modal .modal-content button:hover {
   opacity: 0.65;
+  box-shadow: 0 3px rgba(255, 255, 255, 0.3);
+  transform: translateY(2px);
 }
 .modal .modal-content button img {
   width: 20px;
@@ -1653,10 +1676,13 @@ nav a.has-pending::before {
   font-size: 14px;
   opacity: 1;
   border-radius: 12px;
-  transition: opacity 0.25s ease;
+  box-shadow: 0 5px rgba(255, 255, 255, 0.5);
+  transition: all 0.25s ease;
 }
 .login-button:hover {
   opacity: 0.65;
+  box-shadow: 0 3px rgba(255, 255, 255, 0.3);
+  transform: translateY(2px);
 }
 .login-button img {
   width: 20px;
@@ -1676,6 +1702,12 @@ nav a.has-pending::before {
 }
 
 @media (min-width: 600px) {
+  .page-container {
+    padding-top: 1rem;
+  }
+  .view-header {
+    margin-bottom: 0.5rem;
+  }
   #root,
   .search-results {
     max-width: 60vw;
