@@ -874,13 +874,14 @@ body {
 	padding: 0 0.5rem;
 	position: relative;
 	align-self: stretch;
+	min-height: 40px;
 }
 .search-results {
 	/* Rendered into body so position:fixed prevents clipping by route containers */
 	position: fixed;
 	left: 0;
 	right: 0;
-	top: var(--search-results-top, 100px);
+	top: var(--search-results-top, 92px);
 	z-index: 10002;
 	background: #000;
 	box-sizing: border-box;
@@ -1114,13 +1115,14 @@ input {
 	position: relative;
 	padding: 0.5rem;
 	border: none;
+	outline: none;
 	font-size: 1rem;
 	border-radius: 0.25rem;
 }
 
 input.search-input {
 	width: 100%;
-	box-sizing: border-box;
+
 	border-radius: 50px;
 
 	&::placeholder {
@@ -1814,8 +1816,7 @@ body.home-view .page-container {
 	overflow-y: auto;
 	display: flex;
 	flex-direction: column;
-	max-width: 800px;
-	margin: 0 auto;
+
 	.padded-content {
 		padding: 0 1rem;
 	}
