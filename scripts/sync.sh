@@ -16,22 +16,29 @@ echo "Building client locally..."
 cd "$(dirname "$0")/../client"
 npm run build
 
-# Sync only the built assets
-echo "Syncing client build to remote..."
+# Keep the Express static directory current.
+echo "Syncing client build to server/public..."
 rsync -avz --delete \
   -e "ssh -p $SSH_PORT" \
   dist/ \
   "${SSH_USER}@${SSH_HOST}:${REMOTE_PATH}/server/public/"
 
-# Also copy index.html to root so Apache serves the latest version
-echo "Updating root index.html..."
-ssh -p "$SSH_PORT" "${SSH_USER}@${SSH_HOST}" "cp ${REMOTE_PATH}/server/public/index.html ${REMOTE_PATH}/index.html"
+# Apache serves the site from the remote root. Sync top-level build files
+# separately so --delete cannot remove the backend or other runtime files.
+echo "Syncing frontend files to Apache document root..."
+rsync -avz \
+  --exclude "assets/" \
+  -e "ssh -p $SSH_PORT" \
+  dist/ \
+  "${SSH_USER}@${SSH_HOST}:${REMOTE_PATH}/"
 
-# Clean up stale root files that might be served instead
-echo "Cleaning stale root files..."
-ssh -p "$SSH_PORT" "${SSH_USER}@${SSH_HOST}" "cd ${REMOTE_PATH} && rm -f assets/*"
+echo "Syncing frontend assets to Apache document root..."
+rsync -avz --delete \
+  -e "ssh -p $SSH_PORT" \
+  dist/assets/ \
+  "${SSH_USER}@${SSH_HOST}:${REMOTE_PATH}/assets/"
 
-# Restart PM2 to clear cached index.html
+# Keep the running Node process aligned with server/public.
 echo "Restarting server..."
 ssh -p "$SSH_PORT" "${SSH_USER}@${SSH_HOST}" "cd ${REMOTE_PATH} && pm2 restart mediator-server"
 
