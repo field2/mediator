@@ -787,6 +787,24 @@ input[type=checkbox] {
 .view-header {
   display: flex;
   align-items: center;
+  gap: 0.5rem;
+}
+.view-header.has-search .view-label {
+  flex: 0 1 auto;
+  min-width: 0;
+}
+.view-header.has-search .header-search {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.view-header.has-search .header-search .search-bar {
+  width: 100%;
+  min-width: 0;
+  padding: 0;
+  align-items: center;
+}
+.view-header.has-search .header-search .search-input {
+  min-width: 0;
 }
 .view-header h1 {
   font-size: 1rem;

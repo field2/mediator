@@ -53,6 +53,8 @@ const SearchBar: React.FC<SearchBarProps> = ({
 	const debounceTimer = useRef<number | null>(null);
 	const sentinelRef = useRef<HTMLDivElement>(null);
 	const scrollContainerRef = useRef<HTMLDivElement>(null);
+	const searchBarRef = useRef<HTMLDivElement>(null);
+	const [container, setContainer] = useState<HTMLElement | null>(null);
 	const [expandedItem, setExpandedItem] = useState<SearchResult | null>(null);
 	const [expandedClosing, setExpandedClosing] = useState(false);
 	const [itemOriginRect, setItemOriginRect] = useState<DOMRect | null>(null);
@@ -67,6 +69,13 @@ const SearchBar: React.FC<SearchBarProps> = ({
 
 	const { addToList: addToListLabel, addToWatchlist: addToWatchlistLabel } =
 		mediaActionLabels[mediaType];
+
+	const updateResultsTop = useCallback(() => {
+		const bottom = searchBarRef.current?.getBoundingClientRect().bottom;
+		if (bottom !== undefined) {
+			document.documentElement.style.setProperty('--search-results-top', `${Math.ceil(bottom)}px`);
+		}
+	}, []);
 
 	useEffect(() => {
 		if (query.trim().length < 2) {
@@ -147,8 +156,21 @@ const SearchBar: React.FC<SearchBarProps> = ({
 	};
 
 	const handleInputFocus = () => {
+		updateResultsTop();
 		setShowResults(true);
 	};
+
+	useLayoutEffect(() => {
+		if (!showResults) return;
+
+		updateResultsTop();
+		window.addEventListener('resize', updateResultsTop);
+		window.addEventListener('scroll', updateResultsTop, true);
+		return () => {
+			window.removeEventListener('resize', updateResultsTop);
+			window.removeEventListener('scroll', updateResultsTop, true);
+		};
+	}, [showResults, updateResultsTop]);
 
 	const loadMore = useCallback(async () => {
 		if (loading) return;
@@ -460,8 +482,6 @@ const SearchBar: React.FC<SearchBarProps> = ({
 
 	// Use a portal to render searchResults as a sibling of .view-body
 	// Find the closest .page-container to the input
-	const searchBarRef = React.useRef<HTMLDivElement>(null);
-	const [container, setContainer] = React.useState<HTMLElement | null>(null);
 	React.useEffect(() => {
 		// Render search results into document.body so they aren't clipped
 		// by route containers with overflow:hidden and so they can be scrolled

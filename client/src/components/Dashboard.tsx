@@ -611,17 +611,21 @@ const Dashboard: React.FC = () => {
 
 	return (
 		<div className="page-container">
-			<Header title="" />
-			{!viewingOtherUser && (
-				<SearchBar
-					onSelect={() => {}}
-					mediaType={selectedMediaType}
-					setSelectedMediaType={setSelectedMediaType}
-					selectedMediaType={selectedMediaType}
-					onMediaSelected={handleMediaSelected}
-					onListChanged={refreshSelectedMediaItems}
-				/>
-			)}
+			<Header
+				title=""
+				search={
+					!viewingOtherUser ? (
+						<SearchBar
+							onSelect={() => {}}
+							mediaType={selectedMediaType}
+							setSelectedMediaType={setSelectedMediaType}
+							selectedMediaType={selectedMediaType}
+							onMediaSelected={handleMediaSelected}
+							onListChanged={refreshSelectedMediaItems}
+						/>
+					) : undefined
+				}
+			/>
 			<div className="media-section-body">
 				<div className="search-panel">
 					{showSavePrompt && !isAuthenticated && (

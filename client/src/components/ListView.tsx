@@ -142,22 +142,24 @@ const ListView: React.FC = () => {
 
 	return (
 		<div className="page-container">
-			<Header title={list.name} />
+			<Header
+				title={list.name}
+				search={
+					canEdit ? (
+						<SearchBar
+							onSelect={handleAddMedia}
+							mediaType={selectedSection}
+							setSelectedMediaType={setSelectedSection}
+							selectedMediaType={selectedSection}
+						/>
+					) : undefined
+				}
+			/>
 			{list.description && <p className="list-description">{list.description}</p>}
 			<p className="list-meta">
 				{list.is_public ? '🌐 Public' : '🔒 Private'}
 				{list.isCollaborator && ' • You are a collaborator'}
 			</p>
-
-			{/* Move SearchBar outside of .add-media-panel, as a sibling of .view-body */}
-			{canEdit && (
-				<SearchBar
-					onSelect={handleAddMedia}
-					mediaType={selectedSection}
-					setSelectedMediaType={setSelectedSection}
-					selectedMediaType={selectedSection}
-				/>
-			)}
 
 			<div className="sections">
 				<div className="tabs">

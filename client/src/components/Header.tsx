@@ -7,9 +7,10 @@ import NavigationContext from '../NavigationContext';
 type HeaderProps = {
 	title?: string;
 	children?: React.ReactNode;
+	search?: React.ReactNode;
 };
 
-const Header: React.FC<HeaderProps> = ({ title, children }) => {
+const Header: React.FC<HeaderProps> = ({ title, children, search }) => {
 	const navigate = useNavigate();
 	const location = useLocation();
 	const { isAuthenticated } = useAuth();
@@ -95,7 +96,7 @@ const Header: React.FC<HeaderProps> = ({ title, children }) => {
 	};
 
 	return (
-		<div className="view-header">
+		<div className={`view-header${search ? ' has-search' : ''}`}>
 			{hasPreviousView && location.pathname !== '/' ? (
 				<button
 					className="back-button "
@@ -143,6 +144,8 @@ const Header: React.FC<HeaderProps> = ({ title, children }) => {
 				</Link>
 				<h1 className="view-title">{title}</h1>
 			</div>
+
+			{search && <div className="header-search">{search}</div>}
 
 			{!isAuthenticated ? (
 				<button className="login-button" onClick={() => navigate('/auth')} aria-label="Login">
